@@ -1248,53 +1248,53 @@ cc		endif
       
 !>> FWOA project - HNC - set flow to zero for Bubba Dove floodgate on the Houma Navigation Canal if salinity threshold @ LUMCON is met
 ! Bubba Dove flood gate is link #1351, LUMCON is located in compartment #494
-      if (S(494,2) > 7.5 )  then   
-          Q(1351,2) = 0.0
-          SalLockTriggerHNC = -1
-      else
-          SalLockTriggerHNC = 1
-      endif
+!      if (S(494,2) > 7.5 )  then   
+!          Q(1351,2) = 0.0
+!          SalLockTriggerHNC = -1
+!      else
+!          SalLockTriggerHNC = 1
+!      endif
 !>> print statements to indicate lock opening/closing 
-      if (SalLockStatusHNC /= SalLockTriggerHNC) then
-          if (SalLockStatusHNC == 1) then
-               write(*,*) ' LUCMON salinity > 7.5:'
-               write(*,*) '  - HNC @ Bubba Dove closed at timestep ',mm
-               write(1,*) ' LUCMON salinity > 7.5:'
-               write(1,*) '  - HNC @ Bubba Dove closed at timestep ',mm
-          elseif (SalLockStatusHNC == -1) then
-               write(*,*) ' LUCMON salinity < 7.5:'
-               write(*,*) '  - HNC @ Bubba Dove opened at timestep ',mm
-               write(1,*) ' LUCMON salinity < 7.5:'
-               write(1,*) '  - HNC @ Bubba Dove opened at timestep ',mm
-          endif
-          SalLockStatusHNC = -1*SalLockStatusHNC
-      endif
+!      if (SalLockStatusHNC /= SalLockTriggerHNC) then
+!          if (SalLockStatusHNC == 1) then
+!               write(*,*) ' LUCMON salinity > 7.5:'
+!               write(*,*) '  - HNC @ Bubba Dove closed at timestep ',mm
+!               write(1,*) ' LUCMON salinity > 7.5:'
+!               write(1,*) '  - HNC @ Bubba Dove closed at timestep ',mm
+!          elseif (SalLockStatusHNC == -1) then
+!               write(*,*) ' LUCMON salinity < 7.5:'
+!               write(*,*) '  - HNC @ Bubba Dove opened at timestep ',mm
+!               write(1,*) ' LUCMON salinity < 7.5:'
+!               write(1,*) '  - HNC @ Bubba Dove opened at timestep ',mm
+!          endif
+!          SalLockStatusHNC = -1*SalLockStatusHNC
+!      endif
       
 !>> FWOA project - Superior Canal - set flow to zero for floodgates that are controlled by stage in Superior Canal @ the Hwy 82 Gauge
-      if (max(ES(jus(2807),2),ES(jds(2807),2)) <= 0.229) then
-          Q(2870,2) = 0.0
-          Q(3006,2) = 0.0
-          Q(3844,2) = 0.0
-          Q(3845,2) = 0.0
-          StgTriggerSuperiorCanal = -1
-      else
-          StgTriggerSuperiorCanal = 1
-      endif
+!      if (max(ES(jus(2807),2),ES(jds(2807),2)) <= 0.229) then
+!          Q(2870,2) = 0.0
+!          Q(3006,2) = 0.0
+!          Q(3844,2) = 0.0
+!          Q(3845,2) = 0.0
+!          StgTriggerSuperiorCanal = -1
+!      else
+!          StgTriggerSuperiorCanal = 1
+!      endif
 !>> print statements to indicate tidegate opening/closing
-      if (StgTriggerStatusSuperiorCanal /= StgTriggerSuperiorCanal) then
-          if (StgTriggerStatusSuperiorCanal == 1) then
-               write(*,*) ' Water stage in Superior Canal <= 0.229 m'
-               write(*,*) '  - tidegates closed at timestep =',mm
-               write(1,*) ' Water stage in Superior Canal <= 0.229 m'
-               write(1,*) '  - tidegates closed at timestep =',mm           
-          elseif (StgTriggerStatusSuperiorCanal == -1) then
-               write(*,*) ' Water stage in Superior Canal > 0.229 m'
-               write(*,*) '  - tidegates opened at timestep =',mm
-               write(1,*) ' Water stage in Superior Canal > 0.229 m'
-               write(1,*) '  - tidegates opened at timestep =',mm             
-          endif
-          StgTriggerStatusSuperiorCanal=-1*StgTriggerStatusSuperiorCanal
-      endif
+!      if (StgTriggerStatusSuperiorCanal /= StgTriggerSuperiorCanal) then
+!          if (StgTriggerStatusSuperiorCanal == 1) then
+!               write(*,*) ' Water stage in Superior Canal <= 0.229 m'
+!               write(*,*) '  - tidegates closed at timestep =',mm
+!               write(1,*) ' Water stage in Superior Canal <= 0.229 m'
+!               write(1,*) '  - tidegates closed at timestep =',mm           
+!          elseif (StgTriggerStatusSuperiorCanal == -1) then
+!               write(*,*) ' Water stage in Superior Canal > 0.229 m'
+!               write(*,*) '  - tidegates opened at timestep =',mm
+!               write(1,*) ' Water stage in Superior Canal > 0.229 m'
+!               write(1,*) '  - tidegates opened at timestep =',mm             
+!          endif
+!          StgTriggerStatusSuperiorCanal=-1*StgTriggerStatusSuperiorCanal
+!      endif
       
       
 !>> ****HARDCODED FLOW TRIGGERS - END*****      
