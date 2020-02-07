@@ -360,6 +360,7 @@ c*******************************************************************************
       READ(30,*) tss_error       ! 97       error term for TSS - to be used to perturb output files -percentage adjustment (between -1 and 1) (tss_error)
       READ(30,*) stage_error     ! 98       error term for stage - to be used to perturb output files (stage_error)
       READ(30,*) stvar_error     ! 99       error term for water level variability - to be used to perturb output files (stvar_error)
+      READ(30,*) nlinkskip       ! 100      yw number of links to skip flow limiter (must match number of links in 'links_to_skip.csv', set to 0 if no skip link)      
       close(30)       
 !      sal_0_1_error  = 0.0
 !      sal_1_5_error  = 0.0
@@ -561,6 +562,14 @@ C> initially set GrowAlgae array equal to zero
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
 	close(125)
 
+      !YW Read input like file to skip flow limiter
+      open (unit=500, file= 'links_to_skip.csv',status='unknown')	    ! input csv file with the link ID numbers of links to skip flow limiter
+      !>> Read in links
+      read(500,*)                                                     ! skip first line
+      do kk = 1,nlinkskip
+		read(500,*) linkskip(kk)
+!		write(*,*) linkskip(kk)
+      enddo
 
 ! Initialize some variables and arrays
       NR(:)=0.0

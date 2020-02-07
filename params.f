@@ -720,7 +720,8 @@
       real(sp),dimension(:,:),allocatable :: ChemDOP
       real(sp),dimension(:,:),allocatable :: ChemPOP
 
-      
+      integer :: nlinkskip   ! yw number of link to skip flow limiter   
+      integer,dimension(:),allocatable :: linkskip   ! yw         
       
       
       

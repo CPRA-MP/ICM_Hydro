@@ -490,7 +490,7 @@
       
  6666 format(A,I3,A,I3)     
 
-      
+      allocate(linkskip(nlinkskip))  ! yw store like numbers      
       
       return
       end

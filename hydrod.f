@@ -19,6 +19,7 @@
       real :: QSalSum,QTmpSum,QMarshKK
       real :: rca,rna,rnd,rcd,rcn
       real :: Q_filter1,Q_filter2                                               ! yw flow filter
+      integer :: flag_skip                                                      ! yw skip flag
       
 !parameters for flow by linktype
       real :: ach,AET,avdep,delp,deflength,delh,dv
@@ -458,7 +459,19 @@ cc		endif
                   
                   Q_filter1 = abs(Deta)*As(downN,1)/dt                 ! yw flow filter
                   Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)     ! yw flow filter
-                  Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1,Q_filter2)     ! yw flow filter
+
+                  flag_skip = 0
+                  if (nlinkskip > 0) then
+                      do jj = 1,nlinkskip
+                          if (linkskip(jj) == i) then
+                              flag_skip = 1
+                          endif
+                      enddo
+                  endif
+                  
+                  if (flag_skip == 0) then
+                      Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1,Q_filter2)     ! yw flow filter
+                  endif    
                   
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Link',i,'flow is NaN'
