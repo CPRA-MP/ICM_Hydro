@@ -427,14 +427,13 @@ cc		endif
                       !linkdepth=max(0.5*(Es(upN,2)+ES(downN,2))-latr1(i),0.01)
                       linkdepth=0.5*(Es(upN,2)+ES(downN,2))-latr1(i)	 !zw 3/16/2015
                   endif
-          !>> Calculate hydraulic radius from average flow depth (if open channel)
-                  if (linkt(i) == 1) then
-				    Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
+          !>> Calculate hydraulic radius from culvert dimensions (if bridge/culvert)
+                  if (linkt(i) == 6) then
+                      Rh=Latr4(i)*(Latr2(i)-Latr1(i))/(2.*(Latr2(i)-Latr1(i))+Latr4(i))
                   else
-		!>> Calculate hydraulic radius from culvert dimensions (if bridge/culvert)
-				    Rh=Latr4(i)*(Latr2(i)-Latr1(i))/(2.*(Latr2(i)-
-     &						Latr1(i))+Latr4(i))
-			    endif
+		!>> Calculate hydraulic radius from average flow depth (if open channel)
+		      Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
+	          endif
               
                   Ach = linkdepth*Latr4(i)
               

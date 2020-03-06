@@ -630,7 +630,7 @@
 !      real(sp),dimension(:),allocatable :: flood
       real(sp),dimension(:),allocatable :: floodf
 
-      real(sp),dimension(:,:),allocatable :: Eh
+      real(dp),dimension(:,:),allocatable :: Eh
       
 ! old comdeck.h memory block: COMMON/Marsh2
       real(sp),dimension(:),allocatable :: acssh
