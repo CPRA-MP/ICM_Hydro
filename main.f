@@ -715,25 +715,15 @@ C> initially set GrowAlgae array equal to zero
           Clayacc(j,1) = 0.0
           
           
-          As(j,2)= As(j,1)				! Surface area of cells (m2)
-          Es(j,2)= Es(j,1)				! Stage in storage cells (m)
+		As(j,2)= As(j,1)				! Surface area of cells (m2)
+		Es(j,2)= Es(j,1)				! Stage in storage cells (m)
           ds(j,1)= Es(j,2)-Bed(j)			! Depth in storage cells (m)
-          Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
-          BCnosurge(j,1) = 0.0            ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
+		Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
+		BCnosurge(j,1) = 0.0            ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1) ! boundary conditions stage(m) before surge is added
           Qmarsh(j,2) = Qmarsh(j,1)		! Flow in marsh cell	!JAM Oct 2010
           S(j,2) = S(j,1)
           Tempw(j,2) = Tempw(j,1)
-          
-!>> Initialize average variable !yw  
-
-          ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
-          EHAV(j,1) = EH(j,2)*dt/(3600.*24.) 
-          TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2)
-     &    + CSS(j,1,3) + CSS(j,1,4) )*dt/(3600.*24.) 
-          SALAV(j) = S(j,2)*dt/(3600.*24.)
-          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
-          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
           
       enddo
       close(400)
