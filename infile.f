@@ -1145,6 +1145,13 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 		READ(46,*) dump_int,dump_text,windy_data(kt,1:windgages)
 	enddo      
 
+!>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
+      read(48,*)
+      do kn = 1,tidegages
+          read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
+      enddo
+      transposed_tide_max = Maxval(transposed_tide(1:tidegages,2))
+
 !>> Skip header row of Tide Gage and Surge data input files
       read(47,*)
       read(110,*)
@@ -1164,15 +1171,9 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       enddo
 
 !>> Read Tide Gage and Surge data for current model year
-      do kt=1,simdays*24/dttide
+      do kt=1,(simdays*24/dttide+transposed_tide_max/dttide)
           read(47,*)dump_int,dump_text,TideData(kt,1:tidegages)
           read(110,*)dump_int,dump_text,Surge(kt,1:mds)
-      enddo
-
-!>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
-      read(48,*)
-      do kn = 1,tidegages
-          read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
       enddo
       
 !>> Read in data to weight (by distance) the nearest observed water level timeseries to off-shore boundary compartments that do not have an observed WSEL timeseries      
