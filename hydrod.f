@@ -20,6 +20,8 @@
       real :: rca,rna,rnd,rcd,rcn
       real :: Q_filter1,Q_filter2                                               ! yw flow filter
       integer :: flag_skip                                                      ! yw skip flag
+      real :: dkd_h,Marsh_ruf,MarshRh,MarshAch                                  ! edw new parameters for replacing Kadlec-Knight with Manning's
+      real :: MarshRes,MarshResist,QMarshMann                                   ! edw new parameters for replacing Kadlec-Knight with Manning's
       
 !parameters for flow by linktype
       real :: ach,AET,avdep,delp,deflength,delh,dv
@@ -459,6 +461,8 @@ cc		endif
                   Q_filter1 = abs(Deta)*As(downN,1)/dt                 ! yw flow filter
                   Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)     ! yw flow filter
 
+                  ! this flag skip routine should be cleaned up so as to not have to loop through all 
+                  
                   flag_skip = 0
                   if (nlinkskip > 0) then
                       do jj = 1,nlinkskip
@@ -1354,8 +1358,39 @@ cc		endif
 !          QMarsh(j,2)=sqrt(abs(Deta))*hResist*sn*dkd
           MarshEdge = max(hwidth(j),0.01)
           MarshL = hLength(j)
-          QMarshKK=KKa(j)*MarshEdge*(Dmarsh**KKexp)*Detah/MarshL
 
+! 2023test ! testing replacing Kadlec Knight marsh flow with Manning's equation
+! 2023test ! this will use KKa(j) parameter from cells.csv as Manning's n
+          
+! 2023test !         QMarshKK=KKa(j)*MarshEdge*(Dmarsh**KKexp)*Detah/MarshL
+          
+          !>> Calculate marsh flow 'resistance'
+		
+          !>> Check for missing or negative roughness attribute values (here using the KKa input value for compartment and reassign to default values if missing
+          if (KKa(j) < 0.0) then
+              KKa(j) = def_n
+          elseif (KKa(j) >= 1) then
+              if (KKa(j) >= 999.) then
+          !>> Set zero multiplier for infinitely high roughness values
+                  dkd_h = 0.0
+              else
+                  KKa(j) = def_n
+              endif
+          endif
+
+          Marsh_ruf=MarshL*KKa(j)*KKa(j)
+          MarshRh=Detah   ! hyd. radius of marsh is approx. equal to depth
+          MarshAch=MarshEdge*Detah
+          MarshRes=(Marsh_ruf/MarshRh**(4./3.))/(MarshAch*MarshAch)	!Resistance in marsh-open-water exchange links
+          MarshResist=1.0/sqrt(abs(Res))		!Resistance in marsh-open-water exchange link
+          
+          if(isNaN(MarshResist)) then
+              MarshResist = 0.0
+          endif
+          
+          QMarshMann = sqrt(abs(Detah))*MarshResist*sDetah*dkd_h
+      
+          
 !>> Determine volume of water available for exchange with marsh during timestep
 !          if (sDetaH < 0) then
 !              volavailable = (Es(j,2) - Eh(j,2))*As(j,1)
@@ -1366,7 +1401,8 @@ cc		endif
 !          Qmax = volavailable/dt
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to the max flowrate calculated in celldQ
           if (Ahf(j) > 0.0) then
-              QMarsh(j,2) = sDetaH*min(abs(QMarshKK),Qmarshmax(j))
+! 2023test !              QMarsh(j,2) = sDetaH*min(abs(QMarshKK),Qmarshmax(j))
+              QMarsh(j,2) = sDetah*min(abs(QMarshMann),Qmarshmax(j))
           else
               QMarsh(j,2) = 0.0
           endif
@@ -1378,7 +1414,7 @@ cc		endif
 		khr=int(thour)
 		dmod=khr-3*int(float(khr)/3.)
 
-	endif
+      endif
 	
 
 ! Save salinity values at mid-day to calculate average daily salinities      
@@ -1392,6 +1428,7 @@ cc		endif
 !              SLTEMP(kk,2)=SL(kk,2)
 !          enddo    
 !	endif
+
 
 !>> generate array of hourly water level in boundary condition compartments (if flag is set to write hourly output file)
       if (dhr == 0.0) then
