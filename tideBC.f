@@ -1,4 +1,4 @@
-      
+
 !> @file
 !> @brief This subroutine assigns observed water level to the downstream boundary condition cells.
 !> @details This subroutine assigns observed water level to the downstream boundary condition cells in two different methods.
@@ -21,18 +21,18 @@
 !> @param         EastBC
 !> @param         WestBC
 !> @param         use_row
-!> @param         row_transpose      
-      
+!> @param         row_transpose
+
       Subroutine TideBC
-	use params      
-      
+	use params
+
       implicit none
 	integer :: jjk,jj,nnn
       integer :: use_row,row_transpose
       real :: EastWght,WestWght,EastComp,WestComp,EastBC,WestBC
-      
+
 !>> Update boundary condition water levels for compartments WITH observed water level timeseries
-	do jjk=1,Mds 
+	do jjk=1,Mds
 		jj=KBC(jjk)
 		do nnn=1,tidegages
 !>> Check if compartment has an observed tide timeseries
@@ -45,6 +45,11 @@
 				if (use_row < 1) then
 					use_row = tiderow
 				endif
+! MP2023 added zw-04/06/2020
+! last few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
+        if(use_row > (simdays*24/dttide)) then
+            use_row = tiderow
+        endif
 ! jj is compartment number, jjk is boundary condition number
 				BCnosurge(jj,2)=TideData(use_row,nnn)
 				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
@@ -53,7 +58,7 @@
 	end do
 
 !>> Update boundary condition water levels for compartments WITHOUT observed water level timeseries
-	do jjk=1,Mds 
+	do jjk=1,Mds
 		jj=KBC(jjk)
 		do nnn=1,Mds-tidegages
 			if (jj==weighted_tide(nnn,1)) then
@@ -66,30 +71,31 @@
 !>> Weight east and west observed timeseries from current timestep
 				EastBC = BCnosurge(EastComp,2)
 				WestBC = BCnosurge(WestComp,2)
-						
+
+        BCnosurge(jj,2)=EastWght*EastBC+WestWght*WestBC  !zw added 04/06/2020
 				ES(jj,2)=EastWght*EastBC+WestWght*WestBC
      &                        +Surge(surgerow,jjk)
 			endif
 		enddo
 	enddo
 
-      return 
+      return
 	end
-      
-!***********************End Subroutine for Tidal Boundary Condition*****************************      
 
-      
-      
-!***********************Old Subroutine for Tidal Boundary Condition*****************************       
-!      
-! kthr and kday now global parameters - no longer needed to be passed into subroutine      
+!***********************End Subroutine for Tidal Boundary Condition*****************************
+
+
+
+!***********************Old Subroutine for Tidal Boundary Condition*****************************
+!
+! kthr and kday now global parameters - no longer needed to be passed into subroutine
 !      Subroutine TideBC(jj,kthr,kday)
 !
-!	use params      
-!      
+!	use params
 !
-!      
-!c     These parameters should be moved to input to start at any time of year ** later  
+!
+!
+!c     These parameters should be moved to input to start at any time of year ** later
 !********tide information, surges, periods and phase angles
 !
 !      shour=0.0
@@ -119,7 +125,7 @@
 !      g2 = 0.000000326479
 !      g3 = -0.000000000146371
 !      g4 =  0.0000000000000299401
-!      g5 = -0.00000000000000000283698	 	  
+!      g5 = -0.00000000000000000283698
 !      g6 =  0.000000000000000000000100482
 !	thourj=(tdayj)*24
 !	tt0 = 1
@@ -128,7 +134,7 @@
 !	tt3 = tt2*thourj
 !	tt4 = tt3*thourj
 !	tt5 = tt4*thourj
-!	tt6 = tt5*thourj 
+!	tt6 = tt5*thourj
 !	agulf2= g0+g1*tt1+g2*tt2+g3*tt3+g4*tt4+g5*tt5+g6*tt6	! JAM Nov 2010
 !      cdir= wspd(kday)*wspd(kday)            !new wind variables used
 !      cdir = windx(jj)**2 + windy(jj)**2       !cdir = windspd**2 = (sqrt(windx**2+windy**2))**2
@@ -154,6 +160,6 @@ cc       cdir=0.0  !test oct 15 2013 AMc						! JKS 10/30/13
 !     &					*sin(2*pi*t/(TP1*3600))							! +ao*(1.-sin(2.*pi*t/(3600*24*365.25)))   !GOM seasonal effect. JAM Sept 08
 !     &					+RSSS +agulf2+surge(jj,kday)*1.5				! Sealevel shift JAM Aug 09 + JAM Nov 2010 Surge Dec 7 2010
 !	endif
-      
+
 
 c***********************End Old Subroutine for Tidal Boundary Condition*****************************
