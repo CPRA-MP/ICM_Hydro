@@ -1,20 +1,20 @@
       subroutine allocate_params
-      
+
       use params
       integer :: windsteps,tidesteps,maxconnectuse
-      
-           
+
+
       cells=N
       links=M
       windsteps = simdays*24/dtwind
       tidesteps = simdays*24/dttide
       maxconnectuse = max(maxconnect,25) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
-      
-      
+      numChem=14  !zw added 04/07/2020 to replace fixed variable dimensions related to chemicals
+
       WRITE(1,*) '----------------------------------------------------'
       WRITE(1,*) ' GRID AND RUN INFORMATION'
       WRITE(1,*) '----------------------------------------------------'
-      write(1,*)   
+      write(1,*)
       write(1,1) ' Simulation time (days)          : ', simdays
       write(1,1) ' Hydrologic compartments         : ', cells
       write(1,1) ' Hydraulic links                 : ',links
@@ -27,12 +27,12 @@
       write(1,2) ' Water area required (sq km)     : ',minwater/1000000.
       write(1,*)
       write(1,2) ' Maximum change in stage allowed : ',maxdz
-      
-      
+
+
       WRITE(*,*) '----------------------------------------------------'
       WRITE(*,*) ' GRID AND RUN INFORMATION'
       WRITE(*,*) '----------------------------------------------------'
-      write(*,*)   
+      write(*,*)
       write(*,1) ' Simulation time (days)          : ', simdays
       write(*,1) ' Hydrologic compartments         : ', cells
       write(*,1) ' Hydraulic links                 : ',links
@@ -56,7 +56,7 @@
       allocate(per_land_500m(n_500m_cells))
       allocate(per_water_500m(n_500m_cells))
       allocate(height_500m(n_500m_cells))
-      
+
 ! output summary arrays for compartments !-EDW
       allocate(sal_2wk_ave_max(cells))
       allocate(sal_daily(simdays,cells))
@@ -78,7 +78,7 @@
       allocate(tmp_ave_summer(cells))
       allocate(SedOW(cells))
       allocate(SedMarshInt(cells))
-      allocate(SedMarshEdge(cells)) 
+      allocate(SedMarshEdge(cells))
       allocate(tidal_range_daily(simdays,cells))
       allocate(dailyLW(cells))
       allocate(dailyHW(cells))
@@ -97,7 +97,7 @@
       allocate(difmean_tss(simdays,cells))
 
 
-      
+
 !output summary arrays for links  !-EDW
       allocate(sal_2wk_ave_max_links(links))
       allocate(sal_daily_links(simdays,links))
@@ -115,11 +115,11 @@
       allocate(tkn_month_ave_links(12,links))
       allocate(tss_month_ave_links(12,links))
 
-      
-      
+
+
       allocate(SlkAve(links))
-      
-!output summary arrays for 500 m grid !-EDW     
+
+!output summary arrays for 500 m grid !-EDW
       allocate(pct_sand_bed_500m(n_500m_cells))
       allocate(salinity_500m(n_500m_cells))
       allocate(salinity_IDW_500m(n_500m_cells))
@@ -137,14 +137,14 @@
       allocate(tmp_summer_500m(n_500m_cells))
       allocate(tmp_summer_IDW_500m(n_500m_cells))
       allocate(tree_est(n_500m_cells))
-      
+
       allocate(sal_IDW_500m_month(12,n_500m_cells))
       allocate(tmp_IDW_500m_month(12,n_500m_cells))
       allocate(tkn_500m_month(12,n_500m_cells))
       allocate(tss_500m_month(12,n_500m_cells))
-      
-      
-      
+
+
+
 !output summary arrays for 500 m grid in Veg model matrix
       allocate(veg_grid_IDs(veg_matrix_cols,veg_matrix_rows))
       allocate(depth_summer_forVeg(veg_matrix_cols,veg_matrix_rows))
@@ -155,14 +155,14 @@
       allocate(tree_est_forVeg(veg_matrix_cols,veg_matrix_rows))
       allocate(ht_abv_water_forVeg(veg_matrix_cols,veg_matrix_rows))
       allocate(per_land_forVeg(veg_matrix_cols,veg_matrix_rows))
-      
+
       ! sediment resupsension/erodible bed terms
       allocate(depo_on_off(cells))
       allocate(erBedAvail(cells,4))
       allocate(erBedDepth(cells))
       allocate(erBedBD(cells))
       allocate(CSSresusOff(4))
-      
+
       ! variables of (:) dimensions
 
       ! arrays of various length
@@ -174,7 +174,7 @@
 	allocate(D90(4))	!sediment class parameters
 	allocate(rhoSed(4))	!sediment class parameters
 	allocate(SGsed(4))	!sediment class parameters
-	
+
       allocate(dCSS(4))
       allocate(dCSSh(4))
       allocate(SedAccumRate(4))
@@ -192,19 +192,21 @@
       allocate(MEESedRatio(4))
       allocate(MEESedRate(4))
       allocate(month_DOY(12))
-      allocate(cChemface(15))
-      allocate(DChem(15))
-      allocate(KBC(20))
+      allocate(KBC(mds))  !allocate(KBC(20))  !zw change to mds instead of 20  04/07/2020
       allocate(Sal(1,1))
       allocate(SWR(50))
-      allocate(QChemSUM(15))
-      allocate(QChemSUManth(15))
-      allocate(QChemSUMtrib(15))
-      allocate(QChemSUMdiv(15))
-      allocate(QChemSUMflows(15))
-      allocate(QChemSUMatm(15))
+
+      !zw change to numChem instead of 15 04/07/2020
+      allocate(cChemface(numChem))  !allocate(cChemface(15))
+      allocate(DChem(numChem))  !allocate(DChem(15))
+      allocate(QChemSUM(numChem)) !allocate(QChemSUM(15))
+      allocate(QChemSUManth(numChem)) !allocate(QChemSUManth(15))
+      allocate(QChemSUMtrib(numChem)) !allocate(QChemSUMtrib(15))
+      allocate(QChemSUMdiv(numChem)) !allocate(QChemSUMdiv(15))
+      allocate(QChemSUMflows(numChem)) !allocate(QChemSUMflows(15))
+      allocate(QChemSUMatm(numChem)) !allocate(QChemSUMatm(15))
       allocate(Ws(5))
-            
+
       ! arrays of length equal to number of days simulated
       allocate(ParSandD(simdays))
       allocate(lnO2Sat(simdays))
@@ -227,8 +229,8 @@
       allocate(transposed_tide(tidegages,2))
       allocate(weighted_tide(Mds-tidegages,5))
       allocate(surge(tidesteps,Mds)) !-EDW
-      
-      
+
+
       ! arrays of length equal to number of cells
       allocate(nlink2cell(cells))
       allocate(ka(cells))
@@ -305,12 +307,12 @@
       allocate(Sacch_int(cells,2))
       allocate(Sacch_edge(cells,2))
 
-      
+
       ! arrays of length equal to number of links
-      allocate(USx(links))  
-      allocate(USy(links))  
-      allocate(DSx(links))  
-      allocate(DSy(links))  
+      allocate(USx(links))
+      allocate(USy(links))
+      allocate(DSx(links))
+      allocate(DSy(links))
       allocate(linkt(links))
       allocate(Latr1(links))
       allocate(Latr2(links))
@@ -360,7 +362,7 @@
       allocate(Qsedsm(links))
 !      allocate(Resist(links))    !no longer an array - now a local calculation
 !	allocate(Width(links))
-      
+
 ! variables of (:,:) dimensions
 
       ! arrays of various length
@@ -372,13 +374,13 @@
       allocate(SWRfines(Ndiv))
       allocate(DivMult(Ndiv))
       allocate(daymo(12,2))
-      allocate(decay(25,25))
+      allocate(decay(numChem,numChem))  !allocate(decay(25,25)) !zw changed to numChem instead of 25 04/07/2020
       allocate(Qdiv(Ndiv,simdays))
       allocate(QssT(Ntrib,simdays))
       allocate(QssTdiv(Ndiv,simdays))
       allocate(Qtrib(Ntrib,simdays))
       allocate(Strib(Ntrib,simdays))
-      
+
       ! arrays of length equal to number of cells
       allocate(kinvisc(cells))
       allocate(group_vel(cells,2))
@@ -411,7 +413,7 @@
       allocate(ESAV(cells,3))
       allocate(ESMN(cells,3))
       allocate(ESMX(cells,3))
-      allocate(Fetch(cells,10))
+      allocate(Fetch(cells,16)) !allocate(Fetch(cells,10))!zw changed to 16 instead of 10 04/07/2020
       allocate(hdepth(cells,3))
       allocate(HDT(cells,3))
       allocate(hmarsho(cells,3))
@@ -443,23 +445,23 @@
       allocate(deposition(cells,4))     !sediment array - 4 columns for 4 sediment classes
       allocate(CSSvRs(cells,2))
 
-      
+
       ! !EDW Tempw() used to be used to read in the boundary condition water temps, and then also used as the cell values of temperature at each timestep
       ! !EDW Essentially the first 7 columns were used to read in the BC, then columns 1 and 2 were then re-used as the temperature array for compartments
       ! !EDW Created a new array so that they are now separate.
-      
+
       allocate(TempwBC(mds,simdays))     ! !BUG! this was originally (cells,3) - but error was thrown on infile - should be a timeseries
       allocate(Tempw(cells,3))     ! !BUG! this was originally (cells,3) - but error was thrown on infile - should be a timeseries
       allocate(TempwAve(cells))   !-EDW array to save average temperature values for the day
-      
-      
-      allocate(Tmp(cells,2))  
+
+
+      allocate(Tmp(cells,2))
       allocate(Tmpe(cells,2))     ! !-EDW I don't think this is used
       allocate(Tmpm(cells,2))     ! !-EDW I don't think this is used
       !allocate(TMtrib(30,simdays))!-EDW   array size of 30 is too small when running in Debug mode
       allocate(TMtrib(cells,simdays))!-EDW
-      
-      
+
+
       ! arrays of length equal to number of links
       allocate(Depth(links,3))
 	allocate(Q(links,3))
@@ -470,28 +472,28 @@
       allocate(TL(links,3))
 !      allocate(uplandNP(links,14))
 
-! variables of (:,:,:) dimensions    
-      
-      ! arrays of various length
-      allocate(cCHEM(Ntrib,15,simdays))
-      allocate(cChemdiv(1,15,simdays))
-      allocate(dccc1(1,25,2))
-      allocate(dccc2(1,25,2))
+! variables of (:,:,:) dimensions
 
-      allocate(QAtm(1,15,simdays))
-      allocate(QChemdiv(Ndiv,15,simdays))
+! arrays of various length realted to number of chemicals
+!zw changed to numChem instead of numbers such as 15 or 25, 04/07/2020
+allocate(cCHEM(Ntrib,numChem,simdays))  !allocate(cCHEM(Ntrib,15,simdays))
+allocate(cChemdiv(1,numChem,simdays))  !allocate(cChemdiv(1,15,simdays))
+allocate(dccc1(1,numChem,2))  !allocate(dccc1(1,25,2))
+allocate(dccc2(1,numChem,2))   !allocate(dccc2(1,25,2))
 
-      ! arrays of length equal to number of cells
-      allocate(Chem(cells,15,2))
-      allocate(ChemAve(cells,15))
-      allocate(GrowAlgae(cells,25,25))
-      allocate(GrowChlA(cells,25,25))
-      allocate(QCHEM(Ntrib,15,simdays)) 
-      
- 6666 format(A,I3,A,I3)     
+allocate(QAtm(1,numChem,simdays))  !allocate(QAtm(1,15,simdays))
+allocate(QChemdiv(Ndiv,numChem,simdays))   !allocate(QChemdiv(Ndiv,15,simdays))
 
-      allocate(linkskip(nlinkskip))  ! yw store like numbers      
-      
+! arrays of length equal to number of cells
+allocate(Chem(cells,numChem,2))                !allocate(Chem(cells,15,2))
+allocate(ChemAve(cells,numChem))               !allocate(ChemAve(cells,15))
+allocate(GrowAlgae(cells,numChem,numChem))     !allocate(GrowAlgae(cells,25,25))
+allocate(GrowChlA(cells,numChem,numChem))      !allocate(GrowChlA(cells,25,25))
+allocate(QCHEM(Ntrib,numChem,simdays))         !allocate(QCHEM(Ntrib,15,simdays))
+
+ 6666 format(A,I3,A,I3)
+
+      allocate(linkskip(nlinkskip))  ! yw store like numbers
+
       return
       end
-
