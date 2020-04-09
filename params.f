@@ -723,6 +723,7 @@
       integer :: nlinkskip   ! yw number of link to skip flow limiter   
       integer,dimension(:),allocatable :: linkskip   ! yw         
       
+      integer :: numChem  !add zw 04/08/2020
       
       
       end module params
