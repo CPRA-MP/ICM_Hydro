@@ -476,20 +476,20 @@
 
 ! arrays of various length realted to number of chemicals
 !zw changed to numChem instead of numbers such as 15 or 25, 04/07/2020
-allocate(cCHEM(Ntrib,numChem,simdays))  !allocate(cCHEM(Ntrib,15,simdays))
-allocate(cChemdiv(1,numChem,simdays))  !allocate(cChemdiv(1,15,simdays))
-allocate(dccc1(1,numChem,2))  !allocate(dccc1(1,25,2))
-allocate(dccc2(1,numChem,2))   !allocate(dccc2(1,25,2))
+      allocate(cCHEM(Ntrib,numChem,simdays))  !allocate(cCHEM(Ntrib,15,simdays))
+      allocate(cChemdiv(1,numChem,simdays))  !allocate(cChemdiv(1,15,simdays))
+      allocate(dccc1(1,numChem,2))  !allocate(dccc1(1,25,2))
+      allocate(dccc2(1,numChem,2))   !allocate(dccc2(1,25,2))
 
-allocate(QAtm(1,numChem,simdays))  !allocate(QAtm(1,15,simdays))
-allocate(QChemdiv(Ndiv,numChem,simdays))   !allocate(QChemdiv(Ndiv,15,simdays))
+      allocate(QAtm(1,numChem,simdays))  !allocate(QAtm(1,15,simdays))
+      allocate(QChemdiv(Ndiv,numChem,simdays))   !allocate(QChemdiv(Ndiv,15,simdays))
 
 ! arrays of length equal to number of cells
-allocate(Chem(cells,numChem,2))                !allocate(Chem(cells,15,2))
-allocate(ChemAve(cells,numChem))               !allocate(ChemAve(cells,15))
-allocate(GrowAlgae(cells,numChem,numChem))     !allocate(GrowAlgae(cells,25,25))
-allocate(GrowChlA(cells,numChem,numChem))      !allocate(GrowChlA(cells,25,25))
-allocate(QCHEM(Ntrib,numChem,simdays))         !allocate(QCHEM(Ntrib,15,simdays))
+      allocate(Chem(cells,numChem,2))                !allocate(Chem(cells,15,2))
+      allocate(ChemAve(cells,numChem))               !allocate(ChemAve(cells,15))
+      allocate(GrowAlgae(cells,numChem,numChem))     !allocate(GrowAlgae(cells,25,25))
+      allocate(GrowChlA(cells,numChem,numChem))      !allocate(GrowChlA(cells,25,25))
+      allocate(QCHEM(Ntrib,numChem,simdays))         !allocate(QCHEM(Ntrib,15,simdays))
 
  6666 format(A,I3,A,I3)
 

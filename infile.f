@@ -469,7 +469,7 @@
 
       !>> Read in links that will have flowrates printed to FLO.out file
 	read(126,*)
-  linkswrite(:)=0	 !zw added 04/06/2020
+      linkswrite(:)=0	 !zw added 04/06/2020
 	do kk = 1,nlinksw
 		read(126,*) linkswrite(kk)
 	enddo
@@ -481,7 +481,7 @@
 
 
 !>> Read in compartments that will have hourly stage printed to STGhr.out file
-stghrwrite(:)=0	!zw added 04/06/2020
+      stghrwrite(:)=0	!zw added 04/06/2020
 	read(127,*)
 	do kk = 1,nstghr
 		read(127,*) stghrwrite(kk)
@@ -556,8 +556,8 @@ DivMult(:)=0  !zw added 04/06/2020
  3377 Format(I6,x,26(F7.1,x))
 
 !>> Read Tributary Matrix
-Qmultdiv(:,:)=0  !zw added 04/06/2020
-Qmult(:,:)=0
+      Qmultdiv(:,:)=0  !zw added 04/06/2020
+      Qmult(:,:)=0
 	! dump header row of tributary and diversion multiplier matrix files (Qmult, Qmult_div)
       read(88,*)
       read(77,*)
@@ -718,7 +718,7 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 	enddo
 
 !>> Read in anthropogenic N-NO3 loads to compartments (in kg/d) - loads from farms and MWWTPs
-AnthL(:)=0  !zw added 04/06/2020
+      AnthL(:)=0  !zw added 04/06/2020
 	do j=1,N
 		READ(44,*)AnthL(j)
 	enddo
@@ -915,8 +915,8 @@ AnthL(:)=0  !zw added 04/06/2020
 	ACCSEDj(:)=0.0
 
   !MP2023 added zw 04/06/2020
-  cssT(:,:,:)=0
-  cssFines(:)=0
+      cssT(:,:,:)=0
+      cssFines(:)=0
 
 !>> Read Tributary Numbers from header row of Tributary sand concentration input file
       READ(55,*) (jtrib(jt), jt=1,Ntrib)
@@ -1059,7 +1059,7 @@ AnthL(:)=0  !zw added 04/06/2020
 !	enddo
 
 !>> Skip header row of Precip input file
-Rain(:,:)=0  !zw added 04/06/2020
+      Rain(:,:)=0  !zw added 04/06/2020
       read(42,*)                                        !dump header
 
 !>> Skip Precip data for years prior to current model year
@@ -1080,7 +1080,7 @@ Rain(:,:)=0  !zw added 04/06/2020
 
 
 !>> Skip header row of ET input file
-PET(:,:)=0  !zw added 04/06/2020
+      PET(:,:)=0  !zw added 04/06/2020
       read(40,*)                                          !dump header
 
 !>> Skip ET data for years prior to current model year
@@ -1141,8 +1141,8 @@ PET(:,:)=0  !zw added 04/06/2020
       enddo
 
 !>> Skip header row of wind vector input files (both X & Y vectors)
-windx_data(:,:)=0  !zw added 04/06/2020
-windy_data(:,:)=0
+      windx_data(:,:)=0  !zw added 04/06/2020
+      windy_data(:,:)=0
       read(43,*)
 	read(46,*)                                          !dump header
 
@@ -1167,7 +1167,7 @@ windy_data(:,:)=0
 	enddo
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
-transposed_tide(:,:)=0  !zw added 04/06/2020
+      transposed_tide(:,:)=0  !zw added 04/06/2020
       read(48,*)
       do kn = 1,tidegages
           read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
@@ -1175,8 +1175,8 @@ transposed_tide(:,:)=0  !zw added 04/06/2020
       transposed_tide_max = Maxval(transposed_tide(1:tidegages,2))
 
 !>> Skip header row of Tide Gage and Surge data input files
-TideData(:,:)=0  !zw added 04/06/2020
-Surge(:,:)=0
+      TideData(:,:)=0  !zw added 04/06/2020
+      Surge(:,:)=0
       read(47,*)
       read(110,*)
 
@@ -1201,7 +1201,7 @@ Surge(:,:)=0
       enddo
 
 !>> Read in data to weight (by distance) the nearest observed water level timeseries to off-shore boundary compartments that do not have an observed WSEL timeseries
-weighted_tide(:,:)=0  !zw added 04/06/2020
+      weighted_tide(:,:)=0  !zw added 04/06/2020
       read(49,*)
       do kn = 1,(mds-tidegages)
           read(49,*) weighted_tide(kn,1), ! compartment ICM ID number for BC comparments WITHOUT observed water level timeseries
@@ -1214,9 +1214,9 @@ weighted_tide(:,:)=0  !zw added 04/06/2020
 c
 
 !>> Skip header row of Meteorology and Mississippi River Temperature input files
-ta(:)=0 !zw added 04/06/2020
-tw(:)=0
-TempMR(:)=0
+      ta(:)=0 !zw added 04/06/2020
+      tw(:)=0
+      TempMR(:)=0
       read(45,*)
 
 !>> Skip Meteorology and Mississippi River Temperature data for years prior to current model year
@@ -1273,7 +1273,7 @@ TempMR(:)=0
       enddo
 
 !!******************* Initial Conditions
-FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
+      FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
 	do j=1,N
 		Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
      &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38
@@ -1308,7 +1308,7 @@ FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
 
 
 !>> Skip Boundary Condition Temperature data for years prior to current model year (no header row to skip)
-TempwBC(:,:)=0  !zw added 04/06/2020
+      TempwBC(:,:)=0  !zw added 04/06/2020
       do kt=1,startrun
           read(101,*)
           if (kt == startrun) then

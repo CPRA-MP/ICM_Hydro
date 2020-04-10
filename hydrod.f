@@ -59,7 +59,7 @@
 
 			! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
-			c Temporary values
+c Temporary values
 				Cp =0.5
 				fcrop=0.5          !0.1  !0.59                        !potential coef
 				Tres = 3600.
@@ -141,10 +141,10 @@ cc _________________ JAM Nov 2010 revised
 
 !MP2023 zw moved tide bc and css bc update to here 04/07/2020
 
-	c*********************TIDE BC*******************************************************************
+c*********************TIDE BC*******************************************************************
 
-	c     These parameters should be moved to input to start at any time of year ** later
-	********tide information, surges, periods and phase angles
+c     These parameters should be moved to input to start at any time of year ** later
+********tide information, surges, periods and phase angles
 
 	      shour=0.0
 		sday=0.0
@@ -158,8 +158,8 @@ cc _________________ JAM Nov 2010 revised
 	      tlag=0.								!Tide lag time along the eastern boundary in the Gulf
 		aset=0.01
 
-	c***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
-	c***********************************************************************************************
+c***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
+c***********************************************************************************************
 
 	!      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
 	!	    jj=KBC(jjk)
@@ -169,22 +169,22 @@ cc _________________ JAM Nov 2010 revised
 	!      enddo
 	!>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
 	      Call TideBC
-	c***********************END TIDE****************************************************************
+c***********************END TIDE****************************************************************
 
-	c Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
-	CCCCCCCCCCCCCCCCCCCC AMc
-	cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
-	cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
-	cc		if(mds.gt.2) then
-	cc			do ii=103,110
-	cc				Css(ii,2)=75.+ fcbc*(1-float(ii-103)/float(110-103))
-	cc     &				*150.*sin(pi*wd(kday)/180.)
-	cc			enddo
-	cc		endif
-	cccccc  AMc 8 oct 2013  change TSS BC
-	cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
-	cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
-	cc		if(mds.gt.2) then
+c Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
+CCCCCCCCCCCCCCCCCCCC AMc
+cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
+cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
+cc		if(mds.gt.2) then
+cc			do ii=103,110
+cc				Css(ii,2)=75.+ fcbc*(1-float(ii-103)/float(110-103))
+cc     &				*150.*sin(pi*wd(kday)/180.)
+cc			enddo
+cc		endif
+cccccc  AMc 8 oct 2013  change TSS BC
+cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
+cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
+cc		if(mds.gt.2) then
 
 
 	!>> seasonal adjustment of boundary condition sediment data
@@ -204,12 +204,12 @@ cc _________________ JAM Nov 2010 revised
 			  Css(jj,1,kk)=Css(jj,2,kk)
 			  Es(jj,1)=Es(jj,2)
 			  Eh(jj,2)=Es(jj,2)
-			  Eh(jj,1)=Eh(jj,2) 0
+			  Eh(jj,1)=Eh(jj,2)
 			  BCnosurge(jj,1)=BCnosurge(jj,2)
 			  Qmarshmax(jj) = 0.0
 	    enddo
 	 enddo    !AMc 8 oct 2013
-	cc		endif
+cc		endif
 
 
 c****************************Central Difference -Hybrid Upwind for scalars**********************
@@ -241,7 +241,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 	do j=1,N
 !============================cell continuity
 ! day, dday, kthr, and kday now global parameters - no longer needed to be passed into subroutines
-    if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
+      if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
 
           call CelldQ(j,kday,fcrop,mm,dday)
 
@@ -330,7 +330,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 			Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
 
           endif
-     endif
+      endif
 
 !>> Apply low and high pass filters to newly calculated WQ concentrations
 	    !zw 4/28/2015 rove the WQ low and high pass filters
@@ -448,7 +448,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   endif
           !>> Calculate hydraulic radius from culvert dimensions (if bridge/culvert)
                   if (linkt(i) == 6) then
-                      Rh=Latr4(i)*(Latr2(i)-Latr1(i))/(2.*(Latr2(i)-Latr1(i))+Latr4(i))
+                      Rh=Latr4(i)*(Latr2(i)-Latr1(i))/
+     &                 (2.*(Latr2(i)-Latr1(i))+Latr4(i))
                   else
 		!>> Calculate hydraulic radius from average flow depth (if open channel)
 		      Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
