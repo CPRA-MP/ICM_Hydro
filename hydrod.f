@@ -1396,8 +1396,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           endif
 
           Marsh_ruf=MarshL*KKa(j)*KKa(j)
-          MarshRh=Detah   ! hyd. radius of marsh is approx. equal to depth
-          MarshAch=MarshEdge*Detah
+          MarshRh=abs(Detah)   ! hyd. radius of marsh is approx. equal to depth
+          MarshAch=MarshEdge*abs(Detah)
           MarshRes=(Marsh_ruf/MarshRh**(4./3.))/(MarshAch*MarshAch)	!Resistance in marsh-open-water exchange links
           MarshResist=1.0/sqrt(abs(MarshRes))		!Resistance in marsh-open-water exchange link
           
