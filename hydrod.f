@@ -207,6 +207,9 @@ cc		if(mds.gt.2) then
 			  Eh(jj,1)=Eh(jj,2)
 			  BCnosurge(jj,1)=BCnosurge(jj,2)
 			  Qmarshmax(jj) = 0.0
+        !zw added 04/15/2020 Water Temperature at offshore boundary cells
+		      Tempw(jj,1)=TempwBC(jjk,kday)
+			  Tempw(jj,2)=Tempw(jj,1)
 	    enddo
 	 enddo    !AMc 8 oct 2013
 cc		endif
@@ -1500,6 +1503,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               !    write(*,*) 'TSSave:',TSSave(kl)
               !    pause
               !endif
+			  
+			  !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
+		      ESMX(kl,2) = ES(kl,2)
+		      ESMN(kl,2) = ES(kl,2)
+		      ESAV(kl,1) = ES(kl,2)*dt/(3600.*24.)
+              EHAV(kl,1) = EH(kl,2)*dt/(3600.*24.)
+              dailyHW(kl) = 0.0
+              dailyLW(kl) = 0.0
+		      SALAV(kl) = S(kl,2)*dt/(3600.*24.)
 !>> Update average WQ values for compartments by timestep's contribution to daily average
           else
               do klk = 1,14  !zw 4/28/2015 replace ichem with 14
@@ -1510,6 +1522,16 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               TSSAve(kl) = TSSAve(kl) + ( CSS(kl,2,1)+CSS(kl,2,2)
      &                  + CSS(kl,2,3)+CSS(kl,2,4) )*dt/(3600.*24.)
               QmarshAve(kl) = QmarshAve(kl)+Qmarsh(kl,2)*dt/(3600.*24.)
+			  
+			  !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
+              ESMX(kl,2) = max(ESMX(kl,2),ES(kl,2))
+              ESMN(kl,2) = min(ESMN(kl,2),ES(kl,2))
+		      ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/(3600.*24.)
+              EHAV(kl,1) = EHAV(kl,1) + EH(kl,2)*dt/(3600.*24.)
+              dailyHW(kl) = max(dailyHW(kl),ES(kl,2))
+              dailyLW(kl) = min(dailyLW(kl),ES(kl,2))
+              EsRange(kl,1)=ESMX(kl,2)-ESMN(kl,2)
+ 		      SALAV(kl)=SALAV(kl) + S(kl,2)*dt/(3600.*24.)
           endif
       enddo
 
