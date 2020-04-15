@@ -231,24 +231,24 @@ cccccccccc cjam collects flow from connecting links
       endif      
 
       
-!>> Calculate daily values reported out to output files
-!	if(kday <= mmmd) then 
-	if(daystep == 1) then
-		ESMX(j,2)=ES(j,2)
-		ESMN(j,2)=ES(j,2)
-	!>> reset average water elevation value at start of day
-		ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
-          EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
-      else
-          ESMX(j,2)=max(ESMX(j,2),ES(j,2))
-          ESMN(j,2)=min(ESMN(j,2),ES(j,2))
-          !>> Update average elevation term by timestep's contribution to daily average 
-		ESAV(j,1)=ESAV(j,1) + ES(j,2)*dt/(3600.*24.)
-          EHAV(j,1) = EHAV(j,1) + EH(j,2)*dt/(3600.*24.)
-          dailyHW(j) = max(dailyHW(j),ES(j,2))
-          dailyLW(j) = min(dailyLW(j),ES(j,2))
-          EsRange(j,1)=ESMX(j,2)-ESMN(j,2)
-	endif
+!!>> Calculate daily values reported out to output files
+!!	if(kday <= mmmd) then 
+!	if(daystep == 1) then
+!		ESMX(j,2)=ES(j,2)
+!		ESMN(j,2)=ES(j,2)
+!	!>> reset average water elevation value at start of day
+!		ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
+!          EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
+!      else
+!          ESMX(j,2)=max(ESMX(j,2),ES(j,2))
+!          ESMN(j,2)=min(ESMN(j,2),ES(j,2))
+!          !>> Update average elevation term by timestep's contribution to daily average 
+!		ESAV(j,1)=ESAV(j,1) + ES(j,2)*dt/(3600.*24.)
+!          EHAV(j,1) = EHAV(j,1) + EH(j,2)*dt/(3600.*24.)
+!          dailyHW(j) = max(dailyHW(j),ES(j,2))
+!          dailyLW(j) = min(dailyLW(j),ES(j,2))
+!          EsRange(j,1)=ESMX(j,2)-ESMN(j,2)
+!	endif
 
 
 !>> Calculate cumulative time marsh is flooded
