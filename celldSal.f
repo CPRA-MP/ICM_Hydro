@@ -102,14 +102,14 @@ c  salinity change computations  *********************************
 	Sh(j,2)=S(j,2)  
 
 
-!>> Calculate daily average values reported out to output files
-	if(daystep == 1) then
-	!>> reset average salinity value at start of day
-		SALAV(j) = S(j,2)*dt/(3600.*24.)
-      else
-          !>> Update average salinity by timestep's contribution to daily average 
-		SALAV(j)=SALAV(j) + S(j,2)*dt/(3600.*24.)
-	endif
+!!>> Calculate daily average values reported out to output files
+!	if(daystep == 1) then
+!	!>> reset average salinity value at start of day
+!		SALAV(j) = S(j,2)*dt/(3600.*24.)
+!      else
+!          !>> Update average salinity by timestep's contribution to daily average 
+!		SALAV(j)=SALAV(j) + S(j,2)*dt/(3600.*24.)
+!	endif
 
       return 
 	end
