@@ -71,10 +71,17 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on marsh area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
 	Qupld=(Qhhf+max(0.0,(Rain(kday,jrain(j))
-     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden	 
-      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
-     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010
+     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden
 
+!modified zw 04/29/2020 to deal with upland compartments w/o marsh area
+!     Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
+!     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010
+    if(Ahf(j) > 0.0) then	
+        Qsumh=Qsumh-Qupld
+    else
+	    Qsum=Qsum-Qupld
+	endif
+		
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'Add runoff:',Qsumh
 !	endif
