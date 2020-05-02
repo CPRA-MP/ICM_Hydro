@@ -28,7 +28,7 @@
 
       implicit none
 	integer :: jjk,jj,nnn
-      integer :: use_row,row_transpose
+      integer :: use_row,row_transpose,use_row_1
       real :: EastWght,WestWght,EastComp,WestComp,EastBC,WestBC
 
 !>> Update boundary condition water levels for compartments WITH observed water level timeseries
@@ -40,18 +40,23 @@
 !>> calculate number of tide timesteps equal to hourly adjustment applied to each gage to transpose observed tide to BC compartment
 				row_transpose = transposed_tide(nnn,2)/dttide
 				use_row = tiderow + row_transpose
+				use_row_1=use_row+1  !zw added 5/1/2020
 !>> use current tide row if transposed row is outside of imported timeseries
 !>> first few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
 				if (use_row < 1) then
 					use_row = tiderow
+					use_row_1=use_row !zw added 5/1/2020
 				endif
 ! MP2023 added zw-04/06/2020
 ! last few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
         if(use_row > (simdays*24/dttide)) then
             use_row = tiderow
+			use_row_1=use_row !zw added 5/1/2020
         endif
 ! jj is compartment number, jjk is boundary condition number
-				BCnosurge(jj,2)=TideData(use_row,nnn)
+				!BCnosurge(jj,2)=TideData(use_row,nnn)
+				!zw modified 5/1/2020 to linear-interpolate tide intead of block-interpolate
+				BCnosurge(jj,2)=TideData(use_row,nnn)+(TideData(use_row_1,nnn)-TideData(use_row,nnn))*tidestep/lasttidestep
 				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
 			endif
 		enddo
