@@ -49,7 +49,7 @@
 				endif
 ! MP2023 added zw-04/06/2020
 ! last few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
-        if(use_row > (simdays*24/dttide)) then
+        if(use_row >= (simdays*24/dttide)) then
             use_row = tiderow
 			use_row_1=use_row !zw added 5/1/2020
         endif
