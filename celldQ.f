@@ -76,9 +76,9 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 !modified zw 04/29/2020 to deal with upland compartments w/o marsh area
 !     Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010
-    if(Ahf(j) > 0.0) then	
+      if(Ahf(j) > 0.0) then	
         Qsumh=Qsumh-Qupld
-    else
+      else
 	    Qsum=Qsum-Qupld
 	endif
 		
