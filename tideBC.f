@@ -56,7 +56,8 @@
 ! jj is compartment number, jjk is boundary condition number
 				!BCnosurge(jj,2)=TideData(use_row,nnn)
 				!zw modified 5/1/2020 to linear-interpolate tide intead of block-interpolate
-				BCnosurge(jj,2)=TideData(use_row,nnn)+(TideData(use_row_1,nnn)-TideData(use_row,nnn))*tidestep/lasttidestep
+				BCnosurge(jj,2)=TideData(use_row,nnn)+(TideData(use_row_1,nnn)
+     &                          -TideData(use_row,nnn))*tidestep/lasttidestep
 				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
 			endif
 		enddo
