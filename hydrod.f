@@ -440,18 +440,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   EAOL(i) = 0.0
           !>> If only downstream water stage is lower than channel invert, calculate average depth in channel with a zero depth at downstream end of channel
               else
-                  !if(ES(downN,2) < latr1(i)) then
-                  !    !linkdepth=max(0.5*(ES(upN,2)-latr1(i)),0.01)
-                  !    linkdepth=0.5*(ES(upN,2)-latr1(i))	   !zw 3/16/2015
+                  if(ES(downN,2) < latr1(i)) then
+                      !linkdepth=max(0.5*(ES(upN,2)-latr1(i)),0.01)
+                      linkdepth=0.5*(ES(upN,2)-latr1(i))	   !zw 3/16/2015
 
           !>> If both upstream and downstream water stages are above channel invert, calculate average depth from both upstream and downstream channel depths
-                  !else
-                  !    !linkdepth=max(0.5*(Es(upN,2)+ES(downN,2))-latr1(i),0.01)
-                  !    linkdepth=0.5*(Es(upN,2)+ES(downN,2))-latr1(i)	 !zw 3/16/2015
-                  !endif
-				  
-				  !zw added 5/5/2020 testing upwind approach
-				  linkdepth=Es(upN,2)-latr1(i)
+                  else
+                      !linkdepth=max(0.5*(Es(upN,2)+ES(downN,2))-latr1(i),0.01)
+                      linkdepth=0.5*(Es(upN,2)+ES(downN,2))-latr1(i)	 !zw 3/16/2015
+                  endif
           !>> Calculate hydraulic radius from culvert dimensions (if bridge/culvert)
                   if (linkt(i) == 6) then
                       Rh=Latr4(i)*(Latr2(i)-Latr1(i))/
