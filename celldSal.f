@@ -17,11 +17,6 @@ cjam     c Salinity  computations ****************************
       else
           dddy = ddy
       endif
-	  
-	  !zw added 04/15/2020 = compartment water volumes
-	  volj1=max(0.0,(Es(j,1)-Bed(j)))*As(j,1)+max(0.0,(Eh(j,1)-BedM(j)))*Ahf(j)
-	  volj2=max(0.0,(Es(j,2)-Bed(j)))*As(j,1)+max(0.0,(Eh(j,2)-BedM(j)))*Ahf(j)
-	  dvol=volj2-volj1
       
       QSalsum=0
       do ktrib=1,Ntrib
@@ -58,10 +53,9 @@ cjam     c Salinity  computations ****************************
 	    call salinity(mm,iab,jnb,j,k,Qsalsum)
       enddo										!k do loop
 
-      !zw commented out 04/15/2020 
-	  !if (Qmarsh(j,1) > 0.0) then
-      !    QSalSum=QSalSum + Qmarsh(j,1)*S(j,1)
-      !endif   
+      if (Qmarsh(j,1) > 0.0) then
+          QSalSum=QSalSum + Qmarsh(j,1)*S(j,1)
+      endif   
 
       
       
@@ -78,9 +72,8 @@ c  salinity change computations  *********************************
 
 
       if (dddy > 0.1) then
-	      !zw modified 04/15/2020 to use compartment water volume
-          !DSal =  -QSalsum/(As(j,1)*dddy)*dt-Dz*S(j,1)/dddy
-          DSal =  -QSalsum/volj1*dt-dvol*S(j,1)/volj1
+          DSal =  -QSalsum/(As(j,1)*dddy)*dt
+     &	    -Dz*S(j,1)/dddy
       else
           DSal = 0.0
       endif
