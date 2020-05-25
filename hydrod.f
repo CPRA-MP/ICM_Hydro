@@ -1358,6 +1358,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
           !>> Stage differential between open water and marsh (with sign, negative is marsh-to-open water flow direction)
 		Detah=sDetah*max(0.0,abs(Es(j,2)-Eh(j,2)))							!driving head into marsh
+		
+		!added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
+		if(sDetah<0)
+		    if((Eh(j,2)-BedM(j))<=0.01)
+			    Detah = 0.0;
+			endif
+		endif
 
           !>> Depth in marsh, used in Kadlec-Knight equation - minimum allowed is input parameter to each compartment
           Dmarsh=max(KKdepth(j),Eh(j,2)-BedM(j))
