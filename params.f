@@ -412,6 +412,7 @@
       
       real(dp), dimension(:,:), allocatable :: Es
       real(dp), dimension(:,:), allocatable :: BCnosurge      ! ES value for BC comparments before surge is added
+      real(dp), dimension(:,:), allocatable :: BCsurge        !YW! added for tide calculation
       real(dp), dimension(:,:), allocatable :: S 
       real(dp), dimension(:,:), allocatable :: SL             !changed to double precision !-EDW
       real(dp), dimension(:,:), allocatable :: STEMP          !changed to double precision !-EDW
@@ -720,10 +721,9 @@
       real(sp),dimension(:,:),allocatable :: ChemDOP
       real(sp),dimension(:,:),allocatable :: ChemPOP
 
-      integer :: nlinkskip   ! yw number of link to skip flow limiter   
-      integer,dimension(:),allocatable :: linkskip   ! yw         
+      integer :: nlinklimiter                            !YW! number of link to apply flow limiter   
+      integer,dimension(:),allocatable :: linkslimiter   !YW! list of link number to apply flow limiter      
       
-      integer :: numChem  !add zw 04/08/2020
-      
+      integer :: numChem  !add zw 04/08/2020      
       
       end module params

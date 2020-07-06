@@ -24,8 +24,8 @@ c***********************Start Subroutine for face salinity**********************
       if(iab /= 0.0)then											!ne = 0 there no link available go to 22
 !	    if (linkt(iab) == 8) then
 !              if(Ahf(j) == 0) then
-!              if (Eh(j,1) - Bedm(j) > 0.3) then
-!                  if(Q(iab,1) >= 0.0) then
+!!              if (Eh(j,1) - Bedm(j) > 0.3) then
+!                  if(Q(iab,2) >= 0.0) then
 !                      Csalface=((fa(iab)*S(jus(abs(icc(j,k))),1)+
 !     &					fb(iab)*S(jds(abs(icc(j,k))),1)))
 !                  else
@@ -36,26 +36,25 @@ c***********************Start Subroutine for face salinity**********************
 !              else
 !                  Csalface = 0.0
 !                  diffus = 0.0
-!              endif
-
+!              endif  
 !          else    
-              if(Q(iab,1) >= 0.0) then
+              if(Q(iab,2) >= 0.0) then
 				Csalface= ((fa(iab)*S(jus(abs(icc(j,k))),1)				!cell face values
      &				+fb(iab)*S(jds(abs(icc(j,k))),1)))
               else
 				Csalface= ((fa(iab)*S(jds(abs(icc(j,k))),1)+
      &					fb(iab)*S(jus(abs(icc(j,k))),1)))
 			endif
-              diffus = EAOL(iab)
-!   		endif
+              diffus = EAOL(iab)              
+   		!endif
    
-          QSalSum=QSalSum + sicc(j,k)*(Q(abs(icc(j,k)),1))*Csalface
+          QSalSum=QSalSum + sicc(j,k)*(Q(abs(icc(j,k)),2))*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
      
           SL(iab,2)=Csalface
       endif
-      
-	return
+          
+      return
 	end
 
 

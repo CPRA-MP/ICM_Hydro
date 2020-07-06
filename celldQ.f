@@ -39,7 +39,7 @@
           else
               Qsum_out(j) = Qsum_out(j) + abs(flo_trib)
           endif
-	enddo 
+      enddo
 
 !>> Update cumulative open water flow rates in compartment from input boundary diversion flows
 !>> sign convention on open water flow = positive is flow out of compartment
@@ -62,6 +62,15 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 
 !>> Excess rainfall runoff on marsh
       Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*Max(1.,rhh*rhh))	!JAM Oct 2010
+
+!>> !YW! ignore PET at low marsh water level to avoid Eh too low
+!      if((Eh(j,1)-BedM(j))>0.1) then
+!          Qhhf=Ahf(j)*(Rain(kday,jrain(j))
+!     &    -PET(kday,Jet(j))*Max(1.,rhh*rhh))	!JAM Oct 2010
+!      else
+!          Qhhf=Ahf(j)*Rain(kday,jrain(j))
+!      endif
+
       Ahmf=Ahydro(j)-Ahf(j)
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
@@ -71,30 +80,29 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on marsh area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
 	Qupld=(Qhhf+max(0.0,(Rain(kday,jrain(j))
-     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden
+     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden	 
+!      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
+!     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          
 
-!modified zw 04/29/2020 to deal with upland compartments w/o marsh area
-!     Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
-!     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010
+!>> modified zw 04/29/2020 to deal with upland compartments w/o marsh area
       if(Ahf(j) > 0.0) then	
-        Qsumh=Qsumh-Qupld
+          Qsumh=Qsumh-Qupld
       else
-	    Qsum=Qsum-Qupld
-	endif
-		
+          Qsum=Qsum-Qupld
+      endif
+
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'Add runoff:',Qsumh
 !	endif
 !>> Update cumulative marsh flowrate for marsh-to-open water exchange flow (calculated via Kadlec Knight in hydrod)      
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-      Qsumh=Qsumh-Qmarsh(j,1)											!Qsumh is net of marsh flows 
+      Qsumh=Qsumh-Qmarsh(j,2)											!Qsumh is net of marsh flows 
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'Add Qmarsh:',Qsumh
 !	endif
 !	 (sign convention outward normal is positive and inward is negative. 
 cccccccccc cjam collects flow from connecting links
 
-      
 !     do k=1,13      
 !      do k=1,maxconnect						!more connection: note max number of connected links is 11 to one cell (non-marsh) ***
 
@@ -102,7 +110,7 @@ cccccccccc cjam collects flow from connecting links
 !>> sign convention on link flows: positive is flow out of compartment
       do k=1,nlink2cell(j)
           if(abs(icc(j,k)) /= 0) then
-              Qlink = sicc(j,k)*Q(abs(icc(j,k)),1)
+              Qlink = sicc(j,k)*Q(abs(icc(j,k)),2)
 !>> if link type is marsh overland flow type, add flow to marsh flow sum
 !>> if compartment has no marsh area, add marsh overland flow in compartment to water area
 !>> if  marsh link flow is negative, flow is entering marsh from neighboring marsh
@@ -132,6 +140,7 @@ cccccccccc cjam collects flow from connecting links
               
           endif
       enddo
+
 !>> Reduce calculated flow rates out of compartment based on available volume FOR SEDIMENT ROUTING
 !>> ***NOTE**** this assumes that tributary and diversion flowrates are by and large only flowing INTO the compartment
 !>> ***NOTE**** if large flowrates out of the compartment are due to the observed tributary/diversion flowrates in the input files
@@ -172,8 +181,8 @@ cccccccccc cjam collects flow from connecting links
 !      endif
 !>> add marsh exchange flow to open water cumulative flow
 !>> if positive, flow is open water-to-marsh flow	
-      Qsum=Qsum+Qmarsh(j,1)				!JAM Oct 2010 Transfer from marsh runoff or ebb flow NOTE +ve means outflow from open water cell.
-      
+      Qsum=Qsum+Qmarsh(j,2)				!JAM Oct 2010 Transfer from marsh runoff or ebb flow NOTE +ve means outflow from open water cell.
+
 !JAM   change in elevation for cell j
 
 !>> Calculate change in open water stage
@@ -236,9 +245,7 @@ cccccccccc cjam collects flow from connecting links
           Eh(j,2) = Es(j,2)
           Qmarshmax(j) = 0.0
       endif      
-
-      
-!!>> Calculate daily values reported out to output files
+!!>> Calculate daily values reported out to output files ! moved to hydro
 !!	if(kday <= mmmd) then 
 !	if(daystep == 1) then
 !		ESMX(j,2)=ES(j,2)
@@ -254,7 +261,7 @@ cccccccccc cjam collects flow from connecting links
 !          EHAV(j,1) = EHAV(j,1) + EH(j,2)*dt/(3600.*24.)
 !          dailyHW(j) = max(dailyHW(j),ES(j,2))
 !          dailyLW(j) = min(dailyLW(j),ES(j,2))
-!          EsRange(j,1)=ESMX(j,2)-ESMN(j,2)
+!          EsRange(j,1)=ESMX(j,2)-ESMN(j,2)        
 !	endif
 
 

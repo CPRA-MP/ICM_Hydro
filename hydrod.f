@@ -18,9 +18,9 @@
       real :: akL,akns
       real :: QSalSum,QTmpSum,QMarshKK
       real :: rca,rna,rnd,rcd,rcn
-      real :: Q_filter1,Q_filter2                                               ! yw flow filter
-      integer :: flag_skip                                                      ! yw skip flag
-	  integer :: flag_offbc(Cells)  !zw offshore bc cells flag 04/07/2020
+      real :: Q_filter1,Q_filter2                                                ! yw flow filter
+      integer :: flag_apply                                                      ! yw apply flag
+      integer :: flag_offbc(Cells)  !zw offshore bc cells flag 04/07/2020
       real :: dkd_h,Marsh_ruf,MarshRh,MarshAch                                  ! edw new parameters for replacing Kadlec-Knight with Manning's
       real :: MarshRes,MarshResist,QMarshMann                                   ! edw new parameters for replacing Kadlec-Knight with Manning's
 
@@ -39,35 +39,36 @@
       integer :: Atch_US_link, Atch_DS_link,BayouShaffer_link,Div_link
       real :: Atch_US_Q,BayouShaffer_Qold,Div_Q
 
-			!c     time in seconds
-			      time=float(mm)*dt           ! elapsed time
-			      thour=mm*dt/3600            ! elapsed time in hours
-				tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
-				kthr=int(thour+1)
-				kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
-			!
-			!! calculate various versions of time to be used as flags throughout program
-				kday = ifix(time/3600./24.)+1   !convert time to integer days !BUG! Why is kday day+1?
-			      day = time/3600./24.
-			      dday=day-int(day)           ! decimal portion of day, dday=0.0 at 0:00 (midnight)
-				hday=day-int(day+0.5)       ! decimal portion of day normalized to noon, hday=0.0 at 12:00 (noon)
-			      simhr = floor(dday*24.)     ! hour of the simulation day, in integer
-			      dhr = thour -int(thour)     !decimal portion of hour , dhr - 0.0 at XX:00
+!c     time in seconds
+      time=float(mm)*dt           ! elapsed time
+      thour=mm*dt/3600            ! elapsed time in hours
+      tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
+      kthr=int(thour+1)
+      kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
+!
+!! calculate various versions of time to be used as flags throughout program
+!      kday = ifix(time/3600./24.)   !convert time to integer days !BUG! Why is kday day+1?
+      kday = ceiling(time/3600./24.) !YW! Old range (1,366). New range (1,365)
+      day = time/3600./24.
+      dday=day-int(day)           ! decimal portion of day, dday=0.0 at 0:00 (midnight)
+      hday=day-int(day+0.5)       ! decimal portion of day normalized to noon, hday=0.0 at 12:00 (noon)
+      simhr = floor(dday*24.)     ! hour of the simulation day, in integer
+      dhr = thour -int(thour)     !decimal portion of hour , dhr - 0.0 at XX:00
 
-						dmon=kmon-int(tmon)
-			      dmod=tmon-int(tmon)
+      dmon=kmon-int(tmon)
+      dmod=tmon-int(tmon)
 
-			! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
+! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
 c Temporary values
-				Cp =0.5
-				fcrop=0.5          !0.1  !0.59                        !potential coef
-				Tres = 3600.
-			! 	Vsettl=8/24/3600 !-EDW not used
-				dref=4.0
-			!>> default CSS and salinity concentrations in tributary flow
-			      CSSTRIBj=25.
-				Saltribj=0.205
+      Cp =0.5
+      fcrop=0.5          !0.1  !0.59                        !potential coef
+      Tres = 3600.
+! 	Vsettl=8/24/3600 !-EDW not used
+      dref=4.0
+!>> default CSS and salinity concentrations in tributary flow
+      CSSTRIBj=25.
+      Saltribj=0.205
 
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -136,7 +137,7 @@ cc _________________ JAM Nov 2010 revised
 		do ichem=1,14	 !zw 4/28/2015 added to replace above statements
 	       Chem(jj,ichem,2)=Chem(jj,ichem,1)
 	    enddo
-			S(jj,2)=S(jj,1) !zw added 04/07/2020
+	    S(jj,2)=S(jj,1) !zw added 04/07/2020
 	enddo
 
 !MP2023 zw moved tide bc and css bc update to here 04/07/2020
@@ -146,29 +147,29 @@ c*********************TIDE BC***************************************************
 c     These parameters should be moved to input to start at any time of year ** later
 ********tide information, surges, periods and phase angles
 
-	      shour=0.0
-		sday=0.0
-		f1=shour*3600.						!daily phase
-		f2=(sday/28.)
-		f2=(f2-int(f2))*28.*24.*3600.		!lunar phase
-		f3=(sday/365.25)*12.*30.*24.*3600.	!Gulf phase
-		t1=23.5*3600.						!daily period
-		t2=672.*3600.						!lunar period
-		t3=4320.*3600.						!Gulf period
-	      tlag=0.								!Tide lag time along the eastern boundary in the Gulf
-		aset=0.01
+      shour=0.0
+      sday=0.0
+      f1=shour*3600.						!daily phase
+      f2=(sday/28.)
+      f2=(f2-int(f2))*28.*24.*3600.		!lunar phase
+      f3=(sday/365.25)*12.*30.*24.*3600.	!Gulf phase
+      t1=23.5*3600.						!daily period
+      t2=672.*3600.						!lunar period
+      t3=4320.*3600.						!Gulf period
+      tlag=0.								!Tide lag time along the eastern boundary in the Gulf
+      aset=0.01
 
 c***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
 c***********************************************************************************************
 
-	!      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
-	!	    jj=KBC(jjk)
-	!          Call TideBC(jj,jjk)
-	!! kthr and kday now global parameters - no longer needed to be passed into subroutine
-	!!          Call TideBC(jj,kthr,kday)
-	!      enddo
-	!>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
-	      Call TideBC
+!      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
+!	    jj=KBC(jjk)
+!          Call TideBC(jj,jjk)
+!! kthr and kday now global parameters - no longer needed to be passed into subroutine
+!!          Call TideBC(jj,kthr,kday)
+!      enddo
+!>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
+      Call TideBC
 c***********************END TIDE****************************************************************
 
 c Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
@@ -187,29 +188,29 @@ cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
 cc		if(mds.gt.2) then
 
 
-	!>> seasonal adjustment of boundary condition sediment data
-	!>> Assume Boundary condition sediment is evenly distributed amongst clay and silt size classes and half of the clay is flocced.
-	      BCSedRatio(1) = 0.0
-	      BCSedRatio(2) = 1./2.
-	      BCSedRatio(3) = 1./4.
-	      BCSedRatio(4) = 1./4.
+!>> seasonal adjustment of boundary condition sediment data
+!>> Assume Boundary condition sediment is evenly distributed amongst clay and silt size classes and half of the clay is flocced.
+      BCSedRatio(1) = 0.0
+      BCSedRatio(2) = 1./2.
+      BCSedRatio(3) = 1./4.
+      BCSedRatio(4) = 1./4.
 
-	 do jjk=1,mds
-	    jj=KBC(jjk)
-			do kk=1,4
-			  !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
-			  Css(jj,2,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
+      do jjk=1,mds
+          jj=KBC(jjk)
+          do kk=1,4
+              !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
+              Css(jj,2,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
 
         !zw added 04/07/2020
-			  Css(jj,1,kk)=Css(jj,2,kk)
-			  Es(jj,1)=Es(jj,2)
-			  Eh(jj,2)=Es(jj,2)
-			  Eh(jj,1)=Eh(jj,2)
-			  BCnosurge(jj,1)=BCnosurge(jj,2)
-			  Qmarshmax(jj) = 0.0
+              Css(jj,1,kk)=Css(jj,2,kk)
+              Es(jj,1)=Es(jj,2)
+              Eh(jj,2)=Es(jj,2)
+              Eh(jj,1)=Eh(jj,2)
+              BCnosurge(jj,1)=BCnosurge(jj,2)
+!              Qmarshmax(jj) = 0.0
         !zw added 04/15/2020 Water Temperature at offshore boundary cells
-		      Tempw(jj,1)=TempwBC(jjk,kday)
-			  Tempw(jj,2)=Tempw(jj,1)
+              Tempw(jj,1)=TempwBC(jjk,kday)
+              Tempw(jj,2)=Tempw(jj,1)
 	    enddo
 	 enddo    !AMc 8 oct 2013
 cc		endif
@@ -237,134 +238,9 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 	do jjk=1,mds
 			jj=KBC(jjk)
 			flag_offbc(jj)=1
-	enddo
+      enddo
 
-
-!============================cell updating
-	do j=1,N
-!============================cell continuity
-! day, dday, kthr, and kday now global parameters - no longer needed to be passed into subroutines
-      if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
-
-          call CelldQ(j,kday,fcrop,mm,dday)
-
-          if (iSed == 1) then
-              call waves_YV(j)                                                            !-EDW
-              call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
-          endif
-
-          if (iSal == 1) then
-              call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-          endif
-
-          if (iTemp == 1) then
-              call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-          endif
-
-!          call Celldage(QageSUM,Dz,j,kday,kthr,ageTRIBj,dref,Tres)
-
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)                                                            !-EDW
-! QSSUM is now global parameter - doesn't need to be passed into subroutine
-! QSsumh is calculated in CelldSS - therefore it is no longer passed into subroutine but is calculated only locally
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)
-
-!          call CelldSS(Dz,j,CSSTRIBj,dref,Tres)               !JAM Oct 2010
-!	    call CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-!          call CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-
-
-!>> reset photosynthesis parameters so they can be reset for current compartment at timestep in photo.f
-          muph = 0.0
-          fpp = 0.0
-
-!>> call photosnythesis rate calculation to pass into water quality routines that require it, this updates muph and fpp values
-          if (iWQ == 1) then
-              call photo(j)
-
-!>> loop through WQ constituents for each WQ type that utilizes transport equation
-              do ichem = 1,2
-                  call CelldChem(j,kday,ichem)
-		    enddo
-!              write(*,*) chem(j,kday,1),chem(j,kday,2)
-              ichem = 5
-              call CelldChem(j,kday,ichem)
-
-              do ichem = 7,11
-                  call CelldChem(j,kday,ichem)
-		    enddo
-
-              !ichem = 14
-              !call CelldChem(j,kday,ichem)  !zw 4/28/2015 POP calculated in MP2012 by ALG and DET see below
-
-!>> Update WQ concentrations that are calculated from other constituents and did not rely on the transport equation
-!>>-- set carbon-to-chlorophyll A ratio
-	        rca = 75.0
-!>>-- set nitrogen-chlorophyll A stoichiometric mass ratio for Organic N calculation
-	        rna = 0.176*rca
-!>>-- set nitrogen-detritus stoichiometric mass ratio for Organic N calculation
-              rnd = 0.072
-!>>-- set carbron-detritus stoichiometric mass ratio for Organic C calculation
-              rcd = 0.41
-!>>-- set carbon-nitrogen stoichiometric mass ratio for Organic C calculation
-              rcn = 5.69
-
-!>>-- Dissolved Inorganic N is function of NO3 and NH4
-              Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
-
-!>>-- Organic N is function of: dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-              Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
-
-!>>-- Total Organic Carbon is function of:dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-              Chem(j,6,2) = rcn*Chem(j,10,2)+
-     &                        rca*Chem(j,8,2)+rcd*Chem(j,9,2)
-
-!>>-- Dissolved Inorganic P is function of Total Inorganic P (ichem = 5) and fraction of TIP that is in particulate form (calculated in photo.f)
-              Chem(j,12,2) = (1-fpp)*chem(j,5,2)
-
-!>>-- Chlorophyll A not calculated - set to -9999
-              Chem(j,13,2) = -9999
-
-! used to be located at end of hydrod
-		    Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
-
-! Particulate Organic P (POP) is function of ALG and DET
-			Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
-
-          endif
-      endif
-
-!>> Apply low and high pass filters to newly calculated WQ concentrations
-	    !zw 4/28/2015 rove the WQ low and high pass filters
-          !do ichem = 1,14
-          !    if(Chem(j,ichem,2) < 0.0) Chem(j,ichem,2)=0.0
-	    !enddo
-
-          !if(Chem(j,8,2) <= 0.0001) Chem(j,8,2)=0.0001
-	    !if(Chem(j,5,2) > 0.001) Chem(j,5,2)=0.001					! JKS Sept 2011
-	    !if(Chem(j,12,2) > 0.001) Chem(j,12,2)=0.001				! JKS Sept 2011
-	    !if(Chem(j,10,2) > 0.0005) Chem(j,10,2)=0.0005
-
-          !if(Chem(j,1,2) > 0.003) Chem(j,1,2)=0.003					! JAM June 2011
-	    !if(Chem(j,2,2) > 0.001) Chem(j,2,2)=0.001
-	    !if(Chem(j,3,2) > 10.) chem(j,3,2)=10.0
-	    !if(Chem(j,4,2) > 10.) chem(j,4,2)=10.0
-	    !if(Chem(j,5,2) > 10.) chem(j,5,2)=10.0
-	    !if(Chem(j,6,2) > 10.) chem(j,6,2)=10.0
-	    !if(Chem(j,7,2) > 10.) chem(j,7,2)=10.0
-	    !if(Chem(j,8,2) > 10.) chem(j,8,2)=10.0
-	    !if(Chem(j,9,2) > 10.) chem(j,9,2)=10.0
-	    !if(Chem(j,10,2) > 10.) chem(j,10,2)=10.0
-	    !if(Chem(j,11,2) > 10.) chem(j,11,2)=10.0
-	    !if(Chem(j,12,2) > 10.) chem(j,12,2)=10.0
-!	    if(Chem(j,13,2) > 10.) chem(j,13,2)=10.0
-	    !if(Chem(j,14,2) > 10.) chem(j,14,2)=10.0
-
-      enddo										!j do loop
-
-
-
+      
 !>> Link updates of Q
       do i=1,M
 !>> Reset upwind dispersion factor to default value - this will be updated to 1.0 if flows in each link are above threshold value
@@ -479,20 +355,22 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
 
-                  Q_filter1 = abs(Deta)*As(downN,1)/dt                 ! yw flow filter
-                  Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)     ! yw flow filter
+!>> flow filter. Only apply to selected links
+                  Q_filter1 = abs(Deta)*As(downN,1)/dt
+                  Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)
 
-                  flag_skip = 0
-                  if (nlinkskip > 0) then
-                      do jj = 1,nlinkskip
-                          if (linkskip(jj) == i) then
-                              flag_skip = 1
+                  flag_apply = 0
+                  if (nlinklimiter > 0) then
+                      do jj = 1,nlinklimiter
+                          if (linkslimiter(jj) == i) then
+                              flag_apply = 1
                           endif
                       enddo
                   endif
-
-                  if (flag_skip == 0) then
-                      Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1,Q_filter2)     ! yw flow filter
+                  
+                  if (flag_apply == 1) then
+                      !Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1)
+                      Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1,Q_filter2)
                   endif
 
                   if(isNan(Q(i,2))) then
@@ -1359,12 +1237,12 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Stage differential between open water and marsh (with sign, negative is marsh-to-open water flow direction)
 		Detah=sDetah*max(0.0,abs(Es(j,2)-Eh(j,2)))							!driving head into marsh
 		
-		!added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
-		if(sDetah<0)
-		    if((Eh(j,2)-BedM(j))<=0.01)
-			    Detah = 0.0;
-			endif
-		endif
+          !added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
+          if(sDetah<0) then
+              if((Eh(j,2)-BedM(j))<=0.01) then
+                  Detah = 0.0;
+              endif
+          endif
 
           !>> Depth in marsh, used in Kadlec-Knight equation - minimum allowed is input parameter to each compartment
           Dmarsh=max(KKdepth(j),Eh(j,2)-BedM(j))
@@ -1433,7 +1311,131 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           else
               QMarsh(j,2) = 0.0
           endif
-	enddo												!JAM Oct 2010
+      enddo												!JAM Oct 2010
+
+     
+!============================cell updating
+	do j=1,N
+!============================cell continuity
+! day, dday, kthr, and kday now global parameters - no longer needed to be passed into subroutines
+      if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
+
+          call CelldQ(j,kday,fcrop,mm,dday)
+
+          if (iSed == 1) then
+              call waves_YV(j)                                                            !-EDW
+              call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
+          endif
+
+          if (iSal == 1) then
+              call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+          endif
+
+          if (iTemp == 1) then
+              call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+          endif
+
+!          call Celldage(QageSUM,Dz,j,kday,kthr,ageTRIBj,dref,Tres)
+
+!          call CelldQ(QSUM,Dz,j,fcrop,mm)
+!          call waves_YV(j)                                                            !-EDW
+! QSSUM is now global parameter - doesn't need to be passed into subroutine
+! QSsumh is calculated in CelldSS - therefore it is no longer passed into subroutine but is calculated only locally
+!          call CelldQ(QSUM,Dz,j,fcrop,mm)
+!          call waves_YV(j)
+
+!          call CelldSS(Dz,j,CSSTRIBj,dref,Tres)               !JAM Oct 2010
+!	    call CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
+!          call CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
+
+
+!>> reset photosynthesis parameters so they can be reset for current compartment at timestep in photo.f
+          muph = 0.0
+          fpp = 0.0
+
+!>> call photosnythesis rate calculation to pass into water quality routines that require it, this updates muph and fpp values
+          if (iWQ == 1) then
+              call photo(j)
+
+!>> loop through WQ constituents for each WQ type that utilizes transport equation
+              do ichem = 1,2
+                  call CelldChem(j,kday,ichem)
+		    enddo
+!              write(*,*) chem(j,kday,1),chem(j,kday,2)
+              ichem = 5
+              call CelldChem(j,kday,ichem)
+
+              do ichem = 7,11
+                  call CelldChem(j,kday,ichem)
+		    enddo
+
+              !ichem = 14
+              !call CelldChem(j,kday,ichem)  !zw 4/28/2015 POP calculated in MP2012 by ALG and DET see below
+
+!>> Update WQ concentrations that are calculated from other constituents and did not rely on the transport equation
+!>>-- set carbon-to-chlorophyll A ratio
+	        rca = 75.0
+!>>-- set nitrogen-chlorophyll A stoichiometric mass ratio for Organic N calculation
+	        rna = 0.176*rca
+!>>-- set nitrogen-detritus stoichiometric mass ratio for Organic N calculation
+              rnd = 0.072
+!>>-- set carbron-detritus stoichiometric mass ratio for Organic C calculation
+              rcd = 0.41
+!>>-- set carbon-nitrogen stoichiometric mass ratio for Organic C calculation
+              rcn = 5.69
+
+!>>-- Dissolved Inorganic N is function of NO3 and NH4
+              Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
+
+!>>-- Organic N is function of: dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
+              Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
+
+!>>-- Total Organic Carbon is function of:dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
+              Chem(j,6,2) = rcn*Chem(j,10,2)+
+     &                        rca*Chem(j,8,2)+rcd*Chem(j,9,2)
+
+!>>-- Dissolved Inorganic P is function of Total Inorganic P (ichem = 5) and fraction of TIP that is in particulate form (calculated in photo.f)
+              Chem(j,12,2) = (1-fpp)*chem(j,5,2)
+
+!>>-- Chlorophyll A not calculated - set to -9999
+              Chem(j,13,2) = -9999
+
+! used to be located at end of hydrod
+		    Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
+
+! Particulate Organic P (POP) is function of ALG and DET
+			Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
+
+          endif
+      endif
+
+!>> Apply low and high pass filters to newly calculated WQ concentrations
+	    !zw 4/28/2015 rove the WQ low and high pass filters
+          !do ichem = 1,14
+          !    if(Chem(j,ichem,2) < 0.0) Chem(j,ichem,2)=0.0
+	    !enddo
+
+          !if(Chem(j,8,2) <= 0.0001) Chem(j,8,2)=0.0001
+	    !if(Chem(j,5,2) > 0.001) Chem(j,5,2)=0.001					! JKS Sept 2011
+	    !if(Chem(j,12,2) > 0.001) Chem(j,12,2)=0.001				! JKS Sept 2011
+	    !if(Chem(j,10,2) > 0.0005) Chem(j,10,2)=0.0005
+
+          !if(Chem(j,1,2) > 0.003) Chem(j,1,2)=0.003					! JAM June 2011
+	    !if(Chem(j,2,2) > 0.001) Chem(j,2,2)=0.001
+	    !if(Chem(j,3,2) > 10.) chem(j,3,2)=10.0
+	    !if(Chem(j,4,2) > 10.) chem(j,4,2)=10.0
+	    !if(Chem(j,5,2) > 10.) chem(j,5,2)=10.0
+	    !if(Chem(j,6,2) > 10.) chem(j,6,2)=10.0
+	    !if(Chem(j,7,2) > 10.) chem(j,7,2)=10.0
+	    !if(Chem(j,8,2) > 10.) chem(j,8,2)=10.0
+	    !if(Chem(j,9,2) > 10.) chem(j,9,2)=10.0
+	    !if(Chem(j,10,2) > 10.) chem(j,10,2)=10.0
+	    !if(Chem(j,11,2) > 10.) chem(j,11,2)=10.0
+	    !if(Chem(j,12,2) > 10.) chem(j,12,2)=10.0
+!	    if(Chem(j,13,2) > 10.) chem(j,13,2)=10.0
+	    !if(Chem(j,14,2) > 10.) chem(j,14,2)=10.0
+
+      enddo										!j do loop
 
       dmod=thour-int(thour)
 
@@ -1511,14 +1513,14 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               !    pause
               !endif
 			  
-			  !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
-		      ESMX(kl,2) = ES(kl,2)
-		      ESMN(kl,2) = ES(kl,2)
-		      ESAV(kl,1) = ES(kl,2)*dt/(3600.*24.)
+              !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
+              ESMX(kl,2) = ES(kl,2)
+              ESMN(kl,2) = ES(kl,2)
+              ESAV(kl,1) = ES(kl,2)*dt/(3600.*24.)
               EHAV(kl,1) = EH(kl,2)*dt/(3600.*24.)
               dailyHW(kl) = 0.0
               dailyLW(kl) = 0.0
-		      SALAV(kl) = S(kl,2)*dt/(3600.*24.)
+              SALAV(kl) = S(kl,2)*dt/(3600.*24.)
 !>> Update average WQ values for compartments by timestep's contribution to daily average
           else
               do klk = 1,14  !zw 4/28/2015 replace ichem with 14
@@ -1530,15 +1532,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
      &                  + CSS(kl,2,3)+CSS(kl,2,4) )*dt/(3600.*24.)
               QmarshAve(kl) = QmarshAve(kl)+Qmarsh(kl,2)*dt/(3600.*24.)
 			  
-			  !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
+              !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
               ESMX(kl,2) = max(ESMX(kl,2),ES(kl,2))
               ESMN(kl,2) = min(ESMN(kl,2),ES(kl,2))
-		      ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/(3600.*24.)
+              ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/(3600.*24.)
               EHAV(kl,1) = EHAV(kl,1) + EH(kl,2)*dt/(3600.*24.)
               dailyHW(kl) = max(dailyHW(kl),ES(kl,2))
               dailyLW(kl) = min(dailyLW(kl),ES(kl,2))
               EsRange(kl,1)=ESMX(kl,2)-ESMN(kl,2)
- 		      SALAV(kl)=SALAV(kl) + S(kl,2)*dt/(3600.*24.)
+              SALAV(kl)=SALAV(kl) + S(kl,2)*dt/(3600.*24.)
           endif
       enddo
 

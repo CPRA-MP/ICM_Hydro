@@ -7,7 +7,7 @@
       cells=N
       links=M
       windsteps = simdays*24/dtwind
-      tidesteps = simdays*24/dttide
+      tidesteps = simdays*24/dttide+1    !YW! Tide transpose is assumed been handled in the input files. +1 is to include the final row
       maxconnectuse = max(maxconnect,25) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
       numChem=14  !zw added 04/07/2020 to replace fixed variable dimensions related to chemicals
 
@@ -410,6 +410,7 @@
       allocate(Es(cells,3))
       allocate(EHAV(cells,3))
       allocate(BCnosurge(cells,2))
+      allocate(BCsurge(cells,2))   !YW! added for tide calculation
       allocate(ESAV(cells,3))
       allocate(ESMN(cells,3))
       allocate(ESMX(cells,3))
@@ -493,7 +494,7 @@
 
  6666 format(A,I3,A,I3)
 
-      allocate(linkskip(nlinkskip))  ! yw store like numbers
+      allocate(linkslimiter(nlinklimiter))  !YW! store link numbers to apply flow limiter
 
       return
       end

@@ -71,11 +71,11 @@ cJAM      Tributary and resuspension/deposition contributions to SS
             
 !>> Calculate sediment flux from marsh-to-open water exchange flows
 !>> Negative flux is FROM marsh TO open water
-          if(QMarsh(j,1) >= 0.0) then
+          if(QMarsh(j,2) >= 0.0) then
 !>> if flow is into marsh and there are suspended solid in open water determine maximum possible sediment flux (g/sec) based on available sediment
               if (Css(j,1,k) > CSSmin) then
                   QSmarsh_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
-                  QSmarsh(k) = min(Qmarsh(j,1)*Css(j,1,k),QSmarsh_avail)	!g/s !going into marsh
+                  QSmarsh(k) = min(Qmarsh(j,2)*Css(j,1,k),QSmarsh_avail)	!g/s !going into marsh
               else
                   QSmarsh(k) = 0.0
               endif
@@ -83,7 +83,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> if flow is out of marsh and there are suspended solids in marsh determine maximum possible sediment flux (g/sec) based on available sediment
               if (Cssh(j,1,k) > CSSmin) then
                   QSmarsh_avail = -CSSh(j,1,k)*Ahf(j)*ddh_1/dt
-	            QSmarsh(k) = max(Qmarsh(j,1)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
+	            QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
 
               else
                   QSmarsh(k) = 0.0

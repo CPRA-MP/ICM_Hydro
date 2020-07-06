@@ -45,20 +45,31 @@
 				if (use_row < 1) then
 					use_row = tiderow
 				endif
+
 ! MP2023 added zw-04/06/2020
 ! last few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
         if(use_row >= (simdays*24/dttide)) then
             use_row = tiderow
         endif
+
 ! jj is compartment number, jjk is boundary condition number
-				BCnosurge(jj,2)=TideData(use_row,nnn)
-				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
+!				BCnosurge(jj,2)=TideData(use_row,nnn)
+!				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
+!>> !YW! Interpolate tide and surge between input data time step
+                  BCnosurge(jj,2) = BCnosurge(jj,1)                          
+     &            +(TideData(use_row+1,nnn)-TideData(use_row,nnn))
+     &            /lasttidestep
+                  BCsurge(jj,2) = BCsurge(jj,1)
+     &            +(Surge(use_row+1,jjk)-Surge(use_row,jjk))
+     &            /lasttidestep  
+
+                  ES(jj,2)=BCnosurge(jj,2)+BCsurge(jj,2)
 			endif
 		enddo
 	end do
 
 !>> Update boundary condition water levels for compartments WITHOUT observed water level timeseries
-	do jjk=1,Mds
+	do jjk=1,Mds 
 		jj=KBC(jjk)
 		do nnn=1,Mds-tidegages
 			if (jj==weighted_tide(nnn,1)) then
@@ -72,9 +83,11 @@
 				EastBC = BCnosurge(EastComp,2)
 				WestBC = BCnosurge(WestComp,2)
 
-        BCnosurge(jj,2)=EastWght*EastBC+WestWght*WestBC  !zw added 04/06/2020
+!        BCnosurge(jj,2)=EastWght*EastBC+WestWght*WestBC  !zw added 04/06/2020
 				ES(jj,2)=EastWght*EastBC+WestWght*WestBC
-     &                        +Surge(surgerow,jjk)
+!     &                        +Surge(surgerow,jjk)
+     &                    +EastWght*BCsurge(EastComp,2)               !YW! Apply the same weighting calculation as for tide
+     &                    +WestWght*BCsurge(WestComp,2)               !YW! temporary for calibration
 			endif
 		enddo
 	enddo

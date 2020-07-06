@@ -25,7 +25,7 @@ cc      TL(200,3) Link water Temperature
 !                  diffus = 0.0
 !              endif
 !          else    
-              if(Q(iab,1) >= 0.0) then
+              if(Q(iab,2) >= 0.0) then
                   CTMPface=Tempw(jus(abs(icc(j,k))),1)
               else
                   CTMPface=Tempw(jds(abs(icc(j,k))),1)
@@ -33,7 +33,7 @@ cc      TL(200,3) Link water Temperature
               diffus = EAOL(iab)
 !          endif
 
-          QTMPSum=QTMPSum + sicc(j,k)*(Q(abs(icc(j,k)),1))*CTMPface
+          QTMPSum=QTMPSum + sicc(j,k)*(Q(abs(icc(j,k)),2))*CTMPface
      &			    +fe*diffus*(Tempw(j,1)-Tempw(jnb,1))
                   
           TL(iab,1)=CTMPface

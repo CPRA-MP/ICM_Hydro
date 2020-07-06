@@ -10,20 +10,20 @@ cc**********************Start Subroutine for TSS Solids*************************
 !>> Only calculate marsh sediment exchange if depth in marsh is greater than 0.3 m (assumed surge conditions)
           if (Eh(j,1)-Bedm(j) > 0.3) then
 !>> calculate average concentration at interface between marshes (directionality of flow is needed to apply upwind factor correctly)
-              if (Q(iab,1) >= 0.0) then
+              if (Q(iab,2) >= 0.0) then
                   Cssface = CSSh(jus(abs(icc(j,k))),1,sedclass)
               else    
                   Cssface = CSSh(jds(abs(icc(j,k))),1,sedclass)
               endif
 !>> add sediment flux from this marsh link to the cumulative sediment flux for marsh in this comparment (QSsumh)
               QSSumh(sedclass) = QSsumh(sedclass)
-     &            + sicc(j,k)*(Q(abs(icc(j,k)),1))*Cssface
+     &            + sicc(j,k)*(Q(abs(icc(j,k)),2))*Cssface
           endif
           
 !>> If link is not marsh overland flow link, use CSS in open water and add sediment flux to open water cumulative sediment flux term
       else
 !>> calculate concentration at interface between compartments (directionality of flow is needed)
-          if (Q(iab,1) >= 0.0) then
+          if (Q(iab,2) >= 0.0) then
               Cssface = CSS(jus(abs(icc(j,k))),1,sedclass)
           else
               Cssface = CSS(jds(abs(icc(j,k))),1,sedclass)

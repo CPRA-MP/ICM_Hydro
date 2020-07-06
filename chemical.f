@@ -5,7 +5,7 @@ cc**********************Start Subroutine for Change in Cell Chemistry*******JAM 
 	use params      
 
 	if(iab /= 0) then
-          if(Q(iab,1) >= 0.0) then
+          if(Q(iab,2) >= 0.0) then
 		    Cchemface(ichem) = Chem(jus(abs(icc(j,k))),ichem,1)
 !              Cchemface(ichem)= ((fa(iab)*
 !     &            Chem(jus(abs(icc(j,k))),ichem,1)
@@ -20,7 +20,7 @@ cc**********************Start Subroutine for Change in Cell Chemistry*******JAM 
           diffus = EAOL(iab)
                   
           QChemSUMflows(ichem)=QChemSUMflows(ichem) + sicc(j,k)*   
-     &			(Q(abs(icc(j,k)),1))*Cchemface(ichem)
+     &			(Q(abs(icc(j,k)),2))*Cchemface(ichem)
      &			+fe*diffus*(Chem(j,ichem,1)-Chem(jnb,ichem,1))  !zw 4/28/2015 delete /2.
           
       endif

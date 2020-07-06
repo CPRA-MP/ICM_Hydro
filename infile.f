@@ -104,7 +104,7 @@
      &        Fetch(j,15),         !   Fetch length (m) in 315-deg sector
      &        Fetch(j,16)         !   Fetch length (m) in 337.5-deg sector
 
-		      ! Eh(j,1)=Eho(j)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
+          ! Eh(j,1)=Eho(j)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
           BedM(j) = BedMOrig(j) + BedMAdj(j)
 
 
@@ -127,7 +127,7 @@
       write(*,*)
       write(*,*) '----------------------------------------------------'
       write(*,*) 'Updating area attributes to meet minimum water area:'
-       write(*,*) '----------------------------------------------------'
+      write(*,*) '----------------------------------------------------'
 
       do j = 1,N
       !>> check for incorrect area percentages
@@ -261,10 +261,10 @@
 !          Ahf(j)=flood(j)*Ahydro(j)		! JAM Oct 2010
 !	    Vss(j)=Vss(j)/consd				! JAM Oct 2010
 !	    Vsh(j)=Vsh(j)/consd				! JAM Oct 2010
-	    ! ES(j,1)=ES(j,1)+RSSSo  !BUG RSSSo is undefined - zw 04/06/2020
+!          ES(j,1)=ES(j,1)+RSSSo  !BUG RSSSo is undefined - zw 04/06/2020
           Eh(j,1) = BedM(j) + 0.1
           hDepth(j,1)=Eh(j,1)-BedM(j)		! marsh channel depth (m)	!JAM Oct 2010
-          Qmarsh(j,1) = 0.01				! JAM Oct 2010
+          Qmarsh(j,1) = 0.0				! JAM Oct 2010 !YW!
 
 !>> Calculate length of marsh edge from edge area (for KadlecKnight equation)
 !>> Set edge length to perimeter of idealized (e.g. square)  marsh or water area, whichever is smaller
@@ -535,7 +535,7 @@
 
 
 !>> Read multiplier for diversion flows as function of Mississippi River flow
-DivMult(:)=0  !zw added 04/06/2020
+      DivMult(:)=0  !zw added 04/06/2020
       read(86,*) !skip header row
       write(1,*) 'Reading multiplier on flow
      & for each diversion.'
@@ -587,7 +587,7 @@ DivMult(:)=0  !zw added 04/06/2020
 !        13= ChLa  !Partition Chla= ParCla*LivA
 !        14= POP !-EDW used to say 14=TKN !-EDW
 !---------------------------------
-decay(:,:)=0  !zw added 04/06/2020
+      decay(:,:)=0  !zw added 04/06/2020
       do ichem = 1,14
 		READ(85,*) (decay(ichem,ne),ne=1,14)		  !zw 4/28/2015 decay unit=1/day
 	enddo
@@ -615,7 +615,7 @@ decay(:,:)=0  !zw added 04/06/2020
 ! Tributary Nutrients:  NO3, NH4, ON, TP
 
 !>> Read and advance past the Tributary and Diversion Numbers from header row of input Water Quality files
-cChem(:,:,:)=0  !zw added 04/06/2020
+      cChem(:,:,:)=0  !zw added 04/06/2020
 	READ(80,*) (jtrib(jt), jt=1,Ntrib)
       READ(81,*)
 	READ(82,*)
@@ -1141,8 +1141,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       enddo
 
 !>> Skip header row of wind vector input files (both X & Y vectors)
-      windx_data(:,:)=0  !zw added 04/06/2020
-      windy_data(:,:)=0
+      windx_data(:,:)=0.0  !zw added 04/06/2020
+      windy_data(:,:)=0.0
       read(43,*)
 	read(46,*)                                          !dump header
 
@@ -1172,11 +1172,10 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       do kn = 1,tidegages
           read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
       enddo
-      transposed_tide_max = Maxval(transposed_tide(1:tidegages,2))
 
 !>> Skip header row of Tide Gage and Surge data input files
-      TideData(:,:)=0  !zw added 04/06/2020
-      Surge(:,:)=0
+      TideData(:,:)=0.0  !zw added 04/06/2020
+      Surge(:,:)=0.0
       read(47,*)
       read(110,*)
 
@@ -1195,7 +1194,7 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       enddo
 
 !>> Read Tide Gage and Surge data for current model year
-      do kt=1,(simdays*24/dttide) !+transposed_tide_max/dttide)  !zw modififed 04/06/2020
+      do kt=1,(simdays*24/dttide+1)  !zw modififed 04/06/2020   !YW! +1 to include the final row
           read(47,*)dump_int,dump_text,TideData(kt,1:tidegages)
           read(110,*)dump_int,dump_text,Surge(kt,1:mds)
       enddo
@@ -1343,26 +1342,26 @@ c
       write(*,*)'-----------------------------------------'
       write(*,*)
 
-	do  j=1,N
-!		do k=1,13
+      do  j=1,N
+!          do k=1,13
           nlink2cell(j) = 0
           do k=1,maxconnect
-			icc(j,k) = 0
-		enddo
-	enddo
+              icc(j,k) = 0
+          enddo
+      enddo
 
-	do j=1,N
-		k=0
-		do i=1,M
-			if(jus(i).eq.j)then
-        k=k+1
-				icc(j,k) = i
-			endif
-			if(jds(i).eq.j) then
-        k=k+1
-				icc(j,k)=-i
-			endif
-		enddo
+      do j=1,N
+          k=0
+          do i=1,M
+              if(jus(i).eq.j)then
+                  k=k+1
+                  icc(j,k) = i
+              endif
+              if(jds(i).eq.j) then
+                  k=k+1
+                  icc(j,k)=-i
+              endif
+          enddo
           nlink2cell(j) = k   !> set number of links in compartment value in array
 
           if (k > maxconnect) then
@@ -1375,7 +1374,7 @@ c
 
 1121  format(7x,A,x,I0,x,A,x,I0,x,A)
 1122  format(7x,A,x,I0,x,A,x,I0,x,A)
-	enddo
+      enddo
 
 	do j=1,N					!chg JAM Aug 10, 2009  sicc is the sign of the link k connecting node j
 !          do k=1,13

@@ -12,10 +12,18 @@ cjam     c Salinity  computations ****************************
 !>> Set minimum depth value (avoids div-by-zero errors)
       ddy= Es(j,1)-Bed(j)
 	
-      if(ddy <= 0.1) then
-          dddy = 0.1
+      if(ddy <= 0.01) then
+          dddy = 0.01
       else
           dddy = ddy
+      endif
+      
+      ddym= Eh(j,1)-BedM(j)
+	
+      if(ddym <= 0.01) then
+          dddym = 0.01
+      else
+          dddym = ddym
       endif
       
       QSalsum=0
@@ -32,10 +40,10 @@ cjam     c Salinity  computations ****************************
 
       enddo
 
-	do kdiv=1,Ndiv
+      do kdiv=1,Ndiv
           QSalsum=QSalsum-Qdiv(kdiv,kday)*0.15*	!JAM jan 09 11
      &			Qmultdiv(j,kdiv)
-	enddo
+      enddo
 !		do k=1,13 									! note max number of connected links is 5 ***
 !		do k=1,maxconnect
       do k=1,nlink2cell(j)
@@ -51,14 +59,12 @@ cjam     c Salinity  computations ****************************
 	    iab=abs(icc(j,k))
     
 	    call salinity(mm,iab,jnb,j,k,Qsalsum)
-      enddo										!k do loop
+      enddo										!k do loop   
 
-      if (Qmarsh(j,1) > 0.0) then
-          QSalSum=QSalSum + Qmarsh(j,1)*S(j,1)
-      endif   
+      !if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
+      !    QSalSum=QSalSum + Qmarsh(j,2)*S(j,1)
+      !endif
 
-      
-      
 c  salinity change computations  *********************************
       QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
      &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden      
@@ -67,19 +73,34 @@ c  salinity change computations  *********************************
           QRain = max(QRain,0.0)
       endif
 
+      QRainm = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
+     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
+      
+      if (dddym <= 0.01) then  
+          QRainm = max(QRainm,0.0)
+      endif   
+
+!>> original equation
 !      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
 !     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
 
 
-      if (dddy > 0.1) then
-          DSal =  -QSalsum/(As(j,1)*dddy)*dt
-     &	    -Dz*S(j,1)/dddy
-      else
-          DSal = 0.0
-      endif
+!>> YW testing equation for MP 2023. combining marsh and OW volumne
+
+      S(j,2) = (S(j,1)*(As(j,1)*dddy+Ahf(j)*dddym)-QSalsum*dt)
+     &    /(As(j,1)*dddy+Ahf(j)*dddym
+     &    +(Qsum_in(j)-Qsum_out(j)+QRain+QRainm)*dt)
       
-	S(j,2)=S(j,1)+DSal
-!      
+!>> equation for MP2017 to avoid salinity spike
+!      if (dddy > 0.1) then   
+!          DSal =  -QSalsum/(As(j,1)*dddy)*dt
+!     &	    -Dz*S(j,1)/dddy
+!      else
+!          DSal = 0.0
+!      endif
+      
+!	S(j,2)=S(j,1)+DSal
+         
 !      if (S(j,2) > 100) then
 !          write(*,*)'comp = ',j
 !          write(*,*) 'As =',As(j,2)
@@ -102,7 +123,7 @@ c  salinity change computations  *********************************
 	Sh(j,2)=S(j,2)  
 
 
-!!>> Calculate daily average values reported out to output files
+!!>> Calculate daily average values reported out to output files ! moved to hydro
 !	if(daystep == 1) then
 !	!>> reset average salinity value at start of day
 !		SALAV(j) = S(j,2)*dt/(3600.*24.)

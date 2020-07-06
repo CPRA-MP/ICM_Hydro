@@ -208,7 +208,7 @@ c*******************************************************************************
 
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
 
-	Character*100 header
+      Character*100 header
 
 !>@par General Structure of Subroutine Logic:
 
@@ -360,7 +360,7 @@ c*******************************************************************************
       READ(30,*) tss_error       ! 97       error term for TSS - to be used to perturb output files -percentage adjustment (between -1 and 1) (tss_error)
       READ(30,*) stage_error     ! 98       error term for stage - to be used to perturb output files (stage_error)
       READ(30,*) stvar_error     ! 99       error term for water level variability - to be used to perturb output files (stvar_error)
-      READ(30,*) nlinkskip       ! 100      yw number of links to skip flow limiter (must match number of links in 'links_to_skip.csv', set to 0 if no skip link)
+      READ(30,*) nlinklimiter    !YW! 100   number of links to apply flow limiter (must match number of links in 'links_to_apply.csv', set to 0 if no link to apply flow limiter)    
       close(30)
 !      sal_0_1_error  = 0.0
 !      sal_1_5_error  = 0.0
@@ -380,10 +380,10 @@ c*******************************************************************************
       lastwindstep = dtwind*60*60/dt !dtwind is in hours - number of timesteps before updating wind data
       lastlockstep = dtlock*60*60/dt !dtlock is in hours - number of timesteps before updating lock control data
 !> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
-      daystep = 1
-      tidestep = 1
-      windstep = 1
-      lockstep = 1
+      daystep = 0  !YW! Modified to fix the issue with skipping the first time step
+      tidestep = 0 !YW!
+      windstep = 0 !YW!
+      lockstep = 0 !YW!
 
 !>> Call 'allocate_params' subroutine which allocates memory for almost all arrays used by this program
 !>> (some temporary arrays are allocated in ICM_InterpolateToGrid subroutine which postprocesses model results).
@@ -452,88 +452,88 @@ C> initially set GrowAlgae array equal to zero
 
 !>> Open input text files.
 
-	open (unit=32, file= 'Cells.csv', status = 'unknown')
-	open (unit=323, file ='Fetch.csv', status = 'unknown')
-	open (unit=33, file= 'Links.csv', status = 'unknown')			! JAM Oct 2010
-	open (unit=34, file= 'LinksClosedHours.dat', status = 'unknown') !-EDW !value of 1 means link is closed for the hour, zero means it is open
+      open (unit=32, file= 'Cells.csv', status = 'unknown')
+      open (unit=323, file ='Fetch.csv', status = 'unknown')
+      open (unit=33, file= 'Links.csv', status = 'unknown')			! JAM Oct 2010
+      open (unit=34, file= 'LinksClosedHours.dat', status = 'unknown') !-EDW !value of 1 means link is closed for the hour, zero means it is open
       open (unit=35,file='LockControlObservedData.csv',status='unknown')
 !      open (unit=36, file= 'SWR.dat', status = 'unknown')
-	open (unit=74, file= 'MissRToC.csv', status = 'unknown')		! JAM Oct 2010
-	open (unit=39, file= 'TribQ.csv', status = 'unknown')   !Tributary flow (m3/s)
-	open (unit=40, file= 'PET.csv', status = 'unknown')
+      open (unit=74, file= 'MissRToC.csv', status = 'unknown')		! JAM Oct 2010
+      open (unit=39, file= 'TribQ.csv', status = 'unknown')   !Tributary flow (m3/s)
+      open (unit=40, file= 'PET.csv', status = 'unknown')
       open (unit=42, file= 'Precip.csv', status='unknown')
-	open (unit=45, file= 'Meteorology.csv', status = 'unknown')
-	open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
+      open (unit=45, file= 'Meteorology.csv', status = 'unknown')
+      open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
       open (unit=43, file= 'WindVectorsX.csv',status= 'unknown')
-	open (unit=46, file= 'WindVectorsY.csv',status= 'unknown')
+      open (unit=46, file= 'WindVectorsY.csv',status= 'unknown')
       open (unit=47, file= 'TideData.csv',status='unknown')
       open (unit=48, file= 'TideTranspose.csv',status='unknown')
       open (unit=49, file= 'TideWeight.csv',status='unknown')
       open (unit=77, file= 'QMult.csv', form= 'formatted',
      &       status = 'unknown')
-	open (unit=55, file= 'TribS.csv', status = 'unknown')	! Tributary sand concentration (mg/L)
+      open (unit=55, file= 'TribS.csv', status = 'unknown')	! Tributary sand concentration (mg/L)
       open (unit=555,file= 'TribF.csv',status='unknown')      ! Tributary fines concentration (mg/L)
-	open (unit=56, file= 'SBC.dat', status = 'unknown')
-	open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
-	open (unit=81, file= 'NH4Data.csv', status = 'unknown')
-	open (unit=82, file= 'OrgNData.csv', status = 'unknown')
-	open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
-	open (unit=84, file= 'AtmChemData.csv', status ='unknown')
-	open (unit=85, file= 'Decay.csv', status ='unknown')
-	open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
+      open (unit=56, file= 'SBC.dat', status = 'unknown')
+      open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
+      open (unit=81, file= 'NH4Data.csv', status = 'unknown')
+      open (unit=82, file= 'OrgNData.csv', status = 'unknown')
+      open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
+      open (unit=84, file= 'AtmChemData.csv', status ='unknown')
+      open (unit=85, file= 'Decay.csv', status ='unknown')
+      open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
       open (unit=87, file= 'DivWQ.csv', status ='unknown')
-	open (unit=88, file= 'QMult_div.csv', form= 'formatted',
+      open (unit=88, file= 'QMult_div.csv', form= 'formatted',
      &       status ='unknown')
-	open (unit=89, file= 'DivSW.csv', status = 'unknown')
-	open (unit=101, file= 'BCToC2.dat', form = 'formatted')
-	open (unit=110, file= 'surge.csv', form = 'formatted')
-!	open (unit=117, file= 'AsedOW.csv',form ='formatted',		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
+      open (unit=89, file= 'DivSW.csv', status = 'unknown')
+      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
+      open (unit=110, file= 'surge.csv', form = 'formatted')
+!      open (unit=117, file= 'AsedOW.csv',form ='formatted',		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
 !     &       status ='unknown')
-!	open (unit=118, file= 'UplandNP.dat', form ='formatted')
-	open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
-	open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
+!      open (unit=118, file= 'UplandNP.dat', form ='formatted')
+      open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
+      open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
       open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
 
 !>> Open output text files (in append mode, if needed).
       open (unit=70,file='DIN.out',form ='formatted',position='append')
       open (unit=71,file='OrgN.out',form='formatted',position='append')
-	open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
-	open (unit=73,file='TOC.out',form='formatted',position='append')
-	open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
+      open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
+      open (unit=73,file='TOC.out',form='formatted',position='append')
+      open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
       open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
-	open (unit=92,file='NH4.out',form = 'formatted',position='append')
-	open (unit=93,file='O2Sat.out',form='formatted',position='append')
-	open (unit=94,file='ALG.out',form='formatted',position='append')
-	open (unit=95,file='DO.out',form='formatted',position='append')
-	open (unit=96,file='TSS.out',form='formatted',position='append')
-	open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
-	open (unit=100,file='TMP.out',form='formatted',position='append')
-	open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute 20yr open water Acc.
+      open (unit=92,file='NH4.out',form = 'formatted',position='append')		
+      open (unit=93,file='O2Sat.out',form='formatted',position='append')
+      open (unit=94,file='ALG.out',form='formatted',position='append')
+      open (unit=95,file='DO.out',form='formatted',position='append')
+      open (unit=96,file='TSS.out',form='formatted',position='append')
+      open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
+      open (unit=100,file='TMP.out',form='formatted',position='append')		   
+	open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute 20yr open water Acc. 
 	open (unit=105,file='fflood.out',form='formatted',position='append')
       open (unit=111,file='STG.out',form='formatted',position='append')			! ESAVE.OUT
-	open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
-	open (unit=113,file='DON.out',form='formatted',position='append')
-	open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
+      open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
+      open (unit=113,file='DON.out',form='formatted',position='append')
+      open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
       open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
-	open (unit=123,file='TKN.out',form='formatted',position='append')
+      open (unit=123,file='TKN.out',form='formatted',position='append')
       open (unit=124,file='FLOm.out',form='formatted',position='append')
 
 ! read in information for grid cells used to pass data to other ICM routines !-EDW
       open (unit=200, file='grid_lookup_500m.csv', form='formatted')              ! compartment and link lookup table for 500-m grid cells
       open (unit=201, file='grid_interp_dist_500m.csv',form='formatted')          ! distance from each 500-m grid cell centroid to the compartment and link centroids
-      open (unit=202, file='grid_data_500m.csv', form='formatted')                ! mean elevation for 500 m grid cells
+      open (unit=202, file='grid_data_500m.csv', form='formatted')                ! mean elevation for 500 m grid cells     
       open (unit=203, file='grid_IDs_Veg_matrix.csv', form='formatted')           ! 500m grid cell names formatted in the matrix used by Vegetation ICM routine
 
       open (unit=204, file='grid_500m_out.csv', form='formatted')              ! output file for 500 m grid cells - in list form
       open (unit=205, file='compartment_out.csv',form='formatted')             ! output file for hydro compartments - summary values for ICM in list form
 
-	open(unit=206,file='sal_monthly_ave_500m.out',form='formatted')
-	open(unit=207,file='tmp_monthly_ave_500m.out',form='formatted')
-	open(unit=208,file='tkn_monthly_ave_500m.out',form='formatted')
-	open(unit=209,file='TSS_monthly_ave_500m.out',form='formatted')
+      open(unit=206,file='sal_monthly_ave_500m.out',form='formatted')
+      open(unit=207,file='tmp_monthly_ave_500m.out',form='formatted')
+      open(unit=208,file='tkn_monthly_ave_500m.out',form='formatted')
+      open(unit=209,file='TSS_monthly_ave_500m.out',form='formatted')
 
-	open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
-	open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate
+      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
+      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
       open(unit=212,file='STGm.out',form='formatted',position='append')
 ! output files for use in the Vegetation ICM routine !-EDW
 ! these are written in append mode. ICM checks when first run as to whethere these files exist.
@@ -560,36 +560,33 @@ C> initially set GrowAlgae array equal to zero
 
 !>> Read Boundary Conditions file
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
-	close(125)
+      close(125)
 
-      !YW Read input like file to skip flow limiter
-      open (unit=500, file= 'links_to_skip.csv',status='unknown')	    ! input csv file with the link ID numbers of links to skip flow limiter
-      !>> Read in links
-      read(500,*)                                                     ! skip first line
-      do kk = 1,nlinkskip
-		read(500,*) linkskip(kk)
-!		write(*,*) linkskip(kk)
+!>> !YW! Read input link file to apply flow limiter
+      open (unit=500, file= 'links_to_apply.csv',status='unknown')
+      read(500,*)
+      do kk = 1,nlinklimiter
+          read(500,*) linkslimiter(kk)
       enddo
 
 ! Initialize some variables and arrays
       NR(:)=0.0
       stds=0.
-	do j=1,N
-		accsed(j)=0.0
+      do j=1,N
+          accsed(j)=0.0
           sal_ave(j)=0.0
           cumul_retreat(j) = 0.0
-	enddo
+      enddo
 
-	do i=1,M
-		asedout(i)=0.0
-	enddo
+      do i=1,M
+          asedout(i)=0.0
+      enddo
 
 !>> Call 'infile' subroutine, which reads input text files and stores data into arrays
       call infile
 
 
-
-!>> write header row for hourly stage output file (since not all compartments are printed)
+!>> write header row for hourly stage output file (since not all compartments are printed)	
       if (nstghr > 0) then
           write(210,908) 'Compartment:',(stghrwrite(jjk),jjk=1,nstghr)
       else
@@ -606,11 +603,11 @@ C> initially set GrowAlgae array equal to zero
 !909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
-	close(32)
-	close(33)
+      close(32)
+      close(33)
       close(34)
       close(39)
-    	close(40)
+      close(40)
       close(42)
       close(44)
       close(45)
@@ -651,19 +648,19 @@ C> initially set GrowAlgae array equal to zero
       enddo
 
 !>> 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a tide or lock control data timestep is reached
-      tiderow = 1
-      surgerow = 1
-      lockrow = 1
+      tiderow = 0	!YW! Modified to match all other initialization
+      surgerow = 0	!YW!
+      lockrow = 0	!YW!
 
 !>> Set initial conditions for links (from input files)
-	do i=1,M
+      do i=1,M
           fa(i) = fa_def*fa_mult(i) !Set array of initial upwind factor to default value
-          Q(i,1)=0.1
+          Q(i,1)=0.0	!YW!
           Q(i,2)=Q(i,1)
 
           ! MP2023 zw added 04/06/2020
           EAOL(i)=0.0
-          FLO(i)=0.0
+          !FLO(i)=0.0 !YW! flo range nlinksw
           SlkAve(i) = 0
           SL(i,2)=0
           TL(i,1)=0
@@ -727,7 +724,10 @@ C> initially set GrowAlgae array equal to zero
           Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
           BCnosurge(j,1) = 0.0            ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1) ! boundary conditions stage(m) before surge is added
+          BCsurge(j,1) = 0.0              !YW! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
+          BCsurge(j,2) = BCsurge(j,1)
           Qmarsh(j,2) = Qmarsh(j,1)		! Flow in marsh cell	!JAM Oct 2010
+          Qmarshmax(j) = 0.0
           S(j,2) = S(j,1)
           Tempw(j,2) = Tempw(j,1)
 
@@ -755,8 +755,7 @@ C> initially set GrowAlgae array equal to zero
           Clayacc(j,2) = Clayacc(j,1)
           CSSvRs(j,2)= CSSvRs(j,1)
 
-!>> Initialize average variable !yw
-
+!>> Initialize average variable
           ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
           EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
           TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2)
@@ -779,10 +778,25 @@ C> initially set GrowAlgae array equal to zero
       close(400)
 
       Emax=0.0
-	Emin=0.0
+      Emin=0.0
+      
+!>> !YW! initialize BCnosurge and BCsurge with initial tide and surge      
+      do jj=1,tidegages
+          BCnosurge(transposed_tide(jj,1),1) = TideData(1,jj)
+          do jjj=1,Mds
+              if (KBC(jjj)==transposed_tide(jj,1)) then
+                  BCsurge(transposed_tide(jj,1),1)= Surge(1,jjj)
+              endif
+          enddo
+      enddo
+              
+      if(nlinksw > 0) then               !YW!
+          do jj = 1,nlinksw
+              FLO(jj) = 0.0
+          enddo
+      endif
 
-
-
+ 
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
 !>> Main DO loop. Looped over each simulation timestep.
@@ -796,7 +810,7 @@ C> initially set GrowAlgae array equal to zero
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
 
-      do  mm= 1, NTs-1						! ******do loop ends at ~ line 438
+      do  mm= 1, NTs  						! ******do loop ends at ~ line 438    !YW! change NTs-1 to NTs
           t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
 
 !>> calculate various versions of time to be used as flags throughout program
@@ -858,6 +872,7 @@ C> initially set GrowAlgae array equal to zero
 			S(j,1)=S(j,2)				! resetting ICs
               SL(j,1) = SL(j,2)
               BCnosurge(j,1) = BCnosurge(j,2)
+              BCsurge(j,1) = BCsurge(j,2)                !YW!
               do sedclass=1,4
                   CSS(j,1,sedclass) = CSS(j,2,sedclass)
                   CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
@@ -1029,7 +1044,7 @@ C> initially set GrowAlgae array equal to zero
       enddo
       close(401)
 
-! Write sediment accumulation in open water output file - 1 value per year
+! Write sediment accumulation in open water output file - 1 value per year      
 !      pm1 = (1.-Apctmarsh(j))
 !      WRITE(117,9229)(((ASandA(j)/As(j,1)+clams
 !     &			+max(0.,Sacc(j,2)))*pm1				!modified June 20, 2011 JAM for testing removed /1000  added ASANDA(
