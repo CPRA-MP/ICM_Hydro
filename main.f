@@ -210,6 +210,225 @@ c*******************************************************************************
 
       Character*100 header
 
+!>> *********************************Adding 1d start
+      use constants_module
+      use arrays_module
+      use arrays_section_module
+      use var_module
+      use matrix_module
+      use sgate_module
+      use xsec_attribute_module
+
+      integer(kind=4) :: i_1d, n_1d, ntim, igate, pp_1d, &
+						boundaryFileMaxEntry, ppp, qqq, saveFrequency, noLatFlow !, areanew
+      real(kind=4) :: cour, da, dq, dxini, yy, x, thetas, thesinv, tfin
+      real(kind=4) :: t_1d, skk, qq, qn, xt, r_interpol, t1, t2, maxCourant
+      real(kind=4) :: arean, areac, hyrdn, hyrdc, perimn, perimc, qcrit, &
+					s0ds, timesDepth, latFlowValue
+
+      character(len=128) :: upstream_path , downstream_path
+      character(len=128) :: manning_strickler_path, output_path, other_input
+      character(len=128) :: channel_width_path, lateralFlow_path
+      character(len=128) :: path
+
+    ! open file for input data
+      character(len=128) :: dx_path
+
+      write(*,*) '1D Code is running.'
+      call cpu_time( t1 )
+
+      open(unit=601,file="../lower_Mississippi/input/input_BC_2_SWP_2018.txt", &
+       status='unknown')
+
+    ! read data
+      read(601,*) dtini
+      read(601,*) dxini
+      read(601,*) tfin
+      read(601,*) ncomp
+      read(601,*) ntim
+      read(601,*) phi
+      read(601,*) theta
+      read(601,*) thetas
+      read(601,*) thesinv
+      read(601,*) alfa2
+      read(601,*) alfa4
+      read(601,*) f
+      read(601,*) skk
+      read(601,*) yy
+      read(601,*) qq
+      read(601,*) cfl
+      read(601,*) ots
+      read(601,*) yw
+      read(601,*) bw
+      read(601,*) w
+      read(601,*) option
+      read(601,*) yn
+      read(601,*) qn
+      read(601,*) igate
+      read(601,*) xSection_path
+      read(601,*) manning_strickler_path
+      read(601,*) upstream_path
+      read(601,*) downstream_path
+      read(601,*) channel_width_path
+      read(601,*) dx_path
+      read(601,*) lateralFlow_path
+      read(601,*) output_path
+      read(601,*) option_dsbc
+      read(601,*) maxTableLength
+      read(601,*) nel
+      read(601,*) timesDepth
+      read(601,*) other_input
+      read(601,*) boundaryFileMaxEntry
+      read(601,*) saveFrequency
+      read(601,*) noLatFlow             ! no of lateral flow coupling
+
+      allocate(latFlowLocations(noLatFlow))   ! all the first nodes where a lateral flow starts
+      allocate(latFlowType(noLatFlow))        ! Lateral flow type: Type = 1 = time series; Type 2 = flow as a function of upstream flow
+      allocate(latFlowXsecs(noLatFlow))       ! no of x-secs at the downstream that the lateral flow is applied
+
+      read(601,*) (latFlowLocations(i), i=1, noLatFlow)
+      do i=1,noLatFlow
+          if ((latFlowLocations(i)-1)*(latFlowLocations(i)-ncomp) .eq. 0) then
+              print*, 'ERROR: Lateral flow cannot be applied at the boundaries'
+              stop
+          end if
+      end do
+      read(601,*) (latFlowType(i), i=1, noLatFlow)
+      do i=1,noLatFlow
+          if (latFlowType(i) .eq. 1) then
+              print*, 'Lateral flow at node = ', latFlowLocations(i), ', is a time series'
+          elseif (latFlowType(i) .eq. 2) then
+              print*, 'Lateral flow at node = ', latFlowLocations(i), ', is a function of upstream flow'
+          elseif (latFlowType(i) .eq. 3) then
+              print*, 'Lateral flow at node = ', latFlowLocations(i), ', is a coupling point with ICM model'
+          else
+              print*, 'Wrong lateral flow type is provided. Type ', latFlowType(i), 'is not a valid type'
+              stop
+          end if
+      end do
+
+      read(601,*) (latFlowXsecs(i), i=1, noLatFlow)
+
+      close (601)
+
+    ! Allocate arrays
+      call setup_arrays(ntim, ncomp, maxTableLength, boundaryFileMaxEntry, noLatFlow)
+      call setup_arrays_section
+      call setup_xsec_attribute_module(nel, ncomp)
+
+      dt_1d = dtini
+
+      open(unit=690, file=trim(dx_path))
+      do i=1,ncomp-1
+          read(690, *) x, dx(i)
+      end do
+      close(690)
+
+      ! reading Strickler's coefficient at each section
+      open(unit=685,file=trim(manning_strickler_path), status='unknown') !! //'Mannings_Stricklers_coeff.txt'
+      do i=1,ncomp
+          read(685, *) x, sk(i)
+          call readXsection(i,(1.0/sk(i)),timesDepth)
+          ! This subroutine creates attribute table for each cross sections and saves in the hdd
+          ! setting initial condition
+          !y(1,i) = yy ! + z(i)
+          oldY(i) = yy ! + z(i)
+      end do
+      close(685)
+
+      do i=1,ncomp
+          call create_I2(i,ncomp)
+      end do
+
+      ityp = 1
+
+    ! setting initial condition
+    ! setting initial condition from previous work
+    !open(unit=91,file=trim(output_path)//'initialCondition.txt', status='unknown')
+    ! read(91, *)
+    !do i=1,ncomp
+    !    read(91, *) oldQ(i), oldY(i)
+    !end do
+    !close(91)
+
+    !q(1, :) = qq
+      oldQ = qq
+
+    ! reading Q-Strickler's coefficient multiplier table
+      open(unit=686,file=trim(other_input) &
+       //'Q_Mannings_table.txt', status='unknown')
+      do i=1,maxTableLength
+          read(686,*,end=300)Q_Sk_Table(1,i), Q_Sk_Table(2,i)
+      enddo
+300   close(686)
+      Q_sk_tableEntry = i-1
+
+
+      x = 0.0
+
+    ! Read hydrograph input Upstream
+      open(unit=687, file=upstream_path)
+      do i=1,boundaryFileMaxEntry
+          read(687,*,end=301) USBoundary(1,i), USBoundary(2, i)
+      end do
+301   close(687)
+      ppp = i-1
+
+    ! Read hydrograph input Downstream
+      open(unit=688, file=downstream_path)
+      do i=1,boundaryFileMaxEntry
+        read(688,*,end=302)  DSBoundary(1, i), DSBoundary(2, i)
+      end do
+302   close(688)
+      qqq = i-1
+
+      t_1d = 0.0
+
+    ! applying boundary
+    ! interpolation of boundaries at the initial time step
+
+      oldQ(1)    =r_interpol(USBoundary(1, :),USBoundary(2, :),ppp,t_1d)
+      oldY(ncomp)=r_interpol(DSBoundary(1, :),DSBoundary(2, :),qqq,t_1d)
+
+    ! DS Boundary treatment: from water level to area time series
+      ncompElevTable = xsec_tab(1,:,ncomp)
+      ncompAreaTable = xsec_tab(2,:,ncomp)
+
+	!open(unit=81,file=trim(output_path)//'DS_area.txt', status='unknown')
+      xt=oldY(ncomp)
+      oldArea(ncomp)=r_interpol(ncompElevTable,ncompAreaTable,nel,xt)
+    !write(81, *) t, oldArea(ncomp)
+      lateralFlowTable = 0.0
+      ! read lateral flow conditions
+      do i=1,noLatFlow
+        if ((latFlowType(i) .eq. 1) .or. (latFlowType(i) .eq. 2)) then
+          write(file_num,'(i4.4)')latFlowLocations(i)
+          open(689,file=trim(lateralFlow_path)//'lateral_'//file_num//'.txt')
+          do n_1d=1,boundaryFileMaxEntry
+              read(689,*,end=303) lateralFlowTable(1, n_1d, i), lateralFlowTable(2, n_1d, i)
+          end do
+303       close(689)
+          dataInEachLatFlow(i) = n_1d-1
+        end if
+      end do
+
+    ! Open files for output
+      path = trim(output_path) // 'output_wl.txt'
+      open(unit=608, file=trim(path), status='unknown')
+      path = trim(output_path) // 'q.txt'
+      open(unit=609, file=trim(path), status='unknown')
+
+      path = trim(output_path) // 'area.txt'
+      open(unit=651, file=trim(path), status='unknown')
+
+    ! Output initial condition
+
+      write(608, 10)  t_1d, (oldY(i), i=1,ncomp)
+      write(609, 10)  t_1d, (oldQ(i), i=1, ncomp)
+      write(651, 10) t_1d, (oldArea(i), i=1, ncomp)
+
+!>> *********************************Adding 1d end
+
 !>@par General Structure of Subroutine Logic:
 
 ! determine start time for calculating runtimes
@@ -360,7 +579,9 @@ c*******************************************************************************
       READ(30,*) tss_error       ! 97       error term for TSS - to be used to perturb output files -percentage adjustment (between -1 and 1) (tss_error)
       READ(30,*) stage_error     ! 98       error term for stage - to be used to perturb output files (stage_error)
       READ(30,*) stvar_error     ! 99       error term for water level variability - to be used to perturb output files (stvar_error)
-      READ(30,*) nlinklimiter    !YW! 100   number of links to apply flow limiter (must match number of links in 'links_to_apply.csv', set to 0 if no link to apply flow limiter)    
+      READ(30,*) nlinklimiter    ! 100      number of links to apply flow limiter (must match number of links in 'links_to_apply.csv', set to 0 if no link to apply flow limiter)
+      READ(30,*) ntc             ! 101      number of terminal connection
+      READ(30,*) nlc             ! 102      number of lateral connection
       close(30)
 !      sal_0_1_error  = 0.0
 !      sal_1_5_error  = 0.0
@@ -569,6 +790,54 @@ C> initially set GrowAlgae array equal to zero
           read(500,*) linkslimiter(kk)
       enddo
 
+!>> 1D-ICM coupling input files
+      if (ntc>0) then
+        write(*,*) 'The number of terminal connection is ',ntc
+        open (unit=402, file= '1D2Dcoupling_tc.dat', status = 'unknown')
+        read(402,*)                                                           ! dump header row of compartment input file
+	    do i = 1,ntc
+		    read(402,*) tc2D(i)  ! read compartment list for the terminal connection
+	    enddo
+	    do i = 1,ntc
+		    read(402,*) tc1D(i) ! read 1D CX list for the terminal connection
+	    enddo
+        close(402)
+        
+        do i = 1,ntc
+            tcH(i) = 0.0
+            tcQ(i) = 0.0
+        enddo
+      endif
+      
+      if (nlc>0) then
+        write(*,*) 'The number of lateral connection is ',nlc
+        open (unit=403, file= '1D2Dcoupling_lc.dat', status = 'unknown')
+        read(403,*)                                                          ! dump header row of compartment input file
+        read(403,*) 
+	    do i = 1,nlc
+		    read(403,*) lcr2D(i)   ! read the list of lateral flow receiving ICM compartment
+        enddo
+        read(403,*) 
+	    do i = 1,nlc
+		    read(403,*) lcf2D(i)   ! read the list of lateral flow dummy ICM compartment
+        enddo
+        read(403,*) 
+	    do i = 1,nlc
+		    read(403,*) lcl2D(i)   ! read the list of ICM link
+        enddo 
+        read(403,*) 
+	    do i = 1,nlc
+		    read(403,*) lc1D(i)   ! read the list of 1D channel cx
+	    enddo
+        close(403)
+
+        do i = 1,nlc
+            lcH(i) = 0.0
+            lcQ(i) = 0.0
+        enddo        
+      endif
+
+
 ! Initialize some variables and arrays
       NR(:)=0.0
       stds=0.
@@ -595,12 +864,12 @@ C> initially set GrowAlgae array equal to zero
 908	FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
 
 !>> write header row for flowrate output file (since not all links are printed)
-!	if (nlinksw > 0) then
-!          write(211,909) 'Link:',(linkswrite(jjk),jjk=1,nlinksw)
-!      else
-!          write(211,*) 'No links chosen to have flowrate outputs saved.'
-!      endif
-!909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
+	if (nlinksw > 0) then
+          write(211,909) 'Link:',(linkswrite(jjk),jjk=1,nlinksw)
+      else
+          write(211,*) 'No links chosen to have flowrate outputs saved.'
+      endif
+909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
       close(32)
@@ -810,6 +1079,19 @@ C> initially set GrowAlgae array equal to zero
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
 
+      NTs_Ratio = float(Nts)/float(ntim)
+      if ((NTs_Ratio < 1) .OR. (mod(NTs_Ratio,1.0) .NE. 0)) then
+          write(*,*) 'Check time step for 1D and 2D model'
+          write(*,*) '1D 2D time step ratio is ',NTs_Ratio
+          write(*,*) '1D model number of time step is ',ntim
+          write(*,*) '2D model number of time step is ',NTs
+          pause
+      endif
+      write(*,*) '1D 2D time step ratio is ',NTs_Ratio
+
+!	  time step of MESH n_1d=1
+      n_1d=1  !!! NTs is the no of time steps in ICM while ntim is the no of time steps in MESH.
+
       do  mm= 1, NTs  						! ******do loop ends at ~ line 438    !YW! change NTs-1 to NTs
           t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
 
@@ -859,6 +1141,253 @@ C> initially set GrowAlgae array equal to zero
 
 !>> -- Call 'hydrod' subroutine, which is another 'control' routine which calls all hydrodynamic subroutines at each simulation timestep.
           call hydrod(mm)
+
+!>> Saving lateral flow           
+          if (nlc>0) then
+              do i = 1,nlc                          ! loop over lateral flow compartment
+                  lcQ(i) = -1.0*Q(lcl2D(i),2)
+              enddo
+          endif          
+
+!>> *********************************Adding 1d start
+
+          if (mod(float(mm)/NTs_Ratio,1.0) .eq. 0) then
+        ! interpolation of boundaries at the desired time step
+          newQ(1)     =r_interpol(USBoundary(1, :),USBoundary(2, :),		&
+            ppp,t_1d+dtini)
+          !print*, newQ(1)
+
+!>> set up terminal connection for 1D
+          if (ntc>0) then
+              do i = 1,ntc
+			      newY(ncomp) = Es(tc2D(i),2)           ! yw need to revise for multiple tc
+			  enddo
+		  else
+		      newY(ncomp) =r_interpol(DSBoundary(1, :),DSBoundary(2, :),		&
+            qqq,t_1d+dtini)
+		  endif          
+
+          !newY(ncomp) =r_interpol(DSBoundary(1, :),DSBoundary(2, :),		&
+          !  qqq,t_1d+dtini)
+          xt=newY(ncomp)
+          newArea(ncomp)=r_interpol(ncompElevTable,ncompAreaTable,nel,		&
+            xt)
+
+        ! applying lateral flow at the oldQ
+		  lateralFlow = 0
+          do i=1,noLatFlow
+              if (latFlowType(i) .eq. 1) then
+                  latFlowValue = r_interpol(lateralFlowTable(1, :, i), &
+                    lateralFlowTable(2, :, i),dataInEachLatFlow(i),t)
+              elseif (latFlowType(i) .eq. 2) then
+                  latFlowValue = r_interpol(lateralFlowTable(1, :, i), &
+                    lateralFlowTable(2, :, i),dataInEachLatFlow(i),oldQ(latFlowLocations(i)))
+
+              elseif (latFlowType(i) .eq. 3) then
+                  do j=1,nlc
+                      if (latFlowLocations(i) == lc1D(j)) then
+                          latFlowValue = lcQ(i)                                 ! Q coupling from ICM to MESH; (+)ve Q adds discharge to MESH
+                          !lateralFlow(latFlowLocations(i)) = lcQ(i)            ! Q coupling from ICM to MESH; (+)ve Q adds discharge to MESH
+                      endif
+                  enddo
+              endif
+
+
+              latFlowValue = latFlowValue / &
+                      sum(dx(latFlowLocations(i)-1:latFlowLocations(i)-1+latFlowXsecs(i)-1))
+
+              do j=1,latFlowXsecs(i)
+                lateralFlow(latFlowLocations(i)+j-1)=lateralFlow(latFlowLocations(i)+j-1) + latFlowValue
+              enddo
+            !print*, 'lat flow=', latFlowValue, latFlowLocations(i), &
+            !    latFlowValue*(dx(latFlowLocations(i)-1)+dx(latFlowLocations(i)))*0.5, &
+            !    oldQ(latFlowLocations(i))
+            ! print*, 'lat flow at', latFlowLocations(i), &
+            !    'flow=',lateralFlow(latFlowLocations(i))*0.5*(dx(latFlowLocations(i)-1)+dx(latFlowLocations(i))), &
+            !    dx(latFlowLocations(i)-1), dx(latFlowLocations(i))
+          end do
+          !print*, 'noLatFlow',noLatFlow
+          !print*, 'lateralFlow', (lateralFlow(i), i=1, ncomp)
+
+          ! Set upstream discharge
+          dqp(1) = newQ(1) - oldQ(1)
+		  dap(1) = 0.0
+          call section()
+        ! Nazmul: The subroutine calls the attribute tables and interpolate according to the available water level
+          thes=thetas
+
+          call matrixp()
+
+          do i=2,ncomp
+            !cour=dt(i)/dx(i-1)
+              cour=dtini/dx(i-1)
+              rhs1=-cour*(f1(i)-f1(i-1)-d1(i)+d1(i-1))+lateralFlow(i)*dtini
+              rhs2=-cour*(f2(i)-f2(i-1)-d2(i)+d2(i-1))+dtini*grav*(ci2(i)+aso(i))
+              c11=g11inv(i)*b11(i-1)+g12inv(i)*b21(i-1)
+              c12=g11inv(i)*b12(i-1)+g12inv(i)*b22(i-1)
+              c21=g21inv(i)*b11(i-1)+g22inv(i)*b21(i-1)
+              c22=g21inv(i)*b12(i-1)+g22inv(i)*b22(i-1)
+              dap(i)=g11inv(i)*rhs1+g12inv(i)*rhs2-c11*dap(i-1)-c12*dqp(i-1)
+              dqp(i)=g21inv(i)*rhs1+g22inv(i)*rhs2-c21*dap(i-1)-c22*dqp(i-1)
+             ! print*,'rhs1=', rhs1, rhs2, c11, c12, c21, c22
+          end do
+
+        ! Boundary conditions at downstream (right boundary)
+          if (option_dsbc.eq.1) then
+              dac(ncomp)=dap(ncomp)
+              yn=(area(ncomp)+dap(ncomp))/bo(ncomp)
+              arean=yn*bo(ncomp)
+              perimn=2.0*yn+bo(ncomp)
+              hyrdn=arean/perimn
+              s0ds=-((z(ncomp)-z(ncomp-1))/dx(ncomp))
+              qn=skk*arean*hyrdn**(2.0/3.0)*sqrt(s0ds)
+              dqp(ncomp)=qn-oldQ(ncomp)
+              dqc(ncomp)=dqp(ncomp)
+
+          elseif(option_dsbc.eq.2)then
+              dac(ncomp)=dap(ncomp)
+              yn=(area(ncomp)+dap(ncomp))/bo(ncomp)
+              areac=yn*bo(ncomp)
+              perimc=2.0*yn+bo(ncomp)
+              hyrdc=areac/perimc
+              s0ds=-((z(ncomp)-z(ncomp-1))/dx(ncomp))
+              qn=skk*areac*hyrdc**(2.0/3.0)*sqrt(s0ds)
+              qcrit=1.05*(((yn**3.0)*(bo(ncomp)**2.0)*grav)**(1.0/2.0))
+              write(*,*)qcrit
+              dqp(ncomp)=qcrit-oldQ(ncomp)
+              dqc(ncomp)=dqp(ncomp)
+
+          else
+            !dac(ncomp)=0.0
+            !dap(ncomp)=0.0
+            !dqc(ncomp)=dqp(ncomp)
+
+!            dap(ncomp)=0.0	!checked email !for critical comment out
+! change for unsteady flow
+              dap(ncomp) = newArea(ncomp) - oldArea(ncomp)
+              dac(ncomp)=dap(ncomp)	!checked email
+              dqc(ncomp)=dqp(ncomp)	!checked email
+
+          endif
+
+        ! Update via predictor
+          areap = area + dap
+          qp = oldQ + dqp
+
+          call secpred()
+          thes=thesinv
+          call matrixc()
+
+        do i=ncomp-1,1,-1
+            !cour=dt(i)/dx(i)
+            cour=dtini/dx(i)
+            rhs1=-cour*(f1(i+1)-f1(i)-d1(i+1)+d1(i))+lateralFlow(i+1)*dtini
+            rhs2=-cour*(f2(i+1)-f2(i)-d2(i+1)+d2(i))+dtini*grav*(ci2(i)+aso(i))
+            c11=g11inv(i)*b11(i+1)+g12inv(i)*b21(i+1)
+            c12=g11inv(i)*b12(i+1)+g12inv(i)*b22(i+1)
+            c21=g21inv(i)*b11(i+1)+g22inv(i)*b21(i+1)
+            c22=g21inv(i)*b12(i+1)+g22inv(i)*b22(i+1)
+            dac(i)=g11inv(i)*rhs1+g12inv(i)*rhs2-c11*dac(i+1)-c12*dqc(i+1)
+            dqc(i)=g21inv(i)*rhs1+g22inv(i)*rhs2-c21*dac(i+1)-c22*dqc(i+1)
+        end do
+        ! Upstream boundary condition
+        ! Prescribed discharge at the upstream
+        ! Area correction is calculated
+
+          dqc(1)=dqp(1)	!checked email
+        !dac(1)=dap(1) !for critical, uncomment
+          dap(1)=dac(1)	!checked email
+
+        ! Final update
+          do i=1,ncomp
+              da=(dap(i)+dac(i))/2.0
+              dq=(dqp(i)+dqc(i))/2.0
+              newArea(i)=da+area(i)
+              if(newArea(i) <= 0.0) newArea(i)=0.001
+
+!           Now calculate y based on area calculated
+!-------------------------------------
+              do pp_1d=1,nel
+                  elevTable(pp_1d) = xsec_tab(1,pp_1d,i)
+                  areaTable(pp_1d) = xsec_tab(2,pp_1d,i)
+              enddo
+
+    !       interpolate the cross section attributes based on FINAL CALCULATED area
+              xt=newArea(i)
+              newY(i)=r_interpol(areaTable,elevTable,nel,xt)
+!-------------------------------------
+
+              newQ(i)=oldQ(i)+dq
+              froud(i)=abs(newQ(i))/sqrt(grav*newArea(i)**3.0/bo(i))
+
+          end do
+
+          do i=1,ncomp-1
+              courant(i)=(newQ(i)+newQ(i+1))/(newArea(i)+newArea(i+1))*		&
+             dtini/dx(i)
+          enddo
+
+          if (maxCourant .lt. maxval (courant)) then
+              maxCourant = maxval (courant)
+          endif
+
+          t_1d = t_1d + dtini
+          !print "('- cycle',i9,'  completed')", n_1d
+
+          avgY = avgY + newY
+          avgQ = avgQ + newQ
+
+          if (mod(n_1d,saveFrequency) .eq. 0) then
+            avgY = avgY / saveFrequency
+            avgQ = avgQ / saveFrequency
+            write(608, 10) t_1d, (avgY(i), i=1,ncomp)
+            write(609, 10) t_1d, (avgQ(i), i=1,ncomp)
+            write(651, 10) t_1d, (newArea(i), i=1, ncomp)
+            avgY = 0.0
+            avgQ = 0.0
+          end if
+
+        !write(81, *) t, newArea(ncomp)
+
+        ! update of Y, Q and Area vectors
+          oldY   = newY
+          oldQ   = newQ
+          oldArea= newArea
+
+	  ! increasing the time step of MESH by 1
+	      n_1d=n_1d+1
+          endif
+!>> *********************************Adding 1d end
+
+!>> update teminal and lateral flow connections          
+          if (ntc>0) then                               ! terminal connection discharge
+              do i = 1,ntc
+                  tcQ(i) = newQ(ncomp)					! yw need to revise for multiple tc
+                  !write(*,*) 'main'
+                  !write(*,*) 'i',i 
+                  !write(*,*) 'tcQ(i)',tcQ(i)
+                  !write(*,*) 'ncomp',ncomp
+                  !write(*,*) 'newQ(ncomp)',newQ(ncomp)
+                  !pause
+			  enddo
+		  endif
+          
+          if (nlc>0) then
+              do i=1,nlc
+                  lcH(i) = newY(lc1D(i))                  ! WL lateral coupling from MESH to ICM. need to make sure 1D 2D have the same lateral flow location. Need to modify to calculate averaged stage from 1D
+              end do
+              !pause
+          endif                
+
+          !do i=1,noLatFlow
+          !    if (latFlowType(i) .eq. 3) then
+          !        WL_lat_from_MESH = newY(latFlowLocations(i))                  ! WL lateral coupling from MESH to ICM
+          !    endif
+          !end do
+
+!          Q(895,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
+!          Q(896,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
+          
 
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
 		do i=1,M
@@ -966,6 +1495,29 @@ C> initially set GrowAlgae array equal to zero
 
 !>> End main model DO loop that is looped over each simulation timestep
       enddo
+
+!>> *********************************Adding 1d start
+      close(608)
+      close(609)
+      close(651)
+    !close(81)
+
+      print*, 'dx', (dx(i), i=1, ncomp-1)
+      print*, 'Froude', (froud(i), i=1, ncomp)
+      print*, 'Bed', (z(i), i=1, ncomp)
+      print*, 'newArea', (newArea(i), i=1, ncomp)
+      print*, 'I2_corr', (ci2(i), i=1, ncomp)
+      print*, 'Courant no', (courant(i), i=1, ncomp-1)
+      print*, 'Maximum Courant no', maxCourant
+
+!10  format(f12.2 , <ncomp>f12.2)
+10    format(f12.2 , 1000f12.2)
+
+      call cpu_time( t2 )
+      print '("Time = ",f10.3," seconds.")',t2 - t1
+      pause 202
+
+!>> *********************************Adding 1d end
 
 !>> Add error terms to last timestep value before writing hotstart file
       write(1,*) 'Adding error adjustment to last timestep values.'
@@ -1362,6 +1914,7 @@ C> initially set GrowAlgae array equal to zero
 1120  format(I0,12(',',F0.4))
 3333  FORMAT(4x,A,1x,I4,1x,A,1x,I4,1x,A)
 9229	FORMAT(<cells-1>(F0.2,','),F0.2)
+!9229	format(1000(F0.2,','),F0.2)
 
 !>> End model simulation.
 

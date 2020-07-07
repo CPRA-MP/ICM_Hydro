@@ -25,6 +25,31 @@
       Qsum_in(j) = 0.0
       Qsum_abs(j) = 0.0
 !      Qsum_out_link(j) = 0.0
+
+!>> 1D2D coupling code start
+!>> Update cumulative open water flow rates in compartment from 1d channel
+!>> sign convention on open water flow = positive is flow out of compartment
+	if (ntc>0) then
+          do i = 1,ntc
+			if  (j == tc2D(i)) then
+                  Qsum = Qsum - tcQ(i)			! need to check sign
+                  Qsum_abs(j) = Qsum_abs(j) + abs(tcQ(i))
+                  if (tcQ(i) >= 0.0) then
+                      Qsum_in(j) = Qsum_in(j) + tcQ(i)
+				else
+                      Qsum_out(j) = Qsum_out(j) + abs(tcQ(i))
+                  endif
+                  !write(*,*)'celldQ'
+                  !write(*,*)'i',i
+                  !write(*,*)'j',j
+                  !write(*,*)'tc2D(i)',tc2D(i)
+                  !write(*,*)'tcQ(i)',tcQ(i)
+                  !write(*,*)'Qsum',Qsum
+              endif 
+		enddo
+	endif
+!>> 1D2D coupling code end
+
 !>> Update cumulative open water flow rates in compartment from input boundary tributary flows      
 !>> sign convention on open water flow = positive is flow out of compartment
       do jn = 1,ntrib
@@ -272,6 +297,7 @@ cccccccccc cjam collects flow from connecting links
 
 
 2222	FORMAT(<cells-1>(F20.2,','),F20.2)
+!2222	format(100(F20.2,','),F20.2)
 
 	!Zw added 3/13/2015 for compartment 458 instability diagonis at dt=30s
 	!need to be deleted or commented out after the diagonis is done

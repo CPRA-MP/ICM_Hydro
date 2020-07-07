@@ -726,4 +726,18 @@
       
       integer :: numChem  !add zw 04/08/2020      
       
+!1D-ICM coupling variables
+      integer :: ntc,nlc                          ! number of terminal and lateral connection
+      integer,dimension(:),allocatable :: tc2D    !
+      integer,dimension(:),allocatable :: tc1D
+      integer,dimension(:),allocatable :: lcr2D   ! lateral connection 2D receving compartment
+      integer,dimension(:),allocatable :: lcf2D   ! lateral connection 2D fictional compartment      
+      integer,dimension(:),allocatable :: lcl2D   ! lateral connection 2D link
+      integer,dimension(:),allocatable :: lc1D    ! lateral connection 1D connection point
+      real(dp),dimension(:),allocatable :: tcH
+      real(dp),dimension(:),allocatable :: tcQ
+      real(dp),dimension(:),allocatable :: lcH
+      real(dp),dimension(:),allocatable :: lcQ
+      real :: NTs_Ratio 
+      
       end module params

@@ -496,5 +496,17 @@
 
       allocate(linkslimiter(nlinklimiter))  !YW! store link numbers to apply flow limiter
 
+!1D-ICM coupling variables
+      allocate(tc2D(ntc)) ! terminal compartment list
+      allocate(tc1D(ntc)) ! terminal node list
+      allocate(lcr2D(nlc)) ! lateral connection 2D receiving compartment list
+      allocate(lcf2D(nlc)) ! lateral connection 2D fictional compartment list
+      allocate(lcl2D(nlc)) ! lateral connection 2D link list
+      allocate(lc1D(nlc)) ! lateral node list
+      allocate(tcH(ntc)) ! terminal connection stage from 2D
+      allocate(tcQ(ntc)) ! terminal connection discharge from 1D
+      allocate(lcH(nlc)) ! lateral connection stage from 1D
+      allocate(lcQ(nlc)) ! lateral connection discharge from 2D
+
       return
       end
