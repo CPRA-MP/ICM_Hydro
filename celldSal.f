@@ -74,11 +74,12 @@ c  salinity change computations  *********************************
       endif
 
       QRainm = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
+!     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
+     &        -fpet*PET(kday,Jet(j)))*Ahydro(j)*cden
       
       if (dddym <= 0.01) then  
           QRainm = max(QRainm,0.0)
-      endif   
+      endif
 
 !>> original equation
 !      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
@@ -87,9 +88,43 @@ c  salinity change computations  *********************************
 
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
 
-      S(j,2) = (S(j,1)*(As(j,1)*dddy+Ahf(j)*dddym)-QSalsum*dt)
-     &    /(As(j,1)*dddy+Ahf(j)*dddym
-     &    +(Qsum_in(j)-Qsum_out(j)+QRain+QRainm)*dt)
+!      if (dddy > 0.1) then 
+!          S(j,2) = (S(j,1)*(As(j,1)*dddy+Ahf(j)*dddym)-QSalsum*dt)
+!     &    /(As(j,1)*dddy+Ahf(j)*dddym
+!     &    +(Qsum_in(j)-Qsum_out(j)+QRain+QRainm)*dt)
+!      else
+!          S(j,2) = S(j,1)
+!      endif
+      
+!>> YW TEST
+!      if ((dddy > 0.1) .AND. (dddym > 0.1)) then
+!         S(j,2) = (S(j,1)*(As(j,1)*dddy+Ahf(j)*dddym)-QSalsum*dt)
+!     &    /(As(j,1)*dddy+Ahf(j)*dddym
+!     &    +(Qsum_in(j)-Qsum_out(j)+QRain+QRainm)*dt)
+!      else if ((dddy > 0.1) .AND. (dddym <= 0.1)) then
+!         S(j,2) = (S(j,1)*(As(j,1)*dddy)-QSalsum*dt)
+!     &    /(As(j,1)*dddy
+!     &    +(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
+!      else
+!          S(j,2) = S(j,1)
+!      endif
+
+!>> ZW TEST 07/22/2020
+      ddym1=Eh(j,1)-BedM(j)
+      ddym2=Eh(j,2)-BedM(j)
+      if(Ahf(j)>0 .AND. (ddym1>0.1 .AND. ddym2>0.1))then
+	      vol1=(Es(j,1)-Bed(j))*As(j,1)+(Eh(j,1)-BedM(j))*Ahf(j)
+	      vol2=(Es(j,2)-Bed(j))*As(j,1)+(Eh(j,2)-BedM(j))*Ahf(j)
+	  else
+	      vol1=(Es(j,1)-Bed(j))*As(j,1)
+	      vol2=(Es(j,2)-Bed(j))*As(j,1)
+	  endif
+	  
+	  if((Es(j,2)-Bed(j))>0.1)then
+	      S(j,2)= (S(j,1)*vol1-QSalsum*dt)/vol2
+      else
+          S(j,2) = S(j,1)
+      endif
       
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
