@@ -726,4 +726,35 @@
       
       integer :: numChem  !add zw 04/08/2020      
       
+!1D-ICM coupling variables
+      integer :: ntc,nlc,nuc                      ! number of terminal, lateral, and upstream connection
+      integer :: n_region,n1D                     ! number of 1D rivers
+    
+      integer,dimension(:),allocatable :: tcr2D   ! terminal connection ICM receving compartment
+      integer,dimension(:),allocatable :: tcf2D   ! terminal connection ICM connecting compartment      
+      integer,dimension(:),allocatable :: tcl2D   ! terminal connection ICM link      
+      integer,dimension(:),allocatable :: tcn1D   ! terminal connection 1D connection node
+      integer,dimension(:),allocatable :: tcr1D   ! terminal connection 1D region  
+
+      integer,dimension(:),allocatable :: lcr2D   ! lateral connection ICM receving compartment
+      integer,dimension(:),allocatable :: lcf2D   ! lateral connection ICM connecting compartment      
+      integer,dimension(:),allocatable :: lcl2D   ! lateral connection ICM link
+      integer,dimension(:),allocatable :: lcn1D   ! lateral connection 1D connection node
+      integer,dimension(:),allocatable :: lcr1D   ! lateral connection 1D region        
+      
+      integer,dimension(:),allocatable :: ucr2D   ! upstream connection ICM upstream compartment
+      integer,dimension(:),allocatable :: ucf2D   ! upstream connection ICM connecting compartment      
+      integer,dimension(:),allocatable :: ucl2D   ! upstream connection ICM link
+      integer,dimension(:),allocatable :: ucn1D    ! upstream connection 1D connection node
+      integer,dimension(:),allocatable :: ucr1D   ! upstream connection 1D region         
+      
+      real(dp),dimension(:),allocatable :: tcH    ! terminal connection stage (applied to the connecting compartment from ICM)
+      real(dp),dimension(:),allocatable :: tcQ    ! terminal connection discharge (applied to the connecting link from 1D)
+      real(dp),dimension(:),allocatable :: lcH    ! lateral connection stage (applied to the connecting compartment from 1D)
+      real(dp),dimension(:),allocatable :: lcQ    ! lateral connection discharge (calculated)
+      real(dp),dimension(:),allocatable :: ucH    ! upstream connection stage (applied to the connecting compartment from 1D)
+      real(dp),dimension(:),allocatable :: ucQ    ! upstream connection discharge (calculated)      
+      
+      real(dp),dimension(:),allocatable :: NTs_Ratio  ! time step ratio between 1D river and ICM
+      
       end module params

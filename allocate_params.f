@@ -496,5 +496,33 @@
 
       allocate(linkslimiter(nlinklimiter))  !YW! store link numbers to apply flow limiter
 
+!1D-ICM coupling variables
+      allocate(tcr2D(ntc))  ! terminal connection ICM receiving compartment list
+      allocate(tcf2D(ntc))  ! terminal connection ICM connecting compartment list
+      allocate(tcl2D(ntc))  ! terminal connection ICM link list      
+      allocate(tcn1D(ntc))  ! terminal connection 1D node list
+      allocate(tcr1D(ntc))  ! terminal connection 1D region list      
+      
+      allocate(lcr2D(nlc))  ! lateral connection ICM receiving compartment list
+      allocate(lcf2D(nlc))  ! lateral connection ICM connecting compartment list
+      allocate(lcl2D(nlc))  ! lateral connection ICM link list
+      allocate(lcn1D(nlc))  ! lateral connection 1D node list
+      allocate(lcr1D(nlc))  ! lateral connection 1D region list      
+      
+      allocate(ucr2D(nuc))  ! upstream connection ICM upstream compartment list
+      allocate(ucf2D(nuc))  ! upstream connection ICM connecting compartment list
+      allocate(ucl2D(nuc))  ! upstream connection ICM link list
+      allocate(ucn1D(nuc))  ! upstream connection 1D node list  
+      allocate(ucr1D(nuc))  ! upstream connection 1D regio list        
+      
+      allocate(tcH(ntc)) ! terminal connection stage (applied to the connecting compartment from ICM)
+      allocate(tcQ(ntc)) ! terminal connection discharge (applied to the connecting link from 1D)
+      allocate(lcH(nlc)) ! lateral connection stage (applied to the connecting compartment from 1D)
+      allocate(lcQ(nlc)) ! lateral connection discharge (calculated)
+      allocate(ucH(nuc)) ! upstream connection stage (applied to the connecting compartment from 1D)
+      allocate(ucQ(nuc)) ! upstream connection discharge (calculated)    
+      
+      allocate(NTs_Ratio(n_region)) ! time step ratio between 1D river and ICM
+
       return
       end

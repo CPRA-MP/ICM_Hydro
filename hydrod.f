@@ -238,9 +238,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 	do jjk=1,mds
 			jj=KBC(jjk)
 			flag_offbc(jj)=1
-      enddo
+      enddo    
 
-      
 !>> Link updates of Q
       do i=1,M
 !>> Reset upwind dispersion factor to default value - this will be updated to 1.0 if flows in each link are above threshold value
@@ -516,20 +515,22 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 4, Latr2 = -9999
                       ! if Latr9 = 5, Latr2 = d/s salinty (ppt)
                       ! if Latr9 = 6, Latr2 = -9999
+                      ! if Latr9 = 7, Latr2 = control link number
               !! Latr3 = channel length
               !! Latr4 = channel width
               !! Latr5 = channel Roughness, n
               !! Latr6 = channel entrance loss, Ken
               !! Latr7 = channel exit loss, Kex
               !! Latr8 = Structure loss through lock (when open), Kstr
-              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,6=observed timeseries)
+              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,6=observed timeseries, 7=target discharge)
               !! Latr10 = control scheme threshold value that shuts lock
                       ! if Latr9 = 1, Latr10 = diff stage (m)
                       ! if Latr9 = 2, Latr10 = -9999
                       ! if Latr9 = 3, Latr10 = d/s WSEL (m)
                       ! if Latr9 = 4, Latr10 = d/s salinty (ppt)
                       ! if Latr9 = 5, Latr10 = d/s WSEL (m)
-                      ! if Latr9 = 6, Latr10 = corresponding column in LockControlObservedData.csv
+                      ! if Latr9 = 6, Latr10 = corresponding column in LockControlObservedData.csv.
+                      ! if Latr9 = 7, Latr10 = discharge (cms)
           !>> Initialize link's on/off flag to on
               dkd=1.0	  !zw 3/14/2015 moved to here from below
 
@@ -610,7 +611,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       dkd = 0.0
                   endif
 
-              endif
+              !endif
+          !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
+              elseif (Latr9(i) == 7) then
+                  if (Q(Latr2(i),2) <= Latr10(i)) then
+                      dkd = 0.0
+                  endif
+              endif              
            !>> If both upstream and downstream water stages are lower than channel invert, flow is zero
               !if (Es(upN,2) < latr1(i)) then
               if (Es(upN,2) <= latr1(i) ) then	!zw 3/16/2015
