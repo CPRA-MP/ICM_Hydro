@@ -966,12 +966,36 @@
               if (ntc>0) then
                   do i = 1,ntc
                       WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
+                      if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
+                          SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
+                      endif
+                      if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
+                          TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
+                      endif
+                      if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
+                          FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
+                      endif
+                      if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
+                          SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
+                      endif
                   enddo
               endif
                   
               if (nlc>0) then
                   do i = 1,nlc
                       Q_lat_from_ICM_R(lcr1D(i),i) = -1.0*Q(lcl2D(i),2)    ! check discharge convention
+                      if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
+                          SAL_lat_from_ICM_R(lcr1D(i),i) = S(lcr2D(i),2)                                                   ! check unit
+                      endif
+                      if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
+                          TMP_lat_from_ICM_R(lcr1D(i),i) = Tempw(lcr2D(i),2)                                               ! check unit
+                      endif
+                      if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
+                          FINE_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,2) + CSS(lcr2D(i),2,3) + CSS(lcr2D(i),2,4)      ! check unit
+                      endif
+                      if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
+                          SAND_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,1)                                              ! check unit
+                      endif                      
                   !    write(*,*) 'before'
                   !    write(*,*) 'i',i
                   !    write(*,*) 'lcr1D(i)',lcr1D(i)
@@ -997,62 +1021,20 @@
               if (nuc>0) then
                   do i = 1,nuc
                       Q_upstream_from_ICM_R(ucr1D(i)) = -1.0*Q(ucl2D(i),2)    ! check discharge convention
+                      if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
+                          SAL_upstream_from_ICM_R(ucr1D(i)) = S(ucr2D(i),2)                                                   ! check unit
+                      endif
+                      if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
+                          TMP_upstream_from_ICM_R(ucr1D(i)) = Tempw(ucr2D(i),2)                                               ! check unit
+                      endif
+                      if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
+                          FINE_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,2) + CSS(ucr2D(i),2,3) + CSS(ucr2D(i),2,4)      ! check unit
+                      endif
+                      if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
+                          SAND_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,1)                                              ! check unit
+                      endif                         
                   enddo
-              endif 
-          
-
-
-!>> 1D-ICM coupling - update teminal and lateral flow connections
-              if (ntc>0) then                                ! Saving terminal connection data from 1D model
-                  do i = 1,ntc
-                      Q(tcl2D(i),2) = -1*q_R(tcr1D(i),tcn1D(i))  ! check flow convention
-                      Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
-                      !write(*,*) 'i',i
-                      !write(*,*) 'tcl2D(i)',tcl2D(i)
-                      !write(*,*) 'tcr2D(i)',tcr2D(i)
-                      !write(*,*) 'tcf2D(i)',tcf2D(i)
-                      !write(*,*) 'tcr1D(i)',tcr1D(i)
-                      !write(*,*) 'tcn1D(i)',tcn1D(i)
-                      !write(*,*) 'q_R(tcr1D(i),tcn1D(i))',q_R(tcr1D(i),tcn1D(i))
-                      !write(*,*) 'y_R(tcr1D(i),tcn1D(i))',y_R(tcr1D(i),tcn1D(i))
-                      !write(*,*) 'Q(tcl2D(i),2)',Q(tcl2D(i),2)
-                      !write(*,*) 'Es(tcf2D(i),2)',Es(tcf2D(i),2)
-                      !pause
-                  enddo
-              endif
-                  
-              if (nlc>0) then
-                  do i=1,nlc
-                      Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
-                      !write(*,*) 'after'
-                      !write(*,*) 'i',i
-                      !write(*,*) 'lcr1D(i)',lcr1D(i)
-                      !write(*,*) 'lcn1D(i)',lcn1D(i)
-                      !write(*,*) 'lcr2D(i)',lcr2D(i)
-                      !write(*,*) 'lcf2D(i)',lcf2D(i)
-                      !write(*,*) 'lcl2D(i)',lcl2D(i)
-                      !write(*,*) 'y_R(lcr1D(i),lcn1D(i))',y_R(lcr1D(i),lcn1D(i))
-                      !write(*,*) 'Es(lcf2D(i),2)',Es(lcf2D(i),2)
-                      !pause
-                  enddo
-                  !pause
-              endif
-
-              if (nuc>0) then
-                  do i=1,nuc
-                      Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
-                      !write(*,*) 'i',i
-                      !write(*,*) 'ucf2D(i)',ucf2D(i)
-                      !write(*,*) 'ucr1D(i)',ucr1D(i)
-                      !write(*,*) 'ucn1D(i)',ucn1D(i)
-                      !write(*,*) 'y_R(ucr1D(i),ucn1D(i))',y_R(ucr1D(i),ucn1D(i))
-                      !pause
-                  enddo
-              endif             
-          
-!          Q(895,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
-!          Q(896,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
-          
+              endif           
 
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
               do i=1,M
@@ -1209,6 +1191,99 @@
           !    write(*,*)
           !endif
 !>> *********************************Adding 1d end 
+        
+!>> 1D-ICM coupling - update teminal and lateral flow connections
+          if (ntc>0) then                                ! Saving terminal connection data from 1D model
+              do i = 1,ntc
+                  Q(tcl2D(i),2) = -1*q_R(tcr1D(i),tcn1D(i))  ! check flow convention
+                  Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
+                  if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
+                      S(tcf2D(i),2) = sal_R(tcr1D(i),tcn1D(i))
+                  endif
+                  if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
+                      Tempw(tcf2D(i),2) = tmp_R(tcr1D(i),tcn1D(i))                                             ! check unit
+                  endif
+                  if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
+                      CSS(tcf2D(i),2,2) = fine_R(tcr1D(i),tcn1D(i))/3.0     ! check unit
+                      CSS(tcf2D(i),2,3) = fine_R(tcr1D(i),tcn1D(i))/3.0 
+                      CSS(tcf2D(i),2,4) = fine_R(tcr1D(i),tcn1D(i))/3.0 
+                  endif
+                  if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
+                      CSS(tcf2D(i),2,1) = sand_R(tcr1D(i),tcn1D(i))                                            ! check unit
+                  endif                  
+                !write(*,*) 'i',i
+                !write(*,*) 'tcl2D(i)',tcl2D(i)
+                !write(*,*) 'tcr2D(i)',tcr2D(i)
+                !write(*,*) 'tcf2D(i)',tcf2D(i)
+                !write(*,*) 'tcr1D(i)',tcr1D(i)
+                !write(*,*) 'tcn1D(i)',tcn1D(i)
+                !write(*,*) 'q_R(tcr1D(i),tcn1D(i))',q_R(tcr1D(i),tcn1D(i))
+                !write(*,*) 'y_R(tcr1D(i),tcn1D(i))',y_R(tcr1D(i),tcn1D(i))
+                !write(*,*) 'Q(tcl2D(i),2)',Q(tcl2D(i),2)
+                !write(*,*) 'Es(tcf2D(i),2)',Es(tcf2D(i),2)
+                !pause
+              enddo
+          endif
+                  
+          if (nlc>0) then
+              do i=1,nlc
+                  Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
+                  if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
+                      S(lcf2D(i),2) = sal_R(lcr1D(i),lcn1D(i)) 
+                  endif
+                  if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
+                      Tempw(lcf2D(i),2) = tmp_R(lcr1D(i),lcn1D(i))                                                ! check unit
+                  endif
+                  if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
+                      CSS(lcf2D(i),2,2) = fine_R(lcr1D(i),lcn1D(i))/3.0      ! check unit
+                      CSS(lcf2D(i),2,3) = fine_R(lcr1D(i),lcn1D(i))/3.0 
+                      CSS(lcf2D(i),2,4) = fine_R(lcr1D(i),lcn1D(i))/3.0 
+                  endif
+                  if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
+                      CSS(lcf2D(i),2,1) = sand_R(lcr1D(i),lcn1D(i))                                              ! check unit
+                  endif                    
+                      !write(*,*) 'after'
+                      !write(*,*) 'i',i
+                      !write(*,*) 'lcr1D(i)',lcr1D(i)
+                      !write(*,*) 'lcn1D(i)',lcn1D(i)
+                      !write(*,*) 'lcr2D(i)',lcr2D(i)
+                      !write(*,*) 'lcf2D(i)',lcf2D(i)
+                      !write(*,*) 'lcl2D(i)',lcl2D(i)
+                      !write(*,*) 'y_R(lcr1D(i),lcn1D(i))',y_R(lcr1D(i),lcn1D(i))
+                      !write(*,*) 'Es(lcf2D(i),2)',Es(lcf2D(i),2)
+                      !pause
+              enddo
+                  !pause
+          endif
+
+          if (nuc>0) then
+              do i=1,nuc
+                  Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
+                  if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
+                      S(ucf2D(i),2) = sal_R(ucr1D(i),ucn1D(i))
+                  endif
+                  if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
+                      Tempw(ucf2D(i),2) = tmp_R(ucr1D(i),ucn1D(i))                                               ! check unit
+                  endif
+                  if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
+                      CSS(ucf2D(i),2,2) = fine_R(ucr1D(i),ucn1D(i))/3.0       ! check unit
+                      CSS(ucf2D(i),2,3) = fine_R(ucr1D(i),ucn1D(i))/3.0 
+                      CSS(ucf2D(i),2,4) = fine_R(ucr1D(i),ucn1D(i))/3.0  
+                  endif
+                  if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
+                      CSS(ucf2D(i),2,1) = sand_R(ucr1D(i),ucn1D(i))                                             ! check unit
+                  endif                     
+                      !write(*,*) 'i',i
+                      !write(*,*) 'ucf2D(i)',ucf2D(i)
+                      !write(*,*) 'ucr1D(i)',ucr1D(i)
+                      !write(*,*) 'ucn1D(i)',ucn1D(i)
+                      !write(*,*) 'y_R(ucr1D(i),ucn1D(i))',y_R(ucr1D(i),ucn1D(i))
+                      !pause
+              enddo
+          endif             
+          
+!          Q(895,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
+!          Q(896,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.          
           
 !>> End main model DO loop that is looped over each simulation timestep
       enddo
