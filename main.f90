@@ -996,25 +996,6 @@
                       if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
                           SAND_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,1)                                              ! check unit
                       endif                      
-                  !    write(*,*) 'before'
-                  !    write(*,*) 'i',i
-                  !    write(*,*) 'lcr1D(i)',lcr1D(i)
-                  !    write(*,*) 'lcn1D(i)',lcn1D(i)
-                  !    write(*,*) 'lcr2D(i)',lcr2D(i)
-                  !    write(*,*) 'lcf2D(i)',lcf2D(i)
-                  !    write(*,*) 'lcl2D(i)',lcl2D(i)
-                  !    write(*,*) 'Es(lcr2D(i),1)',Es(lcr2D(i),1)
-                  !    write(*,*) 'Es(lcr2D(i),2)',Es(lcr2D(i),2)
-                  !    write(*,*) 'Es(lcf2D(i),1)',Es(lcf2D(i),1)
-                  !    write(*,*) 'Es(lcf2D(i),2)',Es(lcf2D(i),2)
-                  !    write(*,*) 'Q(lcl2D(i),1)',Q(lcl2D(i),1)
-                  !    write(*,*) 'Q(lcl2D(i),2)',Q(lcl2D(i),2)
-                  !    write(*,*) 'Q_lat_from_ICM_R(lcr1D(i),i)',Q_lat_from_ICM_R(lcr1D(i),i)
-                  !    write(*,*) 'y_R(lcr1D(i),lcn1D(i))',y_R(lcr1D(i),lcn1D(i))
-                  !    write(*,*) 'q_R(lcr1D(i),lcn1D(i)-1)',q_R(lcr1D(i),lcn1D(i)-1)
-                  !    write(*,*) 'q_R(lcr1D(i),lcn1D(i))',q_R(lcr1D(i),lcn1D(i))
-                  !    write(*,*) 'q_R(lcr1D(i),lcn1D(i)+1)',q_R(lcr1D(i),lcn1D(i)+1)
-                  !    write(*,*) 'q_R(lcr1D(i),lcn1D(i)+2)',q_R(lcr1D(i),lcn1D(i)+2)
                   enddo
                   !pause
               endif
@@ -1037,43 +1018,43 @@
               endif           
 
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
-              do i=1,M
-                  Q(i,1)=Q(i,2)
-              enddo
+!              do i=1,M
+!                  Q(i,1)=Q(i,2)
+!              enddo
 
 
 !>> -- Loop over compartments. Save numerous variables that were just calculated by 'hydrod' as the initial condition for the next simulation timestep.
-              do j=1,N
-                  Es(j,1)=Es(j,2)
-                  S(j,1)=S(j,2)				! resetting ICs
-                  SL(j,1) = SL(j,2)
-                  BCnosurge(j,1) = BCnosurge(j,2)
-                  BCsurge(j,1) = BCsurge(j,2)                !YW!
-                  do sedclass=1,4
-                      CSS(j,1,sedclass) = CSS(j,2,sedclass)
-                      CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
-                  enddo
-                  Tempw(j,1)=Tempw(j,2)
-    !             Age(j,1)=Age(j,2)
-                  Sacc(j,1)=Sacc(j,2)
-                  Sacch_int(j,1)=Sacch_int(j,2)
-                  Sacch_edge(j,1)=Sacch_edge(j,2)
-                  Sandacc(j,1) = Sandacc(j,2)
-                  Siltacc(j,1) = Siltacc(j,2)
-                  Clayacc(j,1) = Clayacc(j,2)
-
-                  do ichem = 1,14
-			          Chem(j,ichem,1)=Chem(j,ichem,2)
-                  enddo
-                  CSSvRs(j,1)= CSSvRs(j,2)
-                  Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
-                  Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
+!              do j=1,N
+!                  Es(j,1)=Es(j,2)
+!                  S(j,1)=S(j,2)				! resetting ICs
+!                  SL(j,1) = SL(j,2)
+!                  BCnosurge(j,1) = BCnosurge(j,2)
+!                  BCsurge(j,1) = BCsurge(j,2)                !YW!
+!                  do sedclass=1,4
+!                      CSS(j,1,sedclass) = CSS(j,2,sedclass)
+!                      CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
+!                  enddo
+!                  Tempw(j,1)=Tempw(j,2)
+!    !             Age(j,1)=Age(j,2)
+!                  Sacc(j,1)=Sacc(j,2)
+!                  Sacch_int(j,1)=Sacch_int(j,2)
+!                  Sacch_edge(j,1)=Sacch_edge(j,2)
+!                  Sandacc(j,1) = Sandacc(j,2)
+!                  Siltacc(j,1) = Siltacc(j,2)
+!                  Clayacc(j,1) = Clayacc(j,2)
+!
+!                  do ichem = 1,14
+!			          Chem(j,ichem,1)=Chem(j,ichem,2)
+!                  enddo
+!                  CSSvRs(j,1)= CSSvRs(j,2)
+!                  Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
+!                  Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
 !>> Check if any water surface elevation values are NaN - if so, pause model run
-                  if(isNAN(Es(j,2))) then  
-                      write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
-                      write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
-                      pause
-                  endif
+!                  if(isNAN(Es(j,2))) then  
+!                      write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+!                      write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+!                      pause
+!                  endif
 
 !!>> -- Check that some  calculated water quality values do not exceed default threshold values. If they do, set equal to the threshold
 !              if(Chem(j,10,2) > 0.00025) then
@@ -1100,18 +1081,18 @@
 !                  Chem(j,12,1)=0.00025
 !              endif
 !zw 4/28/2015 remove low and high pass filters
-              enddo
+!              enddo
 
 !>> Check if any link flowrate values are NaN - if so, pause model run
-              do i=1,M
-			      Q(i,1)=Q(i,2)
-                  if(isNAN(Q(i,2))) then
-                      write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
-                      write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
-                      write(*,*) '  Linkt=',linkt(i)
-                      pause
-                  endif
-              enddo
+!              do i=1,M
+!			      Q(i,1)=Q(i,2)
+!                  if(isNAN(Q(i,2))) then
+!                      write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
+!                      write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
+!                      write(*,*) '  Linkt=',linkt(i)
+!                      pause
+!                  endif
+!              enddo
 
 
 !>> Reset tidestep counter because end of observed tidal timestep is met
@@ -1211,17 +1192,6 @@
                   if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
                       CSS(tcf2D(i),2,1) = sand_R(tcr1D(i),tcn1D(i))                                            ! check unit
                   endif                  
-                !write(*,*) 'i',i
-                !write(*,*) 'tcl2D(i)',tcl2D(i)
-                !write(*,*) 'tcr2D(i)',tcr2D(i)
-                !write(*,*) 'tcf2D(i)',tcf2D(i)
-                !write(*,*) 'tcr1D(i)',tcr1D(i)
-                !write(*,*) 'tcn1D(i)',tcn1D(i)
-                !write(*,*) 'q_R(tcr1D(i),tcn1D(i))',q_R(tcr1D(i),tcn1D(i))
-                !write(*,*) 'y_R(tcr1D(i),tcn1D(i))',y_R(tcr1D(i),tcn1D(i))
-                !write(*,*) 'Q(tcl2D(i),2)',Q(tcl2D(i),2)
-                !write(*,*) 'Es(tcf2D(i),2)',Es(tcf2D(i),2)
-                !pause
               enddo
           endif
                   
@@ -1242,16 +1212,6 @@
                   if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
                       CSS(lcf2D(i),2,1) = sand_R(lcr1D(i),lcn1D(i))                                              ! check unit
                   endif                    
-                      !write(*,*) 'after'
-                      !write(*,*) 'i',i
-                      !write(*,*) 'lcr1D(i)',lcr1D(i)
-                      !write(*,*) 'lcn1D(i)',lcn1D(i)
-                      !write(*,*) 'lcr2D(i)',lcr2D(i)
-                      !write(*,*) 'lcf2D(i)',lcf2D(i)
-                      !write(*,*) 'lcl2D(i)',lcl2D(i)
-                      !write(*,*) 'y_R(lcr1D(i),lcn1D(i))',y_R(lcr1D(i),lcn1D(i))
-                      !write(*,*) 'Es(lcf2D(i),2)',Es(lcf2D(i),2)
-                      !pause
               enddo
                   !pause
           endif
@@ -1273,15 +1233,79 @@
                   if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
                       CSS(ucf2D(i),2,1) = sand_R(ucr1D(i),ucn1D(i))                                             ! check unit
                   endif                     
-                      !write(*,*) 'i',i
-                      !write(*,*) 'ucf2D(i)',ucf2D(i)
-                      !write(*,*) 'ucr1D(i)',ucr1D(i)
-                      !write(*,*) 'ucn1D(i)',ucn1D(i)
-                      !write(*,*) 'y_R(ucr1D(i),ucn1D(i))',y_R(ucr1D(i),ucn1D(i))
-                      !pause
               enddo
           endif             
           
+!>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
+!>> Check if any link flowrate values are NaN - if so, pause model run
+          do i=1,M
+              Q(i,1)=Q(i,2)
+              if(isNAN(Q(i,2))) then
+                  write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
+                  write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
+                  write(*,*) '  Linkt=',linkt(i)
+                  pause
+              endif
+          enddo                  
+
+!>> -- Loop over compartments. Save numerous variables that were just calculated by 'hydrod' as the initial condition for the next simulation timestep.
+          do j=1,N
+              Es(j,1)=Es(j,2)
+              S(j,1)=S(j,2)				! resetting ICs
+              SL(j,1) = SL(j,2)
+              BCnosurge(j,1) = BCnosurge(j,2)
+              BCsurge(j,1) = BCsurge(j,2)                !YW!
+              do sedclass=1,4
+                  CSS(j,1,sedclass) = CSS(j,2,sedclass)
+                  CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
+              enddo
+              Tempw(j,1)=Tempw(j,2)
+!              Age(j,1)=Age(j,2)
+              Sacc(j,1)=Sacc(j,2)
+              Sacch_int(j,1)=Sacch_int(j,2)
+              Sacch_edge(j,1)=Sacch_edge(j,2)
+              Sandacc(j,1) = Sandacc(j,2)
+              Siltacc(j,1) = Siltacc(j,2)
+              Clayacc(j,1) = Clayacc(j,2)
+
+              do ichem = 1,14
+                  Chem(j,ichem,1)=Chem(j,ichem,2)
+              enddo
+              CSSvRs(j,1)= CSSvRs(j,2)
+              Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
+              Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
+!>> Check if any water surface elevation values are NaN - if so, pause model run
+              if(isNAN(Es(j,2))) then  
+                  write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+                  write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+                  pause
+              endif          
+!!>> -- Check that some  calculated water quality values do not exceed default threshold values. If they do, set equal to the threshold
+!              if(Chem(j,10,2) > 0.00025) then
+!                  Chem(j,10,2) = 0.00025
+!              endif
+!
+!              if(Chem(j,11,2) > 0.00025) then
+!                    Chem(j,11,2) = 0.00025
+!              endif
+!
+!              if(Chem(j,12,2) > 0.00025) then
+!                  Chem(j,12,2) = 0.00025
+!              endif
+!!>> -- Repeat water quality threshold check, so that the initial conditions array for the next model timestep matches the 'current' array.
+!              if(Chem(j,10,1) > 0.00025) then
+!                  Chem(j,10,1)=0.00025
+!              endif
+!
+!              if(Chem(j,11,1) > 0.00025) then
+!                  Chem(j,11,1)=0.00025
+!              endif
+!
+!              if(Chem(j,12,1) > 0.00025) then
+!                  Chem(j,12,1)=0.00025
+!              endif
+!zw 4/28/2015 remove low and high pass filters
+          enddo                    
 !          Q(895,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
 !          Q(896,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.          
           
