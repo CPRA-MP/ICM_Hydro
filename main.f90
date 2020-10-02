@@ -792,7 +792,8 @@
                          Chem(j,11,1),		&
                          Chem(j,12,1),		&
                          Chem(j,13,1),		&
-                         Chem(j,14,1) !Chem unit = mg/L
+                         Chem(j,14,1),		& !Chem unit = mg/L
+                         Eh(j,1)
 
 !>> Initialize some variables and arrays
           Sandacc(j,1) = 0.0
@@ -1261,7 +1262,8 @@
                       'DOP',		&
                       'DIP',		&
                       'ChlA',		&
-                      'TKN'
+                      'TKN',        &
+                      'Marsh stage'
 
       do j=1,N
 	    write(401,11142) j,		&
@@ -1285,7 +1287,8 @@
                           min(Chem(j,11,2),1000.0),		&
                           min(Chem(j,12,2),1000.0),		&
                           min(Chem(j,13,2),1000.0),		&
-                          min(Chem(j,14,2),1000.0) ! chem unit = mg/L
+                          min(Chem(j,14,2),1000.0),     & ! chem unit = mg/L
+                          Eh(j,2)
       enddo
       close(401)
 
