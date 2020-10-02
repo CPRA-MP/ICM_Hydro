@@ -1263,7 +1263,7 @@
                       'DIP',		&
                       'ChlA',		&
                       'TKN',        &
-                      'Marsh stage'
+                      'Marsh_stage'
 
       do j=1,N
 	    write(401,11142) j,		&
