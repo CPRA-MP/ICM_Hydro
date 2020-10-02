@@ -369,7 +369,7 @@
       READ(30,*) fa_def        ! 85        upwind factor for weighting upwind/downwind contributions to WQ,salinity,TSS and temp transport calculations (fa_def) (range from 0.5 to 1) (0.5 gives equal weight to upwind and downwind, 1 will only use upwind)
       READ(30,*) upwind_vel    ! 86        channel velocity at which upwind factor, fa, is set to 1.0 (upwind_vel) (m/sec)
       READ(30,*) fe            ! 87        dispersion calibration factor (fe)
-      READ(30,*) lockdays      ! 88        number of days in lock control observation timeseries data file LockControlObservedData.csv (lockdays) (days)
+      READ(30,*) dump_int      ! 88  XXXX  NOT USED XXXX number of days in lock control observation timeseries data file LockControlObservedData.csv (lockdays) (days)
       READ(30,*) dtlock        ! 89        timestep of lock control observation timeseries data (dtlock) (hours)
       READ(30,*) CSSmin        ! 90        minimum CSS concentration allowed to be reached - calculated CSS below this value will be increased - this is applied to each sediment class separately (cssmin) (mg/L)
       READ(30,*) CSSmax        ! 91        maximum CSS concentration allowed to be reached - calculated CSS above this value will be throttled - this is applied to each sediment class separately (cssmax) (mg/L)

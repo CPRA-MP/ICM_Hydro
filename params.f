@@ -90,7 +90,6 @@
       
 
       integer :: nlockobs
-      integer :: lockdays
       integer :: dtlock
       real(sp),dimension(:,:),allocatable:: lockhours
       

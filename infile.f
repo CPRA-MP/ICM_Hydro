@@ -457,12 +457,24 @@
             write(1,4123) nlockobs,
      &       'links are classified as locks with observed control data.'
 
-          allocate(lockhours(lockdays*24/dtlock,nlockobs))
+          allocate(lockhours(simdays*24/dtlock,nlockobs))
           lockhours(:,:)=0 !zw added 04/06/2020
 
           read(35,*) dump_text ! dump header row
 
-          do jt = 1,lockdays*24/dtlock
+          !>> Skip Lock operation observations that occur in years prior to current model year
+          do jt=1,startrun*24/dtlock
+              read(35,*)
+              if (jt == startrun) then
+                  write(1,*)'Lock observation data starts at:'
+                  write(1,66) '      line ',int(startrun*24/dtlock+2)
+                  write(*,*)'Lock observation data starts at:'
+                  write(*,66) '      line ',int(startrun*24/dtlock+2)
+              endif
+          enddo
+
+          !>> Read lock control operation observations for current model year
+          do jt = 1,simdays*24/dtlock
               READ(35,*) dump_int,dump_text,lockhours(jt,1:nlockobs)
           enddo
       endif
