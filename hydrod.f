@@ -504,7 +504,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               endif
 
 !>> Link type 3 = rectangular channels with a lock control structure
-          elseif (linkt(i) == 3) then
+              elseif (linkt(i) == 3) then
 
               !! Channel attributes for channels with locks
               !! Latr1 = Channel invert elevation
@@ -516,6 +516,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 5, Latr2 = d/s salinty (ppt)
                       ! if Latr9 = 6, Latr2 = -9999
                       ! if Latr9 = 7, Latr2 = control link number
+                      ! if Latr9 = 8, Latr2 = -9999
               !! Latr3 = channel length
               !! Latr4 = channel width
               !! Latr5 = channel Roughness, n
@@ -531,6 +532,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 5, Latr10 = d/s WSEL (m)
                       ! if Latr9 = 6, Latr10 = corresponding column in LockControlObservedData.csv.
                       ! if Latr9 = 7, Latr10 = discharge (cms)
+                      ! if Latr9 = 8, Latr10 = u/s WSEL (m)
           !>> Initialize link's on/off flag to on
               dkd=1.0	  !zw 3/14/2015 moved to here from below
 
@@ -615,6 +617,11 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
               elseif (Latr9(i) == 7) then
                   if (Q(Latr2(i),2) <= Latr10(i)) then
+                      dkd = 0.0
+                  endif
+          !>> Set zero multiplier if lock should be closed due to high uptream water level
+              elseif (Latr9(i) == 8) then
+                  if(Es(upN,2) > Latr10(i)) then
                       dkd = 0.0
                   endif
               endif              
