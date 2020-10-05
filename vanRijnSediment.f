@@ -178,10 +178,10 @@
               if (Tbed<Tcrit(k)) then
                   deposition(j,k) = velset(j,k)*(1-Tbed/Tcrit(k))
      &                                *Css(j,1,k)*OWArea
-                  resuspension(j,k) = 0.0001
+                  resuspension(j,k) = 0.0
 !>> -- Determine resuspension fluxes for non-sand particles (g/sec) (eq. 11 in methodology memo is for kg/sec - convert to g/sec).
               else
-                  deposition(j,k) = 0.0001     !negligibly small depositional rate when Tbed>Tcrit
+                  deposition(j,k) = 0.0
                   resuspension(j,k)=(((Tbed/Tcrit(k))-1)**sedn(j))
      &                                     *sedcalib(j)*OWArea*1000.0
                          
