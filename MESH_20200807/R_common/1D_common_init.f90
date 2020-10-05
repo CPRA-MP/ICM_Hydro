@@ -1,15 +1,18 @@
 subroutine common_init(nr)
 
 	use common_array_R
+    use params
+    
     implicit none
 	integer, intent(out) :: nr
 	integer :: i, NGCD_array, NGCD
 
 ! read dimensions for each region
 	open(999,file='..\region_input.txt')
-	read(999,*)nr, days_all, ndt_ICM
+	read(999,*)nr
 
-	call setup_common_var(nr)
+    	
+    call setup_common_var(nr)
 
 	do i=1, nr
 		read(999,*)ncomp_R(i), ndt_R(i), nlat_R(i)
@@ -53,9 +56,10 @@ subroutine common_init(nr)
 !!!!!
 
 !	ndt_all=NGCD_array(nr,ndt_R)
+! ndt_all and ntim_all are set in main.f for 2D modeling only - they will be updated here if there are 1D reaches included in the model run
 	ndt_all=NGCD_array(5*nr,ndt_total)
     ndt_all=NGCD(ndt_all, ndt_ICM)
-	ntim_all=int(days_all*86400/ndt_all)
+	ntim_all=int(simdays*86400/ndt_all)
 
 	do i=1, nr
 		ioutf_R(i)=600+8*(i-1)

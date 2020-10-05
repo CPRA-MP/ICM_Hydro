@@ -209,28 +209,10 @@
       !implicit none       ! 1D-ICM coupling
       
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
-
+      integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
       Character*100 header
-
-!>> *********************************Adding 1d start
-      ! Local storage
-      integer :: n_1d, iir   !n_region
-      real(kind=4) :: t1, t2       
       
-      call cpu_time(t1)
-	  
-      call common_init(n_region)      
-      
-      do iir=1, n_region
-          call init_R(iir, ncomp_R(iir),ioutf_R(iir), Input_file_R(iir), nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
-          if (Nctr_SAL_R(iir) .eq. 1)call init_SAL_R(iir, ioutf_R(iir)+4,Input_SAL_R(iir))
-          if (Nctr_TMP_R(iir) .eq. 1)call init_TMP_R(iir, ioutf_R(iir)+5,Input_TMP_R(iir))
-          if (Nctr_FINE_R(iir) .eq. 1)call init_FINE_R(iir, ioutf_R(iir)+6,Input_FINE_R(iir))
-          if (Nctr_SAND_R(iir) .eq. 1)call init_SAND_R(iir, ioutf_R(iir)+7,Input_SAND_R(iir))
-      enddo
-
-!>> *********************************Adding 1d end
-
+     
 !>@par General Structure of Subroutine Logic:
 
 ! determine start time for calculating runtimes
@@ -387,15 +369,10 @@
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
       close(30)
-!      sal_0_1_error  = 0.0
-!      sal_1_5_error  = 0.0
-!      sal_5_20_error  = 0.0
-!      sal_20_35_error  = 0.0
-!      tss_error  = 0.0
-!      stage_error  = 0.0
-!      stvar_error  = 0.0
+
 
 !>> Determine number of simulation timesteps
+      ndt_ICM = dt
       simdays = endrun-startrun+1
       NTs =int(simdays*24*60*60/dt)
       NNN=NTs-int(24*60*60/dt)
@@ -404,16 +381,46 @@
       lasttidestep = dttide*60*60/dt !dttide is in hours - number of timesteps before updating tide data
       lastwindstep = dtwind*60*60/dt !dtwind is in hours - number of timesteps before updating wind data
       lastlockstep = dtlock*60*60/dt !dtlock is in hours - number of timesteps before updating lock control data
-!> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
+!>> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
       daystep = 0  !YW! Modified to fix the issue with skipping the first time step
       tidestep = 0 !YW!
       windstep = 0 !YW!
       lockstep = 0 !YW!
 
+!>>  ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled
+!>>  this allows for different timesteps to be used between the 2D model, and each 1D reach
+!>>  the timestep looping below will be by second, and 2D and 1D subroutine calls will occur when the appropriate dt is reached
+      ndt_all = ndt_ICM
+	  ntim_all=int(simdays*86400/ndt_all)
+      
+      
 !>> Call 'allocate_params' subroutine which allocates memory for almost all arrays used by this program
 !>> (some temporary arrays are allocated in ICM_InterpolateToGrid subroutine which postprocesses model results).
-
       call allocate_params
+
+!>> Initialize 1D model subroutines
+      if (n1D > 0) then
+          call common_init(n_region)              ! n1d is read from RuncontrolR.data and n_region is read in from region_input.txt during configuration of 1D model
+          if (n1D /= n_region) then
+              write(*,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
+              write(1,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
+              pause
+          endif
+          do iir=1, n_region
+              write(*,*) 'Initializing 1D model for region: ',n_region
+              write(1,*) 'Initializing 1D model for region: ',n_region
+              call init_R(iir, ncomp_R(iir),ioutf_R(iir), Input_file_R(iir), nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
+              if (Nctr_SAL_R(iir) .eq. 1)call init_SAL_R(iir, ioutf_R(iir)+4,Input_SAL_R(iir))
+              if (Nctr_TMP_R(iir) .eq. 1)call init_TMP_R(iir, ioutf_R(iir)+5,Input_TMP_R(iir))
+              if (Nctr_FINE_R(iir) .eq. 1)call init_FINE_R(iir, ioutf_R(iir)+6,Input_FINE_R(iir))
+              if (Nctr_SAND_R(iir) .eq. 1)call init_SAND_R(iir, ioutf_R(iir)+7,Input_SAND_R(iir))
+          enddo
+      else
+          write(*,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
+          write(1,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
+      endif
+      
+      
 !>> Set initial conditions for constants and model parameters that are not included in input text files
 !	Initial Conditions
 	  g=9.81					! Gravity (m/s2)
@@ -546,8 +553,8 @@
       open (unit=202, file='grid_data_500m.csv', form='formatted')                ! mean elevation for 500 m grid cells     
       open (unit=203, file='grid_IDs_Veg_matrix.csv', form='formatted')           ! 500m grid cell names formatted in the matrix used by Vegetation ICM routine
 
-      open (unit=204, file='grid_500m_out.csv', form='formatted')              ! output file for 500 m grid cells - in list form
-      open (unit=205, file='compartment_out.csv',form='formatted')             ! output file for hydro compartments - summary values for ICM in list form
+      open (unit=204, file='grid_500m_out.csv', form='formatted')                 ! output file for 500 m grid cells - in list form
+      open (unit=205, file='compartment_out.csv',form='formatted')                ! output file for hydro compartments - summary values for ICM in list form
 
       open(unit=206,file='sal_monthly_ave_500m.out',form='formatted')
       open(unit=207,file='tmp_monthly_ave_500m.out',form='formatted')
@@ -576,7 +583,7 @@
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
       close(125)
 
-!>> !YW! Read input link file to apply flow limiter
+!>> Read input link file to apply flow limiter  !YW
       open (unit=500, file= 'links_to_apply.csv',status='unknown')
       read(500,*)
       do kk = 1,nlinklimiter
@@ -584,76 +591,61 @@
       enddo
 
 !>> 1D-ICM coupling input files
-      if (ntc>0) then
-        write(*,*) 'The number of terminal connection is ',ntc
-        open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
-        read(402,*)                                                           ! dump header row of compartment input file
-        read(402,*)                                                           ! dump header row of compartment input file
-        do i = 1,ntc
-            read(402,*) tcr1D(i), &                                           ! 1D region
-                tcn1D(i), &                                                   ! 1D node            
-                tcr2D(i), &                                                   ! ICM receiving compartment
-                tcf2D(i), &                                                   ! ICM connecting compartment
-                tcl2D(i)                                                      ! ICM connecting link
-        enddo
-        close(402)
-        
-        !do i = 1,ntc
-        !    tcH(i) = 0.0
-        !    tcQ(i) = 0.0
-        !enddo
-      endif
-      
-      if (nlc>0) then
-        write(*,*) 'The number of lateral connection is ',nlc
-        open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
-        read(403,*)                                                          ! dump header row of compartment input file
-        read(403,*)
-        do i = 1,nlc
-            read(403,*) lcr1D(i), &
-                lcn1D(i), &                
-                lcr2D(i), &
-                lcf2D(i), &
-                lcl2D(i)
-         
-        enddo        
-        close(403)
+      if (n1D > 0) then
+          write(*,*) 'Reading input files to couple 1D and 2D models'
+          write(1,*) 'Reading input files to couple 1D and 2D models'
+          
+          write(*,*) '  - the number of terminal connections is ',ntc
+          write(1,*) '  - the number of terminal connections is ',ntc          
+          if (ntc>0) then
+              open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
+              read(402,*)                                                           ! dump header row of compartment input file
+              read(402,*)                                                           ! dump header row of compartment input file
+              do i = 1,ntc
+                  read(402,*) tcr1D(i), &                                           ! 1D region
+                      tcn1D(i), &                                                   ! 1D node            
+                      tcr2D(i), &                                                   ! ICM receiving compartment
+                      tcf2D(i), &                                                   ! ICM connecting compartment
+                      tcl2D(i)                                                      ! ICM connecting link
+              enddo
+              close(402)
+          endif
 
-        !do i = 1,nlc
-        !    lcH(i) = 0.0
-        !    lcQ(i) = 0.0
-        !enddo        
+          write(*,*) '  - the number of lateral connections is ',nlc
+          write(1,*) '  - the number of lateral connections is ',nlc
+          if (nlc>0) then
+              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
+              read(403,*)                                                          ! dump header row of compartment input file
+              read(403,*)
+              do i = 1,nlc
+                  read(403,*) lcr1D(i), &
+                      lcn1D(i), &                
+                      lcr2D(i), &
+                      lcf2D(i), &
+                      lcl2D(i)
+              enddo        
+              close(403)
+          endif
+
+          write(*,*) '  - the number of upstream connections is ',nuc
+          write(1,*) '  - the number of upstream connections is ',nuc
+          if (nuc>0) then
+              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
+              read(404,*)                                                          ! dump header row of compartment input file
+              read(404,*)
+              do i = 1,nuc
+                  read(404,*) ucr1D(i), &
+                      ucn1D(i), &              
+                      ucr2D(i), &
+                      ucf2D(i), &
+                      ucl2D(i)
+              enddo        
+              close(404)
+          endif
       endif
 
-      if (nuc>0) then
-        write(*,*) 'The number of upstream connection is ',nuc
-        open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
-        read(404,*)                                                          ! dump header row of compartment input file
-        read(404,*)
-        do i = 1,nuc
-            read(404,*) ucr1D(i), &
-                ucn1D(i), &              
-                ucr2D(i), &
-                ucf2D(i), &
-                ucl2D(i)
-         
-        enddo        
-        close(404)
-
-        !do i = 1,nuc
-        !    ucH(i) = 0.0
-        !    ucQ(i) = 0.0
-        !enddo        
-      endif
-      
-      if (n1D /= n_region) then
-          write(*,*) 'Number of 1D region defined in ICM and MESH is not consistent.'
-          pause
-      endif
-      
-      
 ! Initialize some variables and arrays
-      NR(:)=0.0
+!      NR(:)=0.0
       stds=0.
       do j=1,N
           accsed(j)=0.0
@@ -769,9 +761,9 @@
       write(*,*)'-----------------------------------------------'
       write(*,*)'Reading in hotstart file and setting values as initial conditons.'
       write(*,*)'-----------------------------------------------'
-      read(400,*)             ! ignore header row
+      read(400,*)                       ! ignore header row
       do j=1,N
-          read(400,*) dump_int,		&   !no need to save compartment number - read in to a dummy integer variable
+          read(400,*) dump_int,		&   ! no need to save compartment number - read in to a dummy integer variable
                          Es(j,1),       &
                          S(j,1),		&
                          Css(j,1,1),		&
@@ -800,24 +792,24 @@
           Siltacc(j,1) = 0.0
           Clayacc(j,1) = 0.0
 
-          As(j,2)= As(j,1)				! Surface area of cells (m2)
-          Es(j,2)= Es(j,1)				! Stage in storage cells (m)
+          As(j,2)= As(j,1)				    ! Surface area of cells (m2)
+          Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
           ds(j,1)= Es(j,2)-Bed(j)			! Depth in storage cells (m)
           Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
-          BCnosurge(j,1) = 0.0            ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
-          BCnosurge(j,2) = BCnosurge(j,1) ! boundary conditions stage(m) before surge is added
-          BCsurge(j,1) = 0.0              !YW! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
+          BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
+          BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
+          BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
           BCsurge(j,2) = BCsurge(j,1)
-          Qmarsh(j,2) = Qmarsh(j,1)		! Flow in marsh cell	!JAM Oct 2010
+          Qmarsh(j,2) = Qmarsh(j,1)		    ! Flow in marsh cell	!JAM Oct 2010
           Qmarshmax(j) = 0.0
           S(j,2) = S(j,1)
           Tempw(j,2) = Tempw(j,1)
 
-          do ichem=1,14    !zw 4/28/2015 added to replace above statements
+          do ichem=1,14                     
               Chem(j,ichem,2)=Chem(j,ichem,1)
           enddo
 
-          ! MP2023 zw added 04/06/2020
+!>> Initialize variables
           SL(j,1) = 0
           SL(j,2) = 0
           do sedclass=1,4
@@ -837,7 +829,6 @@
           Clayacc(j,2) = Clayacc(j,1)
           CSSvRs(j,2)= CSSvRs(j,1)
 
-!>> Initialize average variable
           ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
           EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
           TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2) + CSS(j,1,3) + CSS(j,1,4) )*dt/(3600.*24.)
@@ -845,7 +836,6 @@
           QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
           TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
 
-          ! MP2023 zw added 04/06/2020
           ESMX(j,2)=ES(j,2)
           ESMN(j,2)=ES(j,2)
           dailyHW(j)=0.0
@@ -861,7 +851,7 @@
       Emax=0.0
       Emin=0.0
       
-!>> !YW! initialize BCnosurge and BCsurge with initial tide and surge      
+!>> initialize BCnosurge and BCsurge with initial tide and surge       -YW
       do jj=1,tidegages
           BCnosurge(transposed_tide(jj,1),1) = TideData(1,jj)
           do jjj=1,Mds
@@ -890,40 +880,45 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
-
-      print*, 'ICM dt =',ndt_ICM, 'should =',dt
-      print*, 'MESH dt =', ndt_R
-      print*, 'dt_all =', ndt_all
+	  
       
-      !do  mm= 1, NTs  						! ******do loop ends at ~ line 438    !YW! change NTs-1 to NTs      
-      mm=0  ! set time_counter
+
+    
+      print*, 'ICM dt =',ndt_ICM, 'should =',dt
+      if (n1d > 0) then
+          print*, 'MESH dt =', ndt_R
+          print*, 'dt_all =', ndt_all
+      endif
+ !>> start model time stepping     
+      mm=0                                          ! initialize time counter
       do n_1d=0, ntim_all-1      
+ !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
           if (mod((n_1d*ndt_all+ndt_all), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
 
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
 
-!>> calculate various versions of time to be used as flags throughout program
+!>> -- Calculate various versions of time to be used as flags throughout program
               day = t/3600./24.
-              dday=day-int(day)       ! decimal portion of day, dday=0.0 at 0:00 (midnight), 0.99 at end of day
-              ddayhr = dday*24.       ! decimal portion of day converted to hours dday = 0.00 @ midnight, 23.99 at end of day
+              dday=day-int(day)                     ! decimal portion of day, dday=0.0 at 0:00 (midnight), 0.99 at end of day
+              ddayhr = dday*24.                     ! decimal portion of day converted to hours dday = 0.00 @ midnight, 23.99 at end of day
 
-!>> update counters for current timestep in day, tide data, and wind data
-!>> counters are reset to zero at end of main.f timestepping Do loop when value meets the laststep values calculated at start of main.f
+!>> -- Update counters for current timestep in day, tide data, and wind data
+!>> -- Counters are reset to zero at end of main.f timestepping Do loop when value meets the laststep values calculated at start of main.f
               daystep = daystep + 1
               tidestep = tidestep + 1
               windstep = windstep + 1
               lockstep = lockstep + 1
 
-!>> -- Update counter that tracks with row of the tide data to use for the current model timestep
+!>> -- Update counter that tracks which row of the tide data to use for the current model timestep
               if (tidestep == 1) then
                   tiderow = tiderow + 1
                   surgerow = tiderow
               endif
 
 !>> -- Update wind arrays if timestep matches wind data timestep
-! initial wind data for timestep = 0 was read into windx and windy arrays prior to timestepping began
-! all subsequent timesteps that are divisible by dtwind will update the wind data arrays
+        ! initial wind data for timestep = 0 was read into windx and windy arrays prior to timestepping began
+        ! all subsequent timesteps that are divisible by dtwind will update the wind data arrays
               if (windstep == 1) then
                   windrow = windrow + 1
                   do jjj = 1,N
@@ -946,116 +941,126 @@
 !              enddo
 !		enddo
 
-
-!>> -- Call 'hydrod' subroutine, which is another 'control' routine which calls all hydrodynamic subroutines at each simulation timestep.
+!>> -- Run 2D model hydrodynmics model
+!>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
               call hydrod(mm)
 
-!>> 1D-ICM coupling lateral connection - saving calulcated lateral flow
-              if (ntc>0) then
-                  do i = 1,ntc
-                      WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
-                      if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
-                          SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
-                      endif
-                      if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
-                          TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
-                      endif
-                      if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
-                          FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
-                      endif
-                      if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
-                          SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
-                      endif
-                  enddo
-              endif
+!>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
+              !>> -- linking terminal connections
+              if (n1d>0) then
+                  if (ntc>0) then
+                      do i = 1,ntc
+                          WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
+                          if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
+                              SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
+                          endif
+                          if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
+                              TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
+                          endif
+                          if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
+                              FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
+                          endif
+                          if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
+                              SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
+                          endif
+                      enddo
+                  endif
                   
-              if (nlc>0) then
-                  do i = 1,nlc
-                      Q_lat_from_ICM_R(lcr1D(i),i) = -1.0*Q(lcl2D(i),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-                      if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
-                          SAL_lat_from_ICM_R(lcr1D(i),i) = S(lcr2D(i),2)                                                   ! check unit
-                      endif
-                      if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
-                          TMP_lat_from_ICM_R(lcr1D(i),i) = Tempw(lcr2D(i),2)                                               ! check unit
-                      endif
-                      if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
-                          FINE_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,2) + CSS(lcr2D(i),2,3) + CSS(lcr2D(i),2,4)      ! check unit
-                      endif
-                      if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
-                          SAND_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,1)                                              ! check unit
-                      endif                      
-                  enddo
-                  !pause
+                  !>> -- linking lateral connections    
+                  if (nlc>0) then
+                      do i = 1,nlc
+                          Q_lat_from_ICM_R(lcr1D(i),i) = -1.0*Q(lcl2D(i),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
+                          if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
+                              SAL_lat_from_ICM_R(lcr1D(i),i) = S(lcr2D(i),2)                                                   ! check unit
+                          endif
+                          if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
+                              TMP_lat_from_ICM_R(lcr1D(i),i) = Tempw(lcr2D(i),2)                                               ! check unit
+                          endif
+                          if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
+                              FINE_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,2) + CSS(lcr2D(i),2,3) + CSS(lcr2D(i),2,4)      ! check unit
+                          endif
+                          if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
+                              SAND_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,1)                                              ! check unit
+                          endif                      
+                      enddo
+                  endif
+                  
+                  !>> -- linking upstream connections
+                  if (nuc>0) then
+                      do i = 1,nuc
+                          Q_upstream_from_ICM_R(ucr1D(i)) = Q(ucl2D(i),2)    ! Connecting link USnode is receiving compartment, DSnode is connecting_compartment
+                          if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
+                              SAL_upstream_from_ICM_R(ucr1D(i)) = S(ucr2D(i),2)                                                   ! check unit
+                          endif
+                          if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
+                              TMP_upstream_from_ICM_R(ucr1D(i)) = Tempw(ucr2D(i),2)                                               ! check unit
+                          endif
+                          if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
+                              FINE_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,2) + CSS(ucr2D(i),2,3) + CSS(ucr2D(i),2,4)      ! check unit
+                          endif
+                          if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
+                              SAND_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,1)                                              ! check unit
+                          endif                         
+                      enddo
+                  endif
+                  
               endif
-              if (nuc>0) then
-                  do i = 1,nuc
-                      Q_upstream_from_ICM_R(ucr1D(i)) = Q(ucl2D(i),2)    ! Connecting link USnode is receiving compartment, DSnode is connecting_compartment
-                      if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
-                          SAL_upstream_from_ICM_R(ucr1D(i)) = S(ucr2D(i),2)                                                   ! check unit
-                      endif
-                      if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
-                          TMP_upstream_from_ICM_R(ucr1D(i)) = Tempw(ucr2D(i),2)                                               ! check unit
-                      endif
-                      if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
-                          FINE_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,2) + CSS(ucr2D(i),2,3) + CSS(ucr2D(i),2,4)      ! check unit
-                      endif
-                      if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
-                          SAND_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,1)                                              ! check unit
-                      endif                         
-                  enddo
-              endif
-
-!>> Reset tidestep counter because end of observed tidal timestep is met
+              
+!>> -- Reset tidestep counter because end of observed tidal timestep is met
               if (tidestep == lasttidestep) then
                   tidestep = 0
               endif
 
-!>> Reset windstep counter because end of observed tidal timestep is met
+!>> -- Reset windstep counter because end of observed tidal timestep is met
               if (windstep == lastwindstep) then
                   windstep = 0
               endif
 
-!>> Reset lockstep counter because end of observed lock control timestep i smet
+!>> -- Reset lockstep counter because end of observed lock control timestep i smet
               if (lockstep == lastlockstep) then
                   lockstep = 0
               endif
 
-!>> Reset daystep counter because end of day is met
+!>> -- Reset daystep counter because end of day is met
               if (daystep == lastdaystep) then
                   write(1,3333)'Year',year,'Day',int(day),'complete.'
                   write(*,3333)'Year',year,'Day',int(day),'complete.'
                   daystep = 0
               endif
+!>> End IF for checking whether model timestep should have the 2D model subroutines run          
           endif
 
-!>> *********************************Adding 1d start
+
+!>> Call 1D channel routing subroutines
+!>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
           do iir=1, n_region
+!>> -- Call main loop for each 1D reach - this will calculate flows and water levels
               if (mod((n_1d*ndt_all+ndt_all), ndt_R(iir)) .eq. 0 .or. (n.eq.0) )then
                    call cal_R(iir, n_R(iir),ncomp_R(iir),ioutf_R(iir),nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), WL_terminal_from_ICM_R(iir), Q_upstream_from_ICM_R(iir), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
                    n_R(iir)=n_R(iir)+1
               endif
-		
+!>> -- Call salinity subroutines for each 1D reach with salinity modeling activated
               if (Nctr_SAL_R(iir) .eq. 1) then
                    if (mod((n*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n.eq.0) )then
                        n_SAL_R(iir)=n_SAL_R(iir)+1
                        call cal_SAL_R(iir, n_SAL_R(iir), ncomp_R(iir), ioutf_R(iir)+4, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sal_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_upstream_from_ICM_R(iir), SAL_terminal_from_ICM_R(iir))
                    endif		
               endif
-  
+!>> -- Call temperature subroutines for each 1D reach with temperature modeling activated  
               if (Nctr_TMP_R(iir) .eq. 1) then
                    if (mod((n*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n.eq.0) )then
                        n_TMP_R(iir)=n_TMP_R(iir)+1
                        call cal_TMP_R(iir, n_TMP_R(iir), ncomp_R(iir), ioutf_R(iir)+5, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), tmp_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_upstream_from_ICM_R(iir), TMP_terminal_from_ICM_R(iir))
                    endif		
               endif
-  
+!>> -- Call suspended fines subroutines for each 1D reach with fines modeling activated  
               if (Nctr_FINE_R(iir) .eq. 1) then
                    if (mod((n*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n.eq.0) )then
                        n_FINE_R(iir)=n_FINE_R(iir)+1
                        call cal_FINE_R(iir, n_FINE_R(iir), ncomp_R(iir), ioutf_R(iir)+6, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), fine_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_upstream_from_ICM_R(iir), FINE_terminal_from_ICM_R(iir))
                    endif		
               endif
-  
+!>> -- Call suspended sand subroutines for each 1D reach with sand modeling activated  
               if (Nctr_SAND_R(iir) .eq. 1) then
                    if (mod((n*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n.eq.0) )then
                        n_SAND_R(iir)=n_SAND_R(iir)+1
@@ -1063,10 +1068,12 @@
                    endif		
               endif
           enddo
-!>> *********************************Adding 1d end 
+ 
         
-!>> 1D-ICM coupling - update teminal and lateral flow connections
-          if (ntc>0) then                                ! Saving terminal connection data from 1D model
+!>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
+!>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
+!>> -- saving calculated values for terminal connections from 1D array to the 2D array
+          if (ntc>0) then                                
               do i = 1,ntc
                   Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
                   Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
@@ -1086,7 +1093,7 @@
                   endif                  
               enddo
           endif
-                  
+!>> -- saving calculated values for lateral connections from 1D array to the 2D array                  
           if (nlc>0) then
               do i=1,nlc
                   Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
@@ -1106,7 +1113,7 @@
                   endif                    
               enddo
           endif
-
+!>> -- saving calculated values for upstream connections from 1D array to the 2D array
           if (nuc>0) then
               do i=1,nuc
                   Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
@@ -1128,7 +1135,7 @@
           endif             
           
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
-!>> Check if any link flowrate values are NaN - if so, pause model run
+!>> -- Check if any link flowrate values are NaN - if so, pause model run
           do i=1,M
               Q(i,1)=Q(i,2)
               if(isNAN(Q(i,2))) then
@@ -1195,23 +1202,19 @@
 !              if(Chem(j,12,1) > 0.00025) then
 !                  Chem(j,12,1)=0.00025
 !              endif
-!zw 4/28/2015 remove low and high pass filters
+
           enddo                    
-!          Q(895,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.
-!          Q(896,2) = newQ(1)  ! HARDCORDED FOR ASSIGNING 1D flow as control for lateral flow connection. Needs to be revised.          
+        
           
 !>> End main model DO loop that is looped over each simulation timestep
       enddo
       
 
-!>> *********************************Adding 1d start
+!>> Close any open 1D files
+      if (n1d > 0) then
+          call end_closefiles(ioutf_R(1),n_region,4)
+      end if
 
-      call end_closefiles(ioutf_R(1),n_region,4)
- 
-      call cpu_time( t2 )
-      print '("Time = ",f10.3," seconds.")',t2 - t1      
-
-!>> *********************************Adding 1d end
 
 !>> Add error terms to last timestep value before writing hotstart file
       write(1,*) 'Adding error adjustment to last timestep values.'
@@ -1241,39 +1244,39 @@
       write(1,*)'Saving values from last timestep to a hotstart file.'
       write(*,*)'Saving values from last timestep to a hotstart file.'
 
-      write(401,11140)'Compartment',		&
-                      'Stage',		&
+      write(401,11140)'Compartment',	&
+                      'Stage',		    &
                       'Salinity',		&
                       'CSS_sand',		&
                       'CSS_silt',		&
                       'CSS_clay',		&
-                      'CSS_clayfloc',		&
+                      'CSS_clayfloc',	&
                       'WaterTemp',		&
                       'NO3_NO2',		&
-                      'NH4',		&
-                      'DIN',		&
-                      'OrgN',		&
-                      'TIP',		&
-                      'TOC',		&
-                      'DO',		&
-                      'LiveAlg',		&
-                      'DeadAlg',		&
-                      'DON',		&
-                      'DOP',		&
-                      'DIP',		&
-                      'ChlA',		&
-                      'TKN',        &
+                      'NH4',		    &
+                      'DIN',		    &
+                      'OrgN',		    &
+                      'TIP',		    &
+                      'TOC',		    &
+                      'DO',		        &
+                      'LiveAlg',	    &
+                      'DeadAlg',	    &
+                      'DON',		    &
+                      'DOP',		    &
+                      'DIP',		    &
+                      'ChlA',		    &
+                      'TKN',            &
                       'Marsh_stage'
 
       do j=1,N
-	    write(401,11142) j,		&
-                          Es(j,2),		&
-                          S(j,2),		&
-                          Css(j,2,1),		&
-                          Css(j,2,2),		&
-                          Css(j,2,3),		&
-                          Css(j,2,4),		&
-                          Tempw(j,2),		&
+	      write(401,11142) j,		                    &
+                          Es(j,2),		                &
+                          S(j,2),		                &
+                          Css(j,2,1),		            &
+                          Css(j,2,2),		            &
+                          Css(j,2,3),		            &
+                          Css(j,2,4),		            &
+                          Tempw(j,2),		            &
                           min(Chem(j,1,2),1000.0),		&
                           min(Chem(j,2,2),1000.0),		&
                           min(Chem(j,3,2),1000.0),		&
@@ -1301,11 +1304,11 @@
 
 !>> Calculate percentage of sand in open water bed sediments
       do j = 1,N
-        if((Sandacc(j,2)+Siltacc(j,2)+Clayacc(j,2))>0)then  !zw added 04/06/2020
-          pct_sand_bed(j) = max(0.0,min(100.0,Sandacc(j,2)/(Sandacc(j,2)+Siltacc(j,2)+Clayacc(j,2))))         
-        else
-          pct_sand_bed(j) = 0
-        endif
+          if((Sandacc(j,2)+Siltacc(j,2)+Clayacc(j,2))>0)then
+              pct_sand_bed(j) = max(0.0,min(100.0,Sandacc(j,2)/(Sandacc(j,2)+Siltacc(j,2)+Clayacc(j,2))))         
+          else
+              pct_sand_bed(j) = 0
+          endif
       enddo
 
 !>> Call 'ICM_Summaries' subroutine which calculates the average output values used by the other ICM routines (Wetland Morph, Vegetation, and Ecosytems)
@@ -1419,7 +1422,7 @@
 
 !>> Write gridded output to file in list form - one row for each grid cell.
 !>> Write header rows in grid output files
-!>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM.PY
+!>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM
 
       write(204,1115)'GRID_ID',		&
         'compartment_ave_salinity_ppt',		&
@@ -1603,10 +1606,11 @@
 1119  format(A,12(',',A))
 1120  format(I0,12(',',F0.4))
 3333  FORMAT(4x,A,1x,I4,1x,A,1x,I4,1x,A)
-9229	FORMAT(<cells-1>(F0.2,','),F0.2)
+9229  FORMAT(<cells-1>(F0.2,','),F0.2)
 !9229	format(1000(F0.2,','),F0.2)
 
-!>> End model simulation.
 
+      
+!>> End model simulation.
       return
       end

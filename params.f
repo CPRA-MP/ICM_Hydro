@@ -468,7 +468,7 @@
       real(sp), dimension(:), allocatable :: ASandA
       real(sp), dimension(:), allocatable :: asedout
       real(sp), dimension(:), allocatable :: CssL
-      real(sp), dimension(:), allocatable :: NR
+!      real(sp), dimension(:), allocatable :: NR
 !      real(sp), dimension(:), allocatable :: Pmsh
       real(sp), dimension(:), allocatable :: por
       real(sp), dimension(:), allocatable :: Qsed
@@ -726,6 +726,7 @@
       integer :: numChem  !add zw 04/08/2020      
       
 !1D-ICM coupling variables
+      integer :: ntim_all, ndt_all, ndt_ICM       ! time stepping parameters used across 1D and 2D codes
       integer :: ntc,nlc,nuc                      ! number of terminal, lateral, and upstream connection
       integer :: n_region,n1D                     ! number of 1D rivers
     

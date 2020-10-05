@@ -7,8 +7,7 @@ module common_array_R
 	real(kind=4), allocatable :: Q_terminal_R(:), WL_terminal_from_ICM_R(:), Q_upstream_from_ICM_R(:)
 	integer, allocatable :: ncomp_R(:), ndt_R(:), ioutf_R(:), nlat_R(:), n_R(:), n_SAL_R(:), n_TMP_R(:), n_FINE_R(:), n_SAND_R(:)
 	character(len=128), allocatable :: Input_file_R(:), Input_SAL_R(:), Input_TMP_R(:), Input_FINE_R(:), Input_SAND_R(:)
-	integer :: ntim_all, ndt_all, ndt_ICM
-	real :: days_all
+
 ! SAL TMP, FINE, SAND
 	integer, allocatable :: ndt_SAL_R(:), ndt_TMP_R(:), ndt_FINE_R(:), ndt_SAND_R(:), ndt_total(:)
 	integer, allocatable :: Nctr_SAL_R(:), Nctr_TMP_R(:), Nctr_FINE_R(:), Nctr_SAND_R(:)
