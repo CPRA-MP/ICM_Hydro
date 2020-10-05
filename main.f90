@@ -1032,108 +1032,112 @@
 
 
 !>> Call 1D channel routing subroutines
+          if (n1d> 0) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
-          do iir=1, n_region
+              do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
-              if (mod((n_1d*ndt_all+ndt_all), ndt_R(iir)) .eq. 0 .or. (n.eq.0) )then
-                   call cal_R(iir, n_R(iir),ncomp_R(iir),ioutf_R(iir),nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), WL_terminal_from_ICM_R(iir), Q_upstream_from_ICM_R(iir), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
-                   n_R(iir)=n_R(iir)+1
-              endif
+                  if (mod((n_1d*ndt_all+ndt_all), ndt_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                       call cal_R(iir, n_R(iir),ncomp_R(iir),ioutf_R(iir),nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), WL_terminal_from_ICM_R(iir), Q_upstream_from_ICM_R(iir), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
+                       n_R(iir)=n_R(iir)+1
+                  endif
 !>> -- Call salinity subroutines for each 1D reach with salinity modeling activated
-              if (Nctr_SAL_R(iir) .eq. 1) then
-                   if (mod((n*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n.eq.0) )then
-                       n_SAL_R(iir)=n_SAL_R(iir)+1
-                       call cal_SAL_R(iir, n_SAL_R(iir), ncomp_R(iir), ioutf_R(iir)+4, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sal_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_upstream_from_ICM_R(iir), SAL_terminal_from_ICM_R(iir))
-                   endif		
-              endif
+                  if (Nctr_SAL_R(iir) .eq. 1) then
+                       if (mod((n*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                           n_SAL_R(iir)=n_SAL_R(iir)+1
+                           call cal_SAL_R(iir, n_SAL_R(iir), ncomp_R(iir), ioutf_R(iir)+4, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sal_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_upstream_from_ICM_R(iir), SAL_terminal_from_ICM_R(iir))
+                       endif		
+                  endif
 !>> -- Call temperature subroutines for each 1D reach with temperature modeling activated  
-              if (Nctr_TMP_R(iir) .eq. 1) then
-                   if (mod((n*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n.eq.0) )then
-                       n_TMP_R(iir)=n_TMP_R(iir)+1
-                       call cal_TMP_R(iir, n_TMP_R(iir), ncomp_R(iir), ioutf_R(iir)+5, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), tmp_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_upstream_from_ICM_R(iir), TMP_terminal_from_ICM_R(iir))
-                   endif		
-              endif
+                  if (Nctr_TMP_R(iir) .eq. 1) then
+                       if (mod((n*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                           n_TMP_R(iir)=n_TMP_R(iir)+1
+                           call cal_TMP_R(iir, n_TMP_R(iir), ncomp_R(iir), ioutf_R(iir)+5, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), tmp_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_upstream_from_ICM_R(iir), TMP_terminal_from_ICM_R(iir))
+                       endif		
+                  endif
 !>> -- Call suspended fines subroutines for each 1D reach with fines modeling activated  
-              if (Nctr_FINE_R(iir) .eq. 1) then
-                   if (mod((n*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n.eq.0) )then
-                       n_FINE_R(iir)=n_FINE_R(iir)+1
-                       call cal_FINE_R(iir, n_FINE_R(iir), ncomp_R(iir), ioutf_R(iir)+6, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), fine_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_upstream_from_ICM_R(iir), FINE_terminal_from_ICM_R(iir))
-                   endif		
-              endif
+                  if (Nctr_FINE_R(iir) .eq. 1) then
+                       if (mod((n*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                           n_FINE_R(iir)=n_FINE_R(iir)+1
+                           call cal_FINE_R(iir, n_FINE_R(iir), ncomp_R(iir), ioutf_R(iir)+6, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), fine_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_upstream_from_ICM_R(iir), FINE_terminal_from_ICM_R(iir))
+                       endif		
+                  endif
 !>> -- Call suspended sand subroutines for each 1D reach with sand modeling activated  
-              if (Nctr_SAND_R(iir) .eq. 1) then
-                   if (mod((n*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n.eq.0) )then
-                       n_SAND_R(iir)=n_SAND_R(iir)+1
-                       call cal_SAND_R(iir, n_SAND_R(iir), ncomp_R(iir), ioutf_R(iir)+7, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sand_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_upstream_from_ICM_R(iir), SAND_terminal_from_ICM_R(iir))
-                   endif		
-              endif
-          enddo
+                  if (Nctr_SAND_R(iir) .eq. 1) then
+                       if (mod((n*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                           n_SAND_R(iir)=n_SAND_R(iir)+1
+                           call cal_SAND_R(iir, n_SAND_R(iir), ncomp_R(iir), ioutf_R(iir)+7, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sand_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_upstream_from_ICM_R(iir), SAND_terminal_from_ICM_R(iir))
+                       endif		
+                  endif
+              enddo
+          endif
  
         
 !>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
 !>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
 !>> -- saving calculated values for terminal connections from 1D array to the 2D array
-          if (ntc>0) then                                
-              do i = 1,ntc
-                  Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
-                  Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
-                  if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
-                      S(tcf2D(i),2) = sal_R(tcr1D(i),tcn1D(i))
-                  endif
-                  if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
-                      Tempw(tcf2D(i),2) = tmp_R(tcr1D(i),tcn1D(i))                                             ! check unit
-                  endif
-                  if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
-                      CSS(tcf2D(i),2,2) = fine_R(tcr1D(i),tcn1D(i))/3.0     ! check unit
-                      CSS(tcf2D(i),2,3) = fine_R(tcr1D(i),tcn1D(i))/3.0 
-                      CSS(tcf2D(i),2,4) = fine_R(tcr1D(i),tcn1D(i))/3.0 
-                  endif
-                  if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
-                      CSS(tcf2D(i),2,1) = sand_R(tcr1D(i),tcn1D(i))                                            ! check unit
-                  endif                  
-              enddo
-          endif
+          if (n1d>0) then  
+              if (ntc>0) then                                
+                  do i = 1,ntc
+                      Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
+                      Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
+                      if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
+                          S(tcf2D(i),2) = sal_R(tcr1D(i),tcn1D(i))
+                      endif
+                      if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
+                          Tempw(tcf2D(i),2) = tmp_R(tcr1D(i),tcn1D(i))                                             ! check unit
+                      endif
+                      if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
+                          CSS(tcf2D(i),2,2) = fine_R(tcr1D(i),tcn1D(i))/3.0     ! check unit
+                          CSS(tcf2D(i),2,3) = fine_R(tcr1D(i),tcn1D(i))/3.0 
+                          CSS(tcf2D(i),2,4) = fine_R(tcr1D(i),tcn1D(i))/3.0 
+                      endif
+                      if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
+                          CSS(tcf2D(i),2,1) = sand_R(tcr1D(i),tcn1D(i))                                            ! check unit
+                      endif                  
+                  enddo
+              endif
 !>> -- saving calculated values for lateral connections from 1D array to the 2D array                  
-          if (nlc>0) then
-              do i=1,nlc
-                  Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
-                  if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
-                      S(lcf2D(i),2) = sal_R(lcr1D(i),lcn1D(i)) 
-                  endif
-                  if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
-                      Tempw(lcf2D(i),2) = tmp_R(lcr1D(i),lcn1D(i))                                                ! check unit
-                  endif
-                  if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
-                      CSS(lcf2D(i),2,2) = fine_R(lcr1D(i),lcn1D(i))/3.0      ! check unit
-                      CSS(lcf2D(i),2,3) = fine_R(lcr1D(i),lcn1D(i))/3.0 
-                      CSS(lcf2D(i),2,4) = fine_R(lcr1D(i),lcn1D(i))/3.0 
-                  endif
-                  if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
-                      CSS(lcf2D(i),2,1) = sand_R(lcr1D(i),lcn1D(i))                                              ! check unit
-                  endif                    
-              enddo
-          endif
+              if (nlc>0) then
+                  do i=1,nlc
+                      Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
+                      if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
+                          S(lcf2D(i),2) = sal_R(lcr1D(i),lcn1D(i)) 
+                      endif
+                      if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
+                          Tempw(lcf2D(i),2) = tmp_R(lcr1D(i),lcn1D(i))                                                ! check unit
+                      endif
+                      if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
+                          CSS(lcf2D(i),2,2) = fine_R(lcr1D(i),lcn1D(i))/3.0      ! check unit
+                          CSS(lcf2D(i),2,3) = fine_R(lcr1D(i),lcn1D(i))/3.0 
+                          CSS(lcf2D(i),2,4) = fine_R(lcr1D(i),lcn1D(i))/3.0 
+                      endif
+                      if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
+                          CSS(lcf2D(i),2,1) = sand_R(lcr1D(i),lcn1D(i))                                              ! check unit
+                      endif                    
+                  enddo
+              endif
 !>> -- saving calculated values for upstream connections from 1D array to the 2D array
-          if (nuc>0) then
-              do i=1,nuc
-                  Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
-                  if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
-                      S(ucf2D(i),2) = sal_R(ucr1D(i),ucn1D(i))
-                  endif
-                  if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
-                      Tempw(ucf2D(i),2) = tmp_R(ucr1D(i),ucn1D(i))                                               ! check unit
-                  endif
-                  if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
-                      CSS(ucf2D(i),2,2) = fine_R(ucr1D(i),ucn1D(i))/3.0       ! check unit
-                      CSS(ucf2D(i),2,3) = fine_R(ucr1D(i),ucn1D(i))/3.0 
-                      CSS(ucf2D(i),2,4) = fine_R(ucr1D(i),ucn1D(i))/3.0  
-                  endif
-                  if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
-                      CSS(ucf2D(i),2,1) = sand_R(ucr1D(i),ucn1D(i))                                             ! check unit
-                  endif                     
-              enddo
-          endif             
-          
+              if (nuc>0) then
+                  do i=1,nuc
+                      Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
+                      if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
+                          S(ucf2D(i),2) = sal_R(ucr1D(i),ucn1D(i))
+                      endif
+                      if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
+                          Tempw(ucf2D(i),2) = tmp_R(ucr1D(i),ucn1D(i))                                               ! check unit
+                      endif
+                      if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
+                          CSS(ucf2D(i),2,2) = fine_R(ucr1D(i),ucn1D(i))/3.0       ! check unit
+                          CSS(ucf2D(i),2,3) = fine_R(ucr1D(i),ucn1D(i))/3.0 
+                          CSS(ucf2D(i),2,4) = fine_R(ucr1D(i),ucn1D(i))/3.0  
+                      endif
+                      if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
+                          CSS(ucf2D(i),2,1) = sand_R(ucr1D(i),ucn1D(i))                                             ! check unit
+                      endif                     
+                  enddo
+              endif
+          endif
+              
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
 !>> -- Check if any link flowrate values are NaN - if so, pause model run
           do i=1,M

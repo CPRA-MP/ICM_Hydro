@@ -357,7 +357,7 @@
 !	allocate(Kx(links))
 !	allocate(Length(links))
 !	allocate(NR(links))
-!      allocate(Pmsh(links))
+!     allocate(Pmsh(links))
       allocate(Qsed(links))     !this was originally Qsed(30) - should be allocated for links
       allocate(Qsedsm(links))
 !      allocate(Resist(links))    !no longer an array - now a local calculation
