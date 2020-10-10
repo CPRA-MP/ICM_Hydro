@@ -56,12 +56,12 @@
 
 c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 	fpc= percent(j)*(1.-fcrop)/100.+fcrop
-	soilm=esho(j)-BedM(j)				!JAM Oct 2010
-	shh=Eh(j,1)-BedM(j)					!JAM Oct 2010
-	rhh=max(0.0001, shh/soilm)			!JAM Oct 2010
+	soilm = max(0.0001, esho(j)-BedM(j))				!JAM Oct 2010
+	shh   = max(0.0001, Eh(j,1)-BedM(j))				!JAM Oct 2010
+	rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
 
 !>> Excess rainfall runoff on marsh
-      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*Max(1.,rhh*rhh))	!JAM Oct 2010
+      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))!*Max(1.,rhh*rhh))	!JAM Oct 2010
 
 !>> !YW! ignore PET at low marsh water level to avoid Eh too low
 !      if((Eh(j,1)-BedM(j))>0.1) then
