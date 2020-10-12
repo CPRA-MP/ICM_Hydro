@@ -652,7 +652,6 @@
       real(sp),dimension(:),allocatable :: hLength
       real(sp),dimension(:),allocatable :: SourceBM
       
-      real(sp),dimension(:,:),allocatable :: hdepth
       real(sp),dimension(:,:),allocatable :: hmarsho
 
 ! old comdeck.h memory block: COMMON/Marsh5

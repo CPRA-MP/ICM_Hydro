@@ -262,9 +262,7 @@
 !	    Vss(j)=Vss(j)/consd				! JAM Oct 2010
 !	    Vsh(j)=Vsh(j)/consd				! JAM Oct 2010
 !          ES(j,1)=ES(j,1)+RSSSo  !BUG RSSSo is undefined - zw 04/06/2020
-          Eh(j,1) = BedM(j) + 0.1
-          hDepth(j,1)=Eh(j,1)-BedM(j)		! marsh channel depth (m)	!JAM Oct 2010
-          Qmarsh(j,1) = 0.0				! JAM Oct 2010 !YW!
+
 
 !>> Calculate length of marsh edge from edge area (for KadlecKnight equation)
 !>> Set edge length to perimeter of idealized (e.g. square)  marsh or water area, whichever is smaller

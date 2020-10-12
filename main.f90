@@ -795,12 +795,15 @@
           As(j,2)= As(j,1)				    ! Surface area of cells (m2)
           Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
           ds(j,1)= Es(j,2)-Bed(j)			! Depth in storage cells (m)
+          Eh(j,1) = BedM(j) + 0.1           ! Initial marsh depth (override hotstart file read in above)
           Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
           BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
           BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
           BCsurge(j,2) = BCsurge(j,1)
-          Qmarsh(j,2) = Qmarsh(j,1)		    ! Flow in marsh cell	!JAM Oct 2010
+          
+          Qmarsh(j,1) = 0.0				    ! Flow into/out of marsh area
+          Qmarsh(j,2) = Qmarsh(j,1)		    
           Qmarshmax(j) = 0.0
           S(j,2) = S(j,1)
           Tempw(j,2) = Tempw(j,1)

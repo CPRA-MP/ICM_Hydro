@@ -415,7 +415,6 @@
       allocate(ESMN(cells,3))
       allocate(ESMX(cells,3))
       allocate(Fetch(cells,16)) !allocate(Fetch(cells,10))!zw changed to 16 instead of 10 04/07/2020
-      allocate(hdepth(cells,3))
       allocate(HDT(cells,3))
       allocate(hmarsho(cells,3))
       allocate(icc(cells,maxconnectuse))
