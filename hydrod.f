@@ -665,6 +665,21 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
 
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Link',i,'flow is NaN'
+                      write(*,*) 'Deta=', Deta
+                      write(*,*) 'Res=',Res
+                      write(*,*) 'Resist=',Resist
+                      write(*,*) 'dkd=',dkd
+                      write(*,*) 'ruf=',ruf
+                      write(*,*) 'AK=',AK
+                      write(*,*) 'Ach=',Ach
+                      write(*,*) 'linkdepth=',linkdepth
+                      write(*,*) 'invert=',latr1(i)
+                      write(*,*) 'Es(jus)=',Es(jus(i),2)
+                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      pause
+                  endif
               endif
 
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
@@ -879,7 +894,21 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !        fa(i) = 1.0
           !    endif
 
-              EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Link',i,'flow is NaN'
+                      write(*,*) 'dkd=',dkd
+                      write(*,*) 'avdep=',avdep
+                      write(*,*) 'delh=',delh
+                      write(*,*) 'linkwidth=',Latr4(i)
+                      write(*,*) 'linklength=',Latr3(i)
+					  write(*,*) 'Manning n=',Latr5(i)
+                      write(*,*) 'invert=',latr1(i)
+                      write(*,*) 'Eh(jus)=',Eh(jus(i),2)
+                      write(*,*) 'Eh(jds)=',Eh(jds(i),2)
+                      pause
+                  endif
+				  
+               EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
 !>> Link type 9 = ridges/levees
           elseif( linkt(i) == 9) then
