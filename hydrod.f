@@ -665,21 +665,22 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
 
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
-                  if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i,'flow is NaN'
-                      write(*,*) 'Deta=', Deta
-                      write(*,*) 'Res=',Res
-                      write(*,*) 'Resist=',Resist
-                      write(*,*) 'dkd=',dkd
-                      write(*,*) 'ruf=',ruf
-                      write(*,*) 'AK=',AK
-                      write(*,*) 'Ach=',Ach
-                      write(*,*) 'linkdepth=',linkdepth
-                      write(*,*) 'invert=',latr1(i)
-                      write(*,*) 'Es(jus)=',Es(jus(i),2)
-                      write(*,*) 'Es(jds)=',Es(jds(i),2)
-                      pause
-                  endif
+              endif
+    
+              if(isNan(Q(i,2))) then
+                  write (*,*) 'Link',i,'flow is NaN'
+                  write(*,*) 'Deta=', Deta
+                  write(*,*) 'Res=',Res
+                  write(*,*) 'Resist=',Resist
+                  write(*,*) 'dkd=',dkd
+                  write(*,*) 'ruf=',ruf
+                  write(*,*) 'AK=',AK
+                  write(*,*) 'Ach=',Ach
+                  write(*,*) 'linkdepth=',linkdepth
+                  write(*,*) 'invert=',latr1(i)
+                  write(*,*) 'Es(jus)=',Es(jus(i),2)
+                  write(*,*) 'Es(jds)=',Es(jds(i),2)
+                  pause
               endif
 
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
