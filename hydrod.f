@@ -663,26 +663,23 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   !Deta = min(abs(Deta),100.)	  !zw 3/14/2015 comments out:Es is already checked in celldQ
 
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
-
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Link',i,'flow is NaN'
+                      write(*,*) 'Deta=', Deta
+                      write(*,*) 'Res=',Res
+                      write(*,*) 'Resist=',Resist
+                      write(*,*) 'dkd=',dkd
+                      write(*,*) 'ruf=',ruf
+                      write(*,*) 'AK=',AK
+                      write(*,*) 'Ach=',Ach
+                      write(*,*) 'linkdepth=',linkdepth
+                      write(*,*) 'invert=',latr1(i)
+                      write(*,*) 'Es(jus)=',Es(jus(i),2)
+                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      pause
+                  endif
               endif
-    
-              if(isNan(Q(i,2))) then
-                  write (*,*) 'Link',i,'flow is NaN'
-                  write(*,*) 'Deta=', Deta
-                  write(*,*) 'Res=',Res
-                  write(*,*) 'Resist=',Resist
-                  write(*,*) 'dkd=',dkd
-                  write(*,*) 'ruf=',ruf
-                  write(*,*) 'AK=',AK
-                  write(*,*) 'Ach=',Ach
-                  write(*,*) 'linkdepth=',linkdepth
-                  write(*,*) 'invert=',latr1(i)
-                  write(*,*) 'Es(jus)=',Es(jus(i),2)
-                  write(*,*) 'Es(jds)=',Es(jds(i),2)
-                  pause
-              endif
-
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
               if (abs(Q(i,2)/Ach) >= upwind_vel) then
                   fa(i) = 1.0
@@ -896,13 +893,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !    endif
 
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i,'flow is NaN'
+                      write (*,*) 'Link',i,'flow is NaN after Q calculation'
                       write(*,*) 'dkd=',dkd
                       write(*,*) 'avdep=',avdep
                       write(*,*) 'delh=',delh
                       write(*,*) 'linkwidth=',Latr4(i)
                       write(*,*) 'linklength=',Latr3(i)
-					  write(*,*) 'Manning n=',Latr5(i)
+                      write(*,*) 'Manning n=',Latr5(i)
                       write(*,*) 'invert=',latr1(i)
                       write(*,*) 'Eh(jus)=',Eh(jus(i),2)
                       write(*,*) 'Eh(jds)=',Eh(jds(i),2)
@@ -1063,25 +1060,30 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
 
 !>> Calculate volume of water in upstream compartment available for exchange during timestep
-          sn =(Es(jus(i),2)-Es(jds(i),2))/abs(Es(jus(i),2)-Es(jds(i),2))
+          sn =(Es(jus(i),2)-Es(jds(i),2))/max(0.000001,abs(Es(jus(i),2)-Es(jds(i),2)))
           if (sn > 0) then
 !              volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jus(i),1)
               volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
      &                        As(jus(i),1)
 
-          else
+          elseif (sn < 0) then
 !              volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jds(i),1)
               volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
      &                        As(jds(i),1)
+          else
+              volavailable = 0.0
           endif
 !>> Calculate separate volume of water available for exchange for overland marsh flow links
           if (linkt(i) == 8) then
-              if (Eh(jus(i),2) > Eh(jds(i),2)) then
+              sn = (Eh(jus(i),2)-Eh(jds(i),2))/max(0.000001,abs(Eh(jus(i),2)-Eh(jds(i),2)))
+              if (sn > 0) then
                   volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
      &                            Ahf(jus(i))
-              else
+              elseif(sn < 0) then
                   volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
      &                            Ahf(jds(i))
+              else
+                  volavailable = 0.0
               endif
           endif
 
@@ -1100,6 +1102,25 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               endif
           endif
 
+          if(isNan(Q(i,2))) then
+              write (*,*) 'Link',i,'flow is NaN after Qmax filter'
+              
+              if (linkt(i) == 8) then
+                  write(*,*) 'dkd=',dkd
+                  write(*,*) 'avdep=',avdep
+                  write(*,*) 'delh=',delh
+              end if
+              
+              write(*,*) 'linkwidth=',Latr4(i)
+              write(*,*) 'linklength=',Latr3(i)
+              write(*,*) 'Manning n=',Latr5(i)
+              write(*,*) 'invert=',latr1(i)
+              write(*,*) 'Eh(jus)=',Eh(jus(i),2)
+              write(*,*) 'Eh(jds)=',Eh(jds(i),2)
+              pause
+          endif
+      
+      
 !>> End link updates of Q
       enddo
 
