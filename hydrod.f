@@ -373,7 +373,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   endif
 
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i,'flow is NaN'
+                      write (*,*) 'Link',i, 'of Type', linkt(i),' flow is NaN'
                       write(*,*) 'Deta=', Deta
                       write(*,*) 'Res=',Res
                       write(*,*) 'Resist=',Resist
@@ -475,6 +475,22 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
      &                          max(0.6,(1-0.2*htup/p))
                       Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*htup**1.5
                   endif
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Type2 Weir Link',i,' flow is NaN'
+                      write(*,*) 'Weir crest elev=',Latr1(i)
+                      write(*,*) 'invert elevation upstream of weir=',Latr2(i) 
+                      write(*,*) 'invert elevation downstream of weir=',Latr3(i) 
+                      write(*,*) 'Weir width=', Latr4(i)
+                      write(*,*) 'Weir Coeff=',Latr8(i)
+                      write(*,*) 'htup=',htup
+                      write(*,*) 'htdn=',htdn
+                      write(*,*) 'invup=',invup
+                      write(*,*) 'p=',p
+                      write(*,*) 'Es(jus)=',Es(jus(i),2)
+                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      pause
+                  endif
+				  
               endif
               ! Assume flow length through weir is 10 m for EAOL calculations
               if (htup > 0.0) then
@@ -499,7 +515,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !        if (abs(Q(i,2)/(htup*Latr4(i))) >= upwind_vel) then
           !            fa(i) = 1.0
           !        endif
-          !    else
+              else
                   EAOL(i) = 0.0
               endif
 
@@ -665,7 +681,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i,'flow is NaN'
+                      write (*,*) 'Type3 Lock Link',i,' flow is NaN'
                       write(*,*) 'Deta=', Deta
                       write(*,*) 'Res=',Res
                       write(*,*) 'Resist=',Resist
@@ -766,6 +782,24 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   ! set flow area for full orifice
                   Ach = orarea
 			endif
+            if(isNan(Q(i,2))) then
+                write (*,*) 'Type',linkt(i), ' Link',i,' flow is NaN'
+                write(*,*) 'Invert elevation=',Latr1(i)
+                write(*,*) 'Crown elevation=',Latr2(i) 
+			    write(*,*) 'Ground elevation upstream=',Latr3(i) 
+                write(*,*) 'average width=', Latr4(i)
+			    write(*,*) 'Ground elevation downstream=',Latr5(i) 
+                write(*,*) 'orifice coefficient=',Latr8(i)
+                write(*,*) 'invup=',invup
+                write(*,*) 'htup=',htup
+                write(*,*) 'htdn=',htdn
+                write(*,*) 'p=',Latr1(i) - invup
+                write(*,*) 'beta=',Es(upN,2)-invup
+                write(*,*) 'Es(jus)=',Es(jus(i),2)
+                write(*,*) 'Es(jds)=',Es(jds(i),2)
+                pause
+            endif
+			
 ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
 !             if (abs(Q(i,2)/Ach) >= upwind_vel) then
 !                  fa(i) = 1.0
@@ -885,15 +919,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
               ! set flow area for EAOL calculation
                   Ach = avdep*latr4(i)
-
-              endif
-          ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-          !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
-          !        fa(i) = 1.0
-          !    endif
-
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i,'flow is NaN after Q calculation'
+                      write (*,*) 'Type8 Marsh Link',i,' flow is NaN after Q calculation'
                       write(*,*) 'dkd=',dkd
                       write(*,*) 'avdep=',avdep
                       write(*,*) 'delh=',delh
@@ -905,6 +932,12 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'Eh(jds)=',Eh(jds(i),2)
                       pause
                   endif
+
+              endif
+          ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
+          !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
+          !        fa(i) = 1.0
+          !    endif
 				  
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
@@ -1001,6 +1034,24 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*abs(htupf)**1.5
 
                   endif
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Type9 Ridge Link',i,' flow is NaN'
+                      write(*,*) 'ridge crest elevation=',Latr1(i)
+                      write(*,*) 'invert elevation upstream=',Latr2(i) 
+                      write(*,*) 'invert elevation downstream=',Latr10(i) 
+                      write(*,*) 'length of ridge crest=', Latr3(i)
+                      write(*,*) 'width of ridge crest=', Latr4(i)
+                      write(*,*) 'Manning n=',Latr5(i)
+                      write(*,*) 'htup=',htup
+                      write(*,*) 'htdn=',htdn
+                      write(*,*) 'invup=',invup
+                      write(*,*) 'p=',p
+                      write(*,*) 'htupf=',htupf
+                      write(*,*) 'Es(jus)=',Es(jus(i),2)
+                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      pause
+                  endif
+				  
               endif
           ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
           !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
@@ -1043,6 +1094,21 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               reg_s = 0.000316*reg_fs**(5./3.)/Latr9(i)**(1./6.)
               sn = Q(Latr2(i),2)/abs(Q(Latr2(i),2))
               Q(i,2) = sn*reg_p*reg_r**(5./3.)*reg_s**(1./2.)/Latr5(i)
+
+              if(isNan(Q(i,2))) then
+                  write (*,*) 'Type10 Regime Link',i,' flow is NaN'
+                  write(*,*) 'Regime flowrate=',Latr9(i)
+                  write(*,*) 'Regime D50=',Latr10(i) 
+                  write(*,*) 'corresponding channel link=', Latr2(i)
+                  write(*,*) 'Manning n=',Latr5(i)
+                  write(*,*) 'Q(Latr2(i),2)=',Q(Latr2(i),2) 
+                  write(*,*) 'reg_p=', reg_p
+                  write(*,*) 'reg_fs=',reg_fs
+                  write(*,*) 'reg_r=',reg_r
+                  write(*,*) 'reg_s=',reg_s
+                  write(*,*) 'sn=',sn
+                  pause
+              endif
 
 !>> Check to see if regime channel link flow is greater than original channel flow
 !>> If so, set original channel to zero and use regime channel flow
@@ -1099,26 +1165,14 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                           Write(*,*) 'Max flowrate reached. Link:',i
                       endif
                   endif
+                  if(isNan(Q(i,2))) then
+                      write (*,*) 'Link',i,'flow is NaN after Qmax filter'
+                      write(*,*) 'Qmax=',Qmax
+                      pause
+                  endif
               endif
           endif
 
-          if(isNan(Q(i,2))) then
-              write (*,*) 'Link',i,'flow is NaN after Qmax filter'
-              
-              if (linkt(i) == 8) then
-                  write(*,*) 'dkd=',dkd
-                  write(*,*) 'avdep=',avdep
-                  write(*,*) 'delh=',delh
-              end if
-              
-              write(*,*) 'linkwidth=',Latr4(i)
-              write(*,*) 'linklength=',Latr3(i)
-              write(*,*) 'Manning n=',Latr5(i)
-              write(*,*) 'invert=',latr1(i)
-              write(*,*) 'Eh(jus)=',Eh(jus(i),2)
-              write(*,*) 'Eh(jds)=',Eh(jds(i),2)
-              pause
-          endif
       
       
 !>> End link updates of Q

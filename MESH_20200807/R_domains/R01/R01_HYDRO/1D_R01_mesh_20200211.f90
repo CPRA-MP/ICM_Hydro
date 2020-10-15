@@ -282,7 +282,18 @@ subroutine init_R01(npr, ifile, input_file, nlat, outa, outb, outc, outd, wl_lat
 !10  format(f12.2 , 1200f12.2)
 10  format(f12.2 , <ncomp>f12.2)
 
-
+    do i=1,ncomp  !add zw for code debugging 10/15/2020
+	   if(isNan(outa(i)) .OR. isNan(outb(i)). OR. isNan(outc(i)). OR. isNan(outd(i)))then
+	       write(*,*) 'NaNs after init_R'
+		   write(*,*) 'at 1D Cross-section ',i
+		   write(*,*) 'y_R= ',outa(i)
+		   write(*,*) 'q_R= ',outb(i)
+		   write(*,*) 'area_R= ',outc(i)
+		   write(*,*) 'hy_R=',outd(i)
+		   pause
+	   endif
+    enddo
+	
 end subroutine init_R01
 
 
@@ -342,7 +353,15 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
         xt=newY(ncomp)
 		newArea(ncomp)=r_interpol(ncompElevTable,ncompAreaTable,nel,xt)
 		!pause 2
-
+        if(isNan(newQ(1)).OR.isNan(newY(ncomp)).or.isNan(newY(ncomp)).OR.isNan(newArea(ncomp)))then
+		    write(*,*)'NaNs in Cal_R for boundary assignment at time ',t
+			write(*,*)'newQ(1)=',newQ(1)
+			write(*,*)'newY(ncomp)=',newY(ncomp)
+			write(*,*)'newY(ncomp)=',newY(ncomp)
+			write(*,*)'newArea(ncomp)=',newArea(ncomp)
+			pause
+	    endif
+		
 		! applying lateral flow at the oldQ
 		lateralFlow = 0
         do i=1,noLatFlow
@@ -367,14 +386,26 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
             ! print*, 'lat flow at', latFlowLocations(i), &
             !    'flow=',lateralFlow(latFlowLocations(i))*0.5*(dx(latFlowLocations(i)-1)+dx(latFlowLocations(i))), &
             !    dx(latFlowLocations(i)-1), dx(latFlowLocations(i))
-        end do
+            if(isNan(lateralFlow(i)))then
+			   write(*,*)'time step=',t
+			   write(*,*)'NaN lateral flow from Cal-R at 1D location ', latFlowLocations(i)
+			   pause
+			endif
+		end do
         !print*, 'noLatFlow',noLatFlow
         !print*, 'lateralFlow', (lateralFlow(i), i=1, ncomp)
+		
 
         ! Set upstream discharge
         dqp(1) = newQ(1) - oldQ(1)
 		!pause 3
-
+		if(isNan(dqp(1)))then
+		   write(*,*)'NaN value for dqp(1) in Cal_R at time ',t
+		   write(*,*)'oldQ(1)=',oldQ(1)
+		   write(*,*)'newQ(1)=',newQ(1)
+		   pause
+		endif
+		
         call section_R01()
         ! Nazmul: The subroutine calls the attribute tables and interpolate according to the available water level
         thes=thetas
@@ -579,5 +610,17 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
 		!pause 10
 !10  format(f12.2 , 1200f12.2)
 10  format(f12.2 , <ncomp>f12.2)
+
+    do i=1,ncomp  !add zw for code debugging 10/15/2020
+	   if(isNan(outa(i)) .OR. isNan(outb(i)). OR. isNan(outc(i)). OR. isNan(outd(i)))then
+	       write(*,*) 'NaNs after Cal_R'
+		   write(*,*) 'at 1D Cross-section ',i
+		   write(*,*) 'y_R= ',outa(i)
+		   write(*,*) 'q_R= ',outb(i)
+		   write(*,*) 'area_R= ',outc(i)
+		   write(*,*) 'hy_R=',outd(i)
+		   pause
+	   endif
+    enddo
 
 	end subroutine cal_R01

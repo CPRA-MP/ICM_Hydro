@@ -407,8 +407,8 @@
               pause
           endif
           do iir=1, n_region
-              write(*,*) 'Initializing 1D model for region: ',n_region
-              write(1,*) 'Initializing 1D model for region: ',n_region
+              write(*,*) 'Initializing 1D model for region: ',iir
+              write(1,*) 'Initializing 1D model for region: ',iir
               call init_R(iir, ncomp_R(iir),ioutf_R(iir), Input_file_R(iir), nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
               if (Nctr_SAL_R(iir) .eq. 1)call init_SAL_R(iir, ioutf_R(iir)+4,Input_SAL_R(iir))
               if (Nctr_TMP_R(iir) .eq. 1)call init_TMP_R(iir, ioutf_R(iir)+5,Input_TMP_R(iir))
