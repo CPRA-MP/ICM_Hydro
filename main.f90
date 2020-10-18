@@ -406,9 +406,14 @@
               write(1,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
               pause
           endif
+          if (nlc /= sum(nlat_R(1:n_region))) then
+              write(*,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
+              write(1,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
+              pause
+          endif	  
           do iir=1, n_region
-              write(*,*) 'Initializing 1D model for region: ',iir
-              write(1,*) 'Initializing 1D model for region: ',iir
+              write(*,*) 'Initializing 1D model for region: ',n_region
+              write(1,*) 'Initializing 1D model for region: ',n_region
               call init_R(iir, ncomp_R(iir),ioutf_R(iir), Input_file_R(iir), nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
               if (Nctr_SAL_R(iir) .eq. 1)call init_SAL_R(iir, ioutf_R(iir)+4,Input_SAL_R(iir))
               if (Nctr_TMP_R(iir) .eq. 1)call init_TMP_R(iir, ioutf_R(iir)+5,Input_TMP_R(iir))
@@ -883,9 +888,6 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
-	  
-      
-
     
       print*, 'ICM dt =',ndt_ICM, 'should =',dt
       if (n1d > 0) then
@@ -971,20 +973,24 @@
                   
                   !>> -- linking lateral connections    
                   if (nlc>0) then
-                      do i = 1,nlc
-                          Q_lat_from_ICM_R(lcr1D(i),i) = -1.0*Q(lcl2D(i),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-                          if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
-                              SAL_lat_from_ICM_R(lcr1D(i),i) = S(lcr2D(i),2)                                                   ! check unit
-                          endif
-                          if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
-                              TMP_lat_from_ICM_R(lcr1D(i),i) = Tempw(lcr2D(i),2)                                               ! check unit
-                          endif
-                          if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
-                              FINE_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,2) + CSS(lcr2D(i),2,3) + CSS(lcr2D(i),2,4)      ! check unit
-                          endif
-                          if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
-                              SAND_lat_from_ICM_R(lcr1D(i),i) = CSS(lcr2D(i),2,1)                                              ! check unit
-                          endif                      
+                      k = 0
+                      do i = 1,n1D
+                          do j = 1,nlat_R(i) ! need to add statement to allow time-series for 1D when coupled		  
+                              Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
+                              if (Nctr_SAL_R(i) .eq. 1) then
+                                  SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
+                              endif
+                              if (Nctr_TMP_R(i) .eq. 1) then
+                                  TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
+                              endif
+                              if (Nctr_FINE_R(i) .eq. 1) then
+                                  FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
+                              endif
+                              if (Nctr_SAND_R(i) .eq. 1) then
+                                  SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
+                              endif
+                          enddo
+                          k = k+nlat_R(i)
                       enddo
                   endif
                   
@@ -1101,22 +1107,26 @@
               endif
 !>> -- saving calculated values for lateral connections from 1D array to the 2D array                  
               if (nlc>0) then
-                  do i=1,nlc
-                      Es(lcf2D(i),2) =  y_R(lcr1D(i),lcn1D(i))                            ! need to check y be the average of the XSs
-                      if (Nctr_SAL_R(lcr1D(i)) .eq. 1) then
-                          S(lcf2D(i),2) = sal_R(lcr1D(i),lcn1D(i)) 
-                      endif
-                      if (Nctr_TMP_R(lcr1D(i)) .eq. 1) then
-                          Tempw(lcf2D(i),2) = tmp_R(lcr1D(i),lcn1D(i))                                                ! check unit
-                      endif
-                      if (Nctr_FINE_R(lcr1D(i)) .eq. 1) then
-                          CSS(lcf2D(i),2,2) = fine_R(lcr1D(i),lcn1D(i))/3.0      ! check unit
-                          CSS(lcf2D(i),2,3) = fine_R(lcr1D(i),lcn1D(i))/3.0 
-                          CSS(lcf2D(i),2,4) = fine_R(lcr1D(i),lcn1D(i))/3.0 
-                      endif
-                      if (Nctr_SAND_R(lcr1D(i)) .eq. 1) then
-                          CSS(lcf2D(i),2,1) = sand_R(lcr1D(i),lcn1D(i))                                              ! check unit
-                      endif                    
+                  k = 0
+                  do i = 1,n1D
+                      do j = 1,nlat_R(i)   
+                          Es(lcf2D(k+j),2) =  y_R(i,lcn1D(k+j))                            ! need to check y be the average of the XSs
+                          if (Nctr_SAL_R(i) .eq. 1) then
+                              S(lcf2D(k+j),2) = sal_R(i,lcn1D(k+j)) 
+                          endif
+                          if (Nctr_TMP_R(i) .eq. 1) then
+                              Tempw(lcf2D(k+j),2) = tmp_R(i,lcn1D(k+j))                                                ! check unit
+                          endif
+                          if (Nctr_FINE_R(i) .eq. 1) then
+                              CSS(lcf2D(k+j),2,2) = fine_R(i,lcn1D(k+j))/3.0      ! check unit
+                              CSS(lcf2D(k+j),2,3) = fine_R(i,lcn1D(k+j))/3.0 
+                              CSS(lcf2D(k+j),2,4) = fine_R(i,lcn1D(k+j))/3.0 
+                          endif                          
+                          if (Nctr_SAND_R(i) .eq. 1) then
+                              CSS(lcf2D(k+j),2,1) = sand_R(i,lcn1D(k+j))                                              ! check unit
+                          endif                    
+                      enddo
+                      k = k+nlat_R(i)                  
                   enddo
               endif
 !>> -- saving calculated values for upstream connections from 1D array to the 2D array
