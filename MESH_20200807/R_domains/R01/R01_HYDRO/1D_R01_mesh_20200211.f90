@@ -357,7 +357,6 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
 		    write(*,*)'NaNs in Cal_R for boundary assignment at time ',t
 			write(*,*)'newQ(1)=',newQ(1)
 			write(*,*)'newY(ncomp)=',newY(ncomp)
-			write(*,*)'newY(ncomp)=',newY(ncomp)
 			write(*,*)'newArea(ncomp)=',newArea(ncomp)
 			pause
 	    endif
@@ -386,9 +385,14 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
             ! print*, 'lat flow at', latFlowLocations(i), &
             !    'flow=',lateralFlow(latFlowLocations(i))*0.5*(dx(latFlowLocations(i)-1)+dx(latFlowLocations(i))), &
             !    dx(latFlowLocations(i)-1), dx(latFlowLocations(i))
-            if(isNan(lateralFlow(i)))then
+            if(isNan(lateralFlow(latFlowLocations(i))))then
 			   write(*,*)'time step=',t
 			   write(*,*)'NaN lateral flow from Cal-R at 1D location ', latFlowLocations(i)
+			   write(*,*)'Q_lat_from_ICM= ', Q_lat_from_ICM(i)
+			   write(*,*)'LatFlowLoc, Q_lat_from_ICM'
+               do j=1,noLatFlow
+			       write(*,*)latFlowLocations(j),Q_lat_from_ICM(j)
+			   enddo
 			   pause
 			endif
 		end do
@@ -613,7 +617,7 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
 
     do i=1,ncomp  !add zw for code debugging 10/15/2020
 	   if(isNan(outa(i)) .OR. isNan(outb(i)). OR. isNan(outc(i)). OR. isNan(outd(i)))then
-	       write(*,*) 'NaNs after Cal_R'
+	       write(*,*) 'NaNs after Cal_R at time step ', n
 		   write(*,*) 'at 1D Cross-section ',i
 		   write(*,*) 'y_R= ',outa(i)
 		   write(*,*) 'q_R= ',outb(i)
