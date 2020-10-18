@@ -616,7 +616,7 @@ subroutine cal_R01(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
 10  format(f12.2 , <ncomp>f12.2)
 
     do i=1,ncomp  !add zw for code debugging 10/15/2020
-	   if(isNan(outa(i)) .OR. isNan(outb(i)). OR. isNan(outc(i)). OR. isNan(outd(i)))then
+	   if(isNan(outa(i)) .OR. isNan(outb(i)) .OR. isNan(outc(i)) .OR. isNan(outd(i)))then
 	       write(*,*) 'NaNs after Cal_R at time step ', n
 		   write(*,*) 'at 1D Cross-section ',i
 		   write(*,*) 'y_R= ',outa(i)
