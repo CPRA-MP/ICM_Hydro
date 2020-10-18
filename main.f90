@@ -1073,7 +1073,7 @@
                   endif
               enddo
           endif
- 
+
         
 !>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
 !>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
