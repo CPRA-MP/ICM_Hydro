@@ -283,11 +283,7 @@ subroutine init_R01(npr, ifile, input_file, nlat, outa, outb, outc, outd, wl_lat
 10  format(f12.2 , <ncomp>f12.2)
 
     do i=1,ncomp  !add zw for code debugging 10/15/2020
-<<<<<<< HEAD
-	   if(isNan(outa(i)) .OR. isNan(outb(i)). OR. isNan(outc(i)). OR. isNan(outd(i)))then
-=======
 	   if(isNan(outa(i)) .OR. isNan(outb(i)) .OR. isNan(outc(i)) .OR. isNan(outd(i)))then
->>>>>>> parent of 46ac90b... Revert "Create 1D_R01_mesh_20200211.f90"
 	       write(*,*) 'NaNs after init_R'
 		   write(*,*) 'at 1D Cross-section ',i
 		   write(*,*) 'y_R= ',outa(i)
