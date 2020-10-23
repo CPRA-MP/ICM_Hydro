@@ -975,20 +975,22 @@
                   if (nlc>0) then
                       k = 0
                       do i = 1,n1D
-                          do j = 1,nlat_R(i) ! need to add statement to allow time-series for 1D when coupled		  
-                              Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-                              if (Nctr_SAL_R(i) .eq. 1) then
-                                  SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
-                              endif
-                              if (Nctr_TMP_R(i) .eq. 1) then
-                                  TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
-                              endif
-                              if (Nctr_FINE_R(i) .eq. 1) then
-                                  FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
-                              endif
-                              if (Nctr_SAND_R(i) .eq. 1) then
-                                  SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
-                              endif
+                          do j = 1,nlat_R(i)
+			      if (lcr1D(k+j)>0) then
+                                  Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
+                                  if (Nctr_SAL_R(i) .eq. 1) then
+                                      SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
+                                  endif
+                                  if (Nctr_TMP_R(i) .eq. 1) then
+                                      TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
+                                  endif
+                                  if (Nctr_FINE_R(i) .eq. 1) then
+                                      FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
+                                  endif
+                                  if (Nctr_SAND_R(i) .eq. 1) then
+                                      SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
+                                  endif
+			      endif	  
                           enddo
                           k = k+nlat_R(i)
                       enddo
@@ -1110,21 +1112,23 @@
                   k = 0
                   do i = 1,n1D
                       do j = 1,nlat_R(i)   
-                          Es(lcf2D(k+j),2) =  y_R(i,lcn1D(k+j))                            ! need to check y be the average of the XSs
-                          if (Nctr_SAL_R(i) .eq. 1) then
-                              S(lcf2D(k+j),2) = sal_R(i,lcn1D(k+j)) 
-                          endif
-                          if (Nctr_TMP_R(i) .eq. 1) then
-                              Tempw(lcf2D(k+j),2) = tmp_R(i,lcn1D(k+j))                                                ! check unit
-                          endif
-                          if (Nctr_FINE_R(i) .eq. 1) then
-                              CSS(lcf2D(k+j),2,2) = fine_R(i,lcn1D(k+j))/3.0      ! check unit
-                              CSS(lcf2D(k+j),2,3) = fine_R(i,lcn1D(k+j))/3.0 
-                              CSS(lcf2D(k+j),2,4) = fine_R(i,lcn1D(k+j))/3.0 
-                          endif                          
-                          if (Nctr_SAND_R(i) .eq. 1) then
-                              CSS(lcf2D(k+j),2,1) = sand_R(i,lcn1D(k+j))                                              ! check unit
-                          endif                    
+		          if (lcr1D(k+j)>0) then
+                              Es(lcf2D(k+j),2) =  y_R(i,lcn1D(k+j))                            ! need to check y be the average of the XSs
+                              if (Nctr_SAL_R(i) .eq. 1) then
+                                  S(lcf2D(k+j),2) = sal_R(i,lcn1D(k+j)) 
+                              endif
+                              if (Nctr_TMP_R(i) .eq. 1) then
+                                  Tempw(lcf2D(k+j),2) = tmp_R(i,lcn1D(k+j))                                                ! check unit
+                              endif
+                              if (Nctr_FINE_R(i) .eq. 1) then
+                                  CSS(lcf2D(k+j),2,2) = fine_R(i,lcn1D(k+j))/3.0      ! check unit
+                                  CSS(lcf2D(k+j),2,3) = fine_R(i,lcn1D(k+j))/3.0 
+                                  CSS(lcf2D(k+j),2,4) = fine_R(i,lcn1D(k+j))/3.0 
+                              endif                          
+                              if (Nctr_SAND_R(i) .eq. 1) then
+                                  CSS(lcf2D(k+j),2,1) = sand_R(i,lcn1D(k+j))                                              ! check unit
+                              endif
+			  endif
                       enddo
                       k = k+nlat_R(i)                  
                   enddo
