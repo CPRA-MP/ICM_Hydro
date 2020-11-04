@@ -1143,11 +1143,21 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           if (linkt(i) == 8) then
               sn = (Eh(jus(i),2)-Eh(jds(i),2))/max(0.000001,abs(Eh(jus(i),2)-Eh(jds(i),2)))
               if (sn > 0) then
-                  volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
+                  if (Ahf(jus(i)) > 0.0) then 
+                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
      &                            Ahf(jus(i))
+                  else
+                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
+     &                        As(jus(i),1)
+                  endif
               elseif(sn < 0) then
-                  volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
+                  if (Ahf(jds(i)) > 0.0) then 
+                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
      &                            Ahf(jds(i))
+                  else
+                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
+     &                        As(jds(i),1)
+                  endif              
               else
                   volavailable = 0.0
               endif
