@@ -25,7 +25,7 @@
       real :: MarshRes,MarshResist,QMarshMann                                   ! edw new parameters for replacing Kadlec-Knight with Manning's
 
 !parameters for flow by linktype
-      real :: ach,AET,avdep,delp,deflength,delh,dv
+      real :: ach,AET,avdep,delp,deflength,delh,dv,cwidth
       real :: beta,eqC,orarea,orc
       real :: hf,htdn,htupf,htup
       real :: infilrate,invdown,invup
@@ -914,7 +914,24 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                      avdep = .5*delh
                   endif
 
-                  Q(i,2) = sn*dkd*avdep**(5./3.)*(Latr4(i)/Latr5(i))*
+!                  Q(i,2) = sn*dkd*avdep**(5./3.)*(Latr4(i)/Latr5(i))*
+!     &                            (delh/Latr3(i))**(1./2.)
+
+          !>> TESTING Nov 2020 YW
+          !>> calculate channel width as a function of water depth and marsh DEM standard deviation.
+          !>> link width equals the total defined width when (water level - marsh elevation) = 2 x marsh DEM standard deviation.
+          !>> link width is calculated proportionally when (water level - marsh elevation) < 2 x marsh DEM standard deviation.
+                  if (Ahf(upN) > 0) then
+                      cwidth = min((EH(upN,2)-BedM(upN))
+     &                      /(2*BedMSD(upN)),1.0)*Latr4(i)                      
+                  elseif (Ahf(downN) > 0) then
+                      cwidth = min((EH(downN,2)-BedM(downN))
+     &                      /(2*BedMSD(downN)),1.0)*Latr4(i)                  
+                  else
+                      cwidth = Latr4(i)
+                  endif
+                  
+                  Q(i,2) = sn*dkd*avdep**(5./3.)*(cwidth/Latr5(i))*
      &                            (delh/Latr3(i))**(1./2.)
 
               ! set flow area for EAOL calculation

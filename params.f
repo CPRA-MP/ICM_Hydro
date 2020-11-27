@@ -642,6 +642,7 @@
 ! old comdeck.h memory block: COMMON/Marsh3
       real(sp),dimension(:),allocatable :: BedM
       real(sp),dimension(:),allocatable :: BedMOrig
+      real(sp),dimension(:),allocatable :: BedMSD
       real(sp),dimension(:),allocatable :: BedMAdj
       real(sp),dimension(:),allocatable :: Esho
       

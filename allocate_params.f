@@ -255,6 +255,7 @@
       allocate(Bed(cells))
       allocate(BedM(cells))
       allocate(BedMOrig(cells))
+      allocate(BedMSD(cells))
       allocate(BedMAdj(cells))
       allocate(ChemDONo(cells))
       allocate(ChemDOPo(cells))

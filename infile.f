@@ -79,6 +79,7 @@
 !     &	    Flood(j),			    !	portion of cells that is  (-)
      &	    Eho(j),				!	initial stage of marsh storage cells		(m)			!JAM Oct 2010
      &	    BedMOrig(j),        !	bed elevation of marsh storage cells		(m)
+     &        BedMSD(j),          !   marsh elevation standard deviation          (m)         ! yw Nov 2020     
      &	    Esho(j),			!	soil moisture depth in marsh storage cells	(m)			!JAM Oct 2010
      &	    depo_on_off(j),     !	sediment deposition on/off flag - 1=deposition allowed in compartment, 0=no deposition in cell (e.g. main channels) (0,1)
      &        BedMAdj(j)          !   vertical adjustment to marsh elevation (m)
