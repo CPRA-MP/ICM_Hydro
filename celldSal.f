@@ -69,7 +69,7 @@ c  salinity change computations  *********************************
       QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
      &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden      
       
-      if (dddy <= 0.01) then  
+      if (dddy <= 0.1) then  
           QRain = max(QRain,0.0)
       endif
 
@@ -77,13 +77,13 @@ c  salinity change computations  *********************************
 !     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
      &        -fpet*PET(kday,Jet(j)))*Ahydro(j)*cden
       
-      if (dddym <= 0.01) then  
+      if (dddym <= 0.1) then  
           QRainm = max(QRainm,0.0)
       endif
 
 !>> original equation
-!      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
-!     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
+      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
+     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
 
 
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
@@ -127,14 +127,14 @@ c  salinity change computations  *********************************
 !      endif
       
 !>> equation for MP2017 to avoid salinity spike
-      if (dddy > 0.1) then   
-          DSal =  -QSalsum/(As(j,1)*dddy)*dt
-     &	    -Dz*S(j,1)/dddy
-      else
-          DSal = 0.0
-      endif
-      
-	S(j,2)=S(j,1)+DSal
+!      if (dddy > 0.1) then   
+!          DSal =  -QSalsum/(As(j,1)*dddy)*dt
+!     &	    -Dz*S(j,1)/dddy
+!      else
+!          DSal = 0.0
+!      endif
+!      
+!	S(j,2)=S(j,1)+DSal
          
 !      if (S(j,2) > 100) then
 !          write(*,*)'comp = ',j
