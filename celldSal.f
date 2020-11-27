@@ -155,6 +155,11 @@ c  salinity change computations  *********************************
 	    S(j,2)=36.
       endif
 
+ !>> Test setting salinity to 0.1 when the compartment is dry   Nov 2020  YW
+      if (dddy == 0.01) then
+          S(j,2) = 0.10
+      endif
+
 	Sh(j,2)=S(j,2)  
 
 
