@@ -387,11 +387,12 @@
       windstep = 0 !YW!
       lockstep = 0 !YW!
 
-!>>  ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled
+!>>  ndt_ICM is the ICM time step and is shared by the 1D and ICM. ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled.
+!>>  ndt_all_ICM and ntim_all_ICM are ICM only time step control. These two variables are updated if 1D is activated
 !>>  this allows for different timesteps to be used between the 2D model, and each 1D reach
 !>>  the timestep looping below will be by second, and 2D and 1D subroutine calls will occur when the appropriate dt is reached
-      ndt_all = ndt_ICM
-	  ntim_all=int(simdays*86400/ndt_all)
+      ndt_all_ICM = ndt_ICM
+      ntim_all_ICM=int(simdays*86400/ndt_all_ICM)
       
       
 !>> Call 'allocate_params' subroutine which allocates memory for almost all arrays used by this program
@@ -420,6 +421,8 @@
               if (Nctr_FINE_R(iir) .eq. 1)call init_FINE_R(iir, ncomp_R(iir), ioutf_R(iir)+6, Input_FINE_R(iir), days_all, ndt_FINE_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
               if (Nctr_SAND_R(iir) .eq. 1)call init_SAND_R(iir, ncomp_R(iir), ioutf_R(iir)+7, Input_SAND_R(iir),days_all, ndt_SAND_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
           enddo
+          ndt_all_ICM = ndt_all
+          ntim_all_ICM = ntim_all          
       else
           write(*,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
           write(1,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
@@ -892,13 +895,13 @@
       print*, 'ICM dt =',ndt_ICM, 'should =',dt
       if (n1d > 0) then
           print*, 'MESH dt =', ndt_R
-          print*, 'dt_all =', ndt_all
+          print*, 'dt_all =', ndt_all_ICM
       endif
  !>> start model time stepping     
       mm=0                                          ! initialize time counter
-      do n_1d=0, ntim_all-1      
+      do n_1d=0, ntim_all_ICM-1      
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
-          if (mod((n_1d*ndt_all+ndt_all), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
+          if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
 
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
@@ -1047,34 +1050,34 @@
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
-                  if (mod((n_1d*ndt_all+ndt_all), ndt_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                  if (mod((n_1d*ndt_all+ndt_all), ndt_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                        call cal_R(iir, n_R(iir),ncomp_R(iir),ioutf_R(iir),nlat_R(iir), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), WL_terminal_from_ICM_R(iir), Q_upstream_from_ICM_R(iir), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
                        n_R(iir)=n_R(iir)+1
                   endif
 !>> -- Call salinity subroutines for each 1D reach with salinity modeling activated
                   if (Nctr_SAL_R(iir) .eq. 1) then
-                       if (mod((n*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                       if (mod((n_1d*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_SAL_R(iir)=n_SAL_R(iir)+1
                            call cal_SAL_R(iir, n_SAL_R(iir), ncomp_R(iir), ioutf_R(iir)+4, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sal_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_upstream_from_ICM_R(iir), SAL_terminal_from_ICM_R(iir))
                        endif		
                   endif
 !>> -- Call temperature subroutines for each 1D reach with temperature modeling activated  
                   if (Nctr_TMP_R(iir) .eq. 1) then
-                       if (mod((n*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                       if (mod((n_1d*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_TMP_R(iir)=n_TMP_R(iir)+1
                            call cal_TMP_R(iir, n_TMP_R(iir), ncomp_R(iir), ioutf_R(iir)+5, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), tmp_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_upstream_from_ICM_R(iir), TMP_terminal_from_ICM_R(iir))
                        endif		
                   endif
 !>> -- Call suspended fines subroutines for each 1D reach with fines modeling activated  
                   if (Nctr_FINE_R(iir) .eq. 1) then
-                       if (mod((n*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                       if (mod((n_1d*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_FINE_R(iir)=n_FINE_R(iir)+1
                            call cal_FINE_R(iir, n_FINE_R(iir), ncomp_R(iir), ioutf_R(iir)+6, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), fine_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_upstream_from_ICM_R(iir), FINE_terminal_from_ICM_R(iir))
                        endif		
                   endif
 !>> -- Call suspended sand subroutines for each 1D reach with sand modeling activated  
                   if (Nctr_SAND_R(iir) .eq. 1) then
-                       if (mod((n*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n.eq.0) )then
+                       if (mod((n_1d*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_SAND_R(iir)=n_SAND_R(iir)+1
                            call cal_SAND_R(iir, n_SAND_R(iir), ncomp_R(iir), ioutf_R(iir)+7, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sand_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_upstream_from_ICM_R(iir), SAND_terminal_from_ICM_R(iir))
                        endif		

@@ -725,7 +725,7 @@
       integer :: numChem  !add zw 04/08/2020      
       
 !1D-ICM coupling variables
-      integer :: ntim_all, ndt_all, ndt_ICM       ! time stepping parameters used across 1D and 2D codes
+      integer :: ntim_all_ICM, ndt_all_ICM!, ndt_ICM       ! time stepping parameters used across 1D and 2D codes
       integer :: ntc,nlc,nuc                      ! number of terminal, lateral, and upstream connection
       integer :: n_region,n1D                     ! number of 1D rivers
     
