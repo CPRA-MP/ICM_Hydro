@@ -56,8 +56,8 @@ INCLUDE(${CMAKE_SOURCE_DIR}/cmake/architecture.cmake)
 ###########################################################################
 # ICM_HYDRO
 ###########################################################################
-SET( hydro hydro_v${ICMHYDRO_VERSION_STRING} )
-ADD_EXECUTABLE( hydro_v${ICMHYDRO_VERSION_STRING} 1D_R00_mod_arrays_FINE.f90
+SET( HYDRO hydro_v${ICMHYDRO_VERSION_STRING} )
+ADD_EXECUTABLE( ${HYDRO} 1D_R00_mod_arrays_FINE.f90
                                                   1D_R00_params_FINE.f90
                                                   1D_R00_sed_properties_FINE.f90
                                                   1D_R00_arrays_module_20200211.f90
@@ -431,5 +431,5 @@ ADD_EXECUTABLE( hydro_v${ICMHYDRO_VERSION_STRING} 1D_R00_mod_arrays_FINE.f90
                                                   2D_TSSolids.f
                                                   2D_vanRijnSediment.f
                                                   2D_waves_YV.f)
-SET_TARGET_PROPERTIES(hydro_${ICMHYDRO_VERSION_STRING} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles/mod)
-SET_TARGET_PROPERTIES(hydro_${ICMHYDRO_VERSION_STRING} PROPERTIES COMPILE_FLAGS "${Fortran_LINELENGTH_FLAG} ${Fortran_COMPILER_SPECIFIC_FLAG}" )
+SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles/mod)
+SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES COMPILE_FLAGS "${Fortran_LINELENGTH_FLAG} ${Fortran_COMPILER_SPECIFIC_FLAG}" )
