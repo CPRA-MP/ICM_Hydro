@@ -56,7 +56,7 @@ INCLUDE(${CMAKE_SOURCE_DIR}/cmake/architecture.cmake)
 ###########################################################################
 # ICM_HYDRO
 ###########################################################################
-SET( HYDRO hydro_v${ICMHYDRO_VERSION_STRING} )
+SET( hydro hydro_v${ICMHYDRO_VERSION_STRING} )
 ADD_EXECUTABLE( hydro_v${ICMHYDRO_VERSION_STRING} 1D_R00_mod_arrays_FINE.f90
                                                   1D_R00_params_FINE.f90
                                                   1D_R00_sed_properties_FINE.f90
