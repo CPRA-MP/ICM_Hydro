@@ -8,7 +8,7 @@ cjam     c Salinity  computations ****************************
 	use params
       
       real :: Saltrib
-      
+
 !>> Set minimum depth value (avoids div-by-zero errors)
       ddy= Es(j,1)-Bed(j)
 	
@@ -27,17 +27,17 @@ cjam     c Salinity  computations ****************************
       endif
       
       QSalsum=0
+
       do ktrib=1,Ntrib
 			
 !>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
-              Saltrib = Saltribj
+          Saltrib = Saltribj
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*
      &			Qmult(j,ktrib)
-
       enddo
 
       do kdiv=1,Ndiv
@@ -46,9 +46,9 @@ cjam     c Salinity  computations ****************************
       enddo
 !		do k=1,13 									! note max number of connected links is 5 ***
 !		do k=1,maxconnect
+
       do k=1,nlink2cell(j)
-          
-	    if(icc(j,k) /= 0) then
+          if(icc(j,k) /= 0) then
               if(icc(j,k) < 0) then
 		        jnb=jus(abs(icc(j,k)))
 		    elseif(icc(j,k) > 0) then
@@ -61,6 +61,7 @@ cjam     c Salinity  computations ****************************
 	    call salinity(mm,iab,jnb,j,k,Qsalsum)
       enddo										!k do loop   
 
+      
       if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
           QSalSum=QSalSum + Qmarsh(j,2)*S(j,1)
       endif

@@ -1472,7 +1472,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               call waves_YV(j)                                                            !-EDW
               call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
           endif
-
+          
           if (iSal == 1) then
               call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
           endif
@@ -1759,8 +1759,10 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           WRITE(100,2222)	(TempwAve(j),j=1,N)								!!JAM Oct 24, 2010 should be tempw
 !     	WRITE(102,2222)	(age(j,2),j=1,N)								!!JAM Oct 24, 2010 should be age
 
-!>-- Write cumulative sediment accumulation in open water to SedAcc.out (Sacc + AsandA)
+!>-- Write cumulative sediment accumulation .out files (Sacc + AsandA)
           WRITE(103,2227)	(Sacc(j,2),j=1,N)
+          WRITE(104,2227) (Sacch_int(j,2),j=1,N)
+          WRITE(1045,2227) (Sacch_edge(j,2),j=1,N)
 
 !>-- Write time marsh is flooded to fflood.out
           WRITE(105,2222)	(floodf(j),j=1,N)								!!JAM Oct 24, 2010 should be Sed accumulation

@@ -12,7 +12,7 @@
 
 ! @section Participating Organizations
 ! @image html CPRAlogo.png
-! <a href="http:\\www.coastal.LA.gov">Coastal Protection and Restoration Authority</a>
+! <a href="http://www.coastal.LA.gov">Coastal Protection and Restoration Authority</a>
 ! @image html WIlogo.png
 ! @image html UNOlogo.png
 
@@ -545,8 +545,10 @@
       open (unit=96,file='TSS.out',form='formatted',position='append')
       open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
       open (unit=100,file='TMP.out',form='formatted',position='append')		   
-	  open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute 20yr open water Acc. 
-	  open (unit=105,file='fflood.out',form='formatted',position='append')
+	  open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute open water Acc. 
+	  open (unit=104,file='SedAcc_MarshInt.out',form='formatted',position='append')		! Last row will be used to compute interior marsh Acc. 
+	  open (unit=1045,file='SedAcc_MarshEdge.out',form='formatted',position='append')		! Last row will be used to compute marsh edge Acc. 
+      open (unit=105,file='fflood.out',form='formatted',position='append')
       open (unit=111,file='STG.out',form='formatted',position='append')			! ESAVE.OUT
       open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
       open (unit=113,file='DON.out',form='formatted',position='append')
@@ -1037,8 +1039,8 @@
 
 !>> -- Reset daystep counter because end of day is met
               if (daystep == lastdaystep) then
-                  write(1,3333)'Year',year,'Day',int(day),'complete.'
-                  write(*,3333)'Year',year,'Day',int(day),'complete.'
+                  write(1,3333)' 2D domain: year',year,' -day',int(day),'complete.'
+                  write(*,3333)' 2D domain: year',year,' -day',int(day),'complete.'
                   daystep = 0
               endif
 !>> End IF for checking whether model timestep should have the 2D model subroutines run          

@@ -19,8 +19,7 @@ c***********************Start Subroutine for face salinity**********************
 !    
 !          SL(iab,2)=Csalface
 !      endif
-      
-      
+
       if(iab /= 0.0)then											!ne = 0 there no link available go to 22
 !	    if (linkt(iab) == 8) then
 !              if(Ahf(j) == 0) then
@@ -50,8 +49,9 @@ c***********************Start Subroutine for face salinity**********************
    
           QSalSum=QSalSum + sicc(j,k)*(Q(abs(icc(j,k)),2))*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
-     
+
           SL(iab,2)=Csalface
+
       endif
           
       return

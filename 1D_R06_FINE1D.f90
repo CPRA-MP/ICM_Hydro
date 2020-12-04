@@ -57,7 +57,7 @@ subroutine init_FINE_R06(npr, ioutfile, input_file, rday, ndtr, nlatr_ori, nlatr
   
     LUN = 999
 
-    open(unit = LUN, file=trim(input_file)//'input\fine.inp', &
+    open(unit = LUN, file=trim(input_file)//'input/fine.inp', &
    status='old', action = 'read', iostat = ioerr)
 
       if (ioerr /= 0) then
@@ -679,7 +679,7 @@ CN(1, :) = ConcBND(1, :)
 
 allocate(sumConc(nx))
 !open(ioutfile,file=trim(out_dir)//'hydro_input.dat')
-open(ioutfile,file=trim(out_dir)//'SedCon_output.dat')
+open(ioutfile,file=trim(out_dir)//'SedConFine_output.dat')
 write(ioutfile,30)time(1)/60, ((CN(i,j),i=1,nx),j=1,np)
 30  format(<nx*np+1>f12.2)
 

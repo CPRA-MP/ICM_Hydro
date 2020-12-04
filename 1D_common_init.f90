@@ -7,7 +7,7 @@ subroutine common_init(nr)
     integer :: i, j, NGCD_array, NGCD, max_nlat
 
 ! read dimensions for each region
-	open(999,file='..\region_input.txt')
+	open(999,file='../region_input.txt')
 !	read(999,*)nr, days_all, ndt_ICM
 	read(999,*)nr
     days_all = simdays
