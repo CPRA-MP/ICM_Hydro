@@ -25,6 +25,8 @@ subroutine common_init(nr)
 
 		
 		read(999,*)Input_file_R(i)
+        write(*,*) i,Input_file_R(i)
+        
 		read(999,*)Nctr_SAL_R(i), Nctr_TMP_R(i), Nctr_FINE_R(i), Nctr_SAND_R(i)
 		if(Nctr_SAL_R(i).eq.1)then
 			read(999,*)ndt_SAL_R(i)
