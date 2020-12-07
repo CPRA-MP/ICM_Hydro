@@ -57,7 +57,7 @@ subroutine init_TMP_R09(npr, ioutfile, input_file, rday, ndtr, nlatr_ori, nlatr,
   
     LUN = 999
 
-    open(unit = LUN, file=trim(input_file)//'input/tmp.inp', &
+    open(unit = LUN, file=trim(input_file)//'/input/tmp.inp', &
    status='old', action = 'read', iostat = ioerr)
 
       if (ioerr /= 0) then

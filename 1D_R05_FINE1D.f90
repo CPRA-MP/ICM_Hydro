@@ -57,7 +57,7 @@ subroutine init_FINE_R05(npr, ioutfile, input_file, rday, ndtr, nlatr_ori, nlatr
   
     LUN = 999
 
-    open(unit = LUN, file=trim(input_file)//'input/fine.inp', &
+    open(unit = LUN, file=trim(input_file)//'/input/fine.inp', &
    status='old', action = 'read', iostat = ioerr)
 
       if (ioerr /= 0) then
