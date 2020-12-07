@@ -73,6 +73,13 @@
       write(*,*)'Preparing summary values from Hydro model output.'      
 !>@par General Structure of Subroutine Logic:
 
+      sal_summer = 0.0
+      stage_summer = 0.0
+      tmp_summer = 0.0
+      sal_summer_links = 0.0
+      tmp_summer_links = 0.0
+      
+      
 !>> Take subset of daily values for days that correspond to summertime.
       ! subset daily values to generate summertime timeseries
       ! summertime defined as May 1 through Aug 31, Jan 1 = day 0 
