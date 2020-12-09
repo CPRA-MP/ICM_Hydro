@@ -46,8 +46,7 @@ subroutine init_R00(npr, ifile, input_file, rday, ndt, nlat_ori, nlat, latFlowLo
     character(len=128) :: dx_path
 
 
-    write(*,*) input_file
-    write(*,*) trim(input_file)
+
     open(unit=999,file=trim(input_file)//'/input/hydro.inp')
 !     open(unit=999,file="./R01_MIKE_INP50_CSC_2012/input/input4.txt",status='unknown')
 !     open(unit=999,file="./R02_NEW_INP_BR2018/input/input4.txt",status='unknown')
