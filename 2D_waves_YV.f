@@ -67,8 +67,8 @@
 	rhow = 1000.*(1+S(j,1)/1000.)	!adjust density for salinity
 
 !>> Calculate wind speed and direction.      
-      windx_value = windx(j)
-      windy_value = windy(j)
+      windx_value = max(0.01,windx(j))
+      windy_value = max(0.01,windy(j))
       wind_spd = sqrt(windx_value**2 + windy_value**2)
       wind_dir_rads = atan(windy_value/windx_value)
       if (day > 360) then
@@ -83,7 +83,7 @@
       if (wind_dir_degs <= 0.) then
           wind_dir_degs = wind_dir_degs + 360.
       endif
-      fetch_lookup = int(floor(wind_dir_degs/22.5)+1)
+      fetch_lookup = max(1, int(floor(wind_dir_degs/22.5)+1) )
       if (day > 360) then
           write(*,*) 'fetch_lookup:', fetch_lookup
       endif
