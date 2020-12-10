@@ -606,20 +606,20 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream water level
               elseif (Latr9(i) == 3) then
-                  if(Es(downN,2) > Latr10(i)) then
+                  if(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       dkd = 0.0
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream salinity
               elseif (Latr9(i) == 4) then
-                  if(S(downN,2) > Latr10(i)) then
+                  if(S(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       dkd = 0.0
                   endif
 
           !>> Set zero multiplier if lock should be closed due to high downstream water level OR salinity
               elseif (Latr9(i) == 5) then
-                  if(S(downN,2) > Latr2(i)) then
+                  if(S(jds(i),2) > Latr2(i)) then          ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       dkd = 0.0
-                  elseif(Es(downN,2) > Latr10(i)) then
+                  elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       dkd = 0.0
                   endif
 
@@ -637,13 +637,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   endif
           !>> Set zero multiplier if lock should be closed due to high uptream water level
               elseif (Latr9(i) == 8) then
-                  if(Es(upN,2) > Latr10(i)) then
+                  if(Es(jus(i),2) > Latr10(i)) then       ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       dkd = 0.0
                   endif
               endif              
            !>> If both upstream and downstream water stages are lower than channel invert, flow is zero
               !if (Es(upN,2) < latr1(i)) then
-              if (Es(upN,2) <= latr1(i) ) then	!zw 3/16/2015
+              if (Es(upN,2) <= latr1(i) ) then
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
               elseif ( ( Es(upN,2)-Bed(upN) ) <=0.01) then
@@ -653,12 +653,11 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               else
                   if(ES(downN,2) < latr1(i)) then
                       !linkdepth=max(0.5*(ES(upN,2)-latr1(i)),0.01)
-                      linkdepth=0.5*(ES(upN,2)-latr1(i))	   !zw 3/16/2015
+                      linkdepth=0.5*(ES(upN,2)-latr1(i))
 
           !>> If both upstream and downstream water stages are above channel invert, calculate average depth from both upstream and downstream channel depths
                   else
-                      !linkdepth=max(0.5*(Es(upN,2)+ES(downN,2))-latr1(i),0.01)
-                      linkdepth=0.5*(Es(upN,2)+ES(downN,2))-latr1(i)	  !zw 3/16/2015
+                      linkdepth=0.5*(Es(upN,2)+ES(downN,2))-latr1(i)
                   endif
 
 
