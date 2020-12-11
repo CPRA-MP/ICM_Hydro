@@ -830,10 +830,7 @@ subroutine cal_SAL_R03(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, o
                 endif
 				!coupling from ICM
 
-!EDW  -test .ne. instead of .ge.
-!EDW                if (Q_lat_from_ICM(j) .gt. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
-				if (Q_lat_from_ICM(j) .ne. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
-!EDW  -test .ne. instead of .ge.
+                if (Q_lat_from_ICM(j) .gt. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
                     SrcTerm = Q_lat_from_ICM(j)/real(jlat)*(SAL_lat_from_ICM(j)-CN(i,k))/(abs(flow(i))+Q_lat_from_ICM(j)/real(jlat))
 				endif
 				
