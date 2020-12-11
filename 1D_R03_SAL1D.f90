@@ -684,7 +684,6 @@ write(ioutfile,30)time(1)/60, ((CN(i,j),i=1,nx),j=1,np)
 
 end subroutine init_SAL_R03
 
-
 subroutine cal_SAL_R03(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, out_sal, Q_lat_from_ICM, SAL_lat_from_ICM, SAL_upstream_from_ICM, SAL_terminal_from_ICM)
   use precision
 !  use params
@@ -811,14 +810,14 @@ subroutine cal_SAL_R03(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, o
 
         arni = area(i)
         SrcTerm = 0.0
-        if( useSRC ) then
-          if (D50(k) < 0.000062) then
-            SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
-          else
-            SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
-            !write(*, *) time(n), arni, SrcTerm
-          endif
-        endif
+!EDW        if( useSRC ) then
+!EDW          if (D50(k) < 0.000062) then
+!EDW            SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
+!EDW          else
+!EDW            SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
+!EDW            !write(*, *) time(n), arni, SrcTerm
+!EDW          endif
+!EDW        endif
 		
 		! Add lateral input
 		do j=1, Nlat
@@ -828,17 +827,20 @@ subroutine cal_SAL_R03(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, o
 			if (i >= ilat .AND. i < (ilat+jlat))then
 				if (FlowLAT(n+1,j) > 0. .and. klat .eq. 1)then
 					SrcTerm = FlowLAT(n+1,j)/real(jlat)*(ConcLAT(n+1,j)-CN(i,k))/(abs(flow(i))+FlowLAT(n+1,j)/real(jlat))
-				endif
+                endif
 				!coupling from ICM
-				if (Q_lat_from_ICM(j) .gt. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
-					SrcTerm = Q_lat_from_ICM(j)/real(jlat)*(SAL_lat_from_ICM(j)-CN(i,k))/(abs(flow(i))+Q_lat_from_ICM(j)/real(jlat))
+
+!EDW  -test .ne. instead of .ge.
+!EDW                if (Q_lat_from_ICM(j) .gt. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
+				if (Q_lat_from_ICM(j) .ne. 0. .and. SAL_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
+!EDW  -test .ne. instead of .ge.
+                    SrcTerm = Q_lat_from_ICM(j)/real(jlat)*(SAL_lat_from_ICM(j)-CN(i,k))/(abs(flow(i))+Q_lat_from_ICM(j)/real(jlat))
 				endif
 				
 				if (klat.eq.2) then
 					print*, 'Rating curves for lateral salinity input have not been supported yet.'
 					stop
 				endif
-				
 			endif
 		enddo
 		
