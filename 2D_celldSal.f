@@ -62,9 +62,9 @@ cjam     c Salinity  computations ****************************
       enddo										!k do loop   
 
       
-      if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
-          QSalSum=QSalSum + Qmarsh(j,2)*S(j,1)
-      endif
+      !if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
+      !    QSalSum=QSalSum + Qmarsh(j,2)*S(j,1)
+      !endif
 
 c  salinity change computations  *********************************
       QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
@@ -157,7 +157,7 @@ c  salinity change computations  *********************************
       endif
 
  !>> Test setting salinity to 0.1 when the compartment is dry   Nov 2020  YW
-      if (dddy == 0.01) then
+      if (dddy <= 0.01) then
           S(j,2) = 0.10
       endif
 
