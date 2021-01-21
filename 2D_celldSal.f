@@ -26,10 +26,10 @@ cjam     c Salinity  computations ****************************
           dddym = ddym
       endif
       
-      QSalsum=0
+      QSalsum = 0
 
+!>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
-			
 !>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
           Saltrib = Saltribj
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
@@ -38,15 +38,15 @@ cjam     c Salinity  computations ****************************
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*
      &			Qmult(j,ktrib)
-      enddo
+enddo
 
+!>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
           QSalsum=QSalsum-Qdiv(kdiv,kday)*0.15*	!JAM jan 09 11
      &			Qmultdiv(j,kdiv)
       enddo
-!		do k=1,13 									! note max number of connected links is 5 ***
-!		do k=1,maxconnect
 
+!>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
           if(icc(j,k) /= 0) then
               if(icc(j,k) < 0) then
@@ -63,30 +63,50 @@ cjam     c Salinity  computations ****************************
 
       
       !if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
-      !    QSalSum=QSalSum + Qmarsh(j,2)*S(j,1)
+      QSalSum = QSalSum + Qmarsh(j,2)*S(j,1)      ! add marsh-openwater flow exchange to salinity flux
       !endif
 
-c  salinity change computations  *********************************
-      QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden      
       
-      if (dddy <= 0.1) then  
-          QRain = max(QRain,0.0)
+!>> original salinity change equation 
+!      QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
+!     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden      
+!      
+!      if (dddy <= 0.1) then  
+!          QRain = max(QRain,0.0)
+!      endif
+!
+!      QRainm = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
+!!     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
+!     &        -fpet*PET(kday,Jet(j)))*Ahydro(j)*cden
+!      
+!      if (dddym <= 0.1) then  
+!          QRainm = max(QRainm,0.0)
+!      endif
+!     
+!      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
+!     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
+
+!>> updated salinity mass balance equation - with treatment for dry cells - Jan 21
+      if (Es(j,2) - Bed(k) <= 0.01) then 
+          S(j,2) = S(j,1) ! 0.10      ! if dry, don't update salinity, previously this set salinity to min value
+      else
+          S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
       endif
 
-      QRainm = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-!     &        -fpet*PET(kday,Jet(j)))*Ahf(j)*cden      
-     &        -fpet*PET(kday,Jet(j)))*Ahydro(j)*cden
+      !>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
+      !>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
+          
+      !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
+      !>>       - tributary flows into compartment
+      !>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
+      !>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
+      !>>       - marsh-openwater exchange flow
+      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly
+
+
+
       
-      if (dddym <= 0.1) then  
-          QRainm = max(QRainm,0.0)
-      endif
-
-!>> original equation
-      S(j,2) = (S(j,1)*As(j,1)*dddy-QSalsum*dt)
-     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
-
-
+      
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
 
 !      if (dddy > 0.1) then 
@@ -150,17 +170,15 @@ c  salinity change computations  *********************************
 !      endif
 
 !>> High-pass and low-pass filters on salinity calculation
-      if(S(j,2) < 0.10) then
-          S(j,2) = 0.10
+!      if(S(j,2) < 0.10) then
+!          S(j,2) = 0.10
+      if(S(j,2) < 0.0) then           ! try a lower floor on allowed salinity value
+          S(j,2) = 0.0
       elseif (S(j,2) > 36.) then
 	    S(j,2)=36.
       endif
 
- !>> Test setting salinity to 0.1 when the compartment is dry   Nov 2020  YW
-      if (dddy <= 0.01) then
-          S(j,2) = 0.10
-      endif
-
+!>> Set marsh salinity equal to open water salinity
 	Sh(j,2)=S(j,2)  
 
 
