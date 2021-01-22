@@ -87,7 +87,7 @@ enddo
 !     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
 
 !>> updated salinity mass balance equation - with treatment for dry cells - Jan 21
-      if (Es(j,2) - Bed(k) <= 0.01) then 
+      if (Es(j,2) - Bed(j) <= 0.01) then 
           S(j,2) = S(j,1) ! 0.10      ! if dry, don't update salinity, previously this set salinity to min value
       else
           S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
