@@ -217,11 +217,11 @@ cccccccccc cjam collects flow from connecting links
       Dzz = sndz*min(abs(Dz),oscilflag)
       if (abs(dzz) == oscilflag) then
           write(*,*) 'Comp=',j,'timestep=',mm,'dz=',dz
-          write(*,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,1)
+          write(*,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,2)
           write(*,*) 'OWstg(t-1)=',Es(j,1),'OWstg(t)=',Es(j,2)
           write(*,*) 'Mstg(t-1)=',Eh(j,1),'Mstg(t)=',Eh(j,2)
           write(1,*) 'Comp=',j,'timestep=',mm,'dz=',dz
-          write(1,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,1)
+          write(1,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,2)
           write(1,*) 'OWstg(t-1)=',Es(j,1),'OWstg(t)=',Es(j,2)
           write(1,*) 'Mstg(t-1)=',Eh(j,1),'Mstg(t)=',Eh(j,2)
       endif

@@ -62,8 +62,8 @@ enddo
       enddo										!k do loop   
 
       
-      !if (Qmarsh(j,2) > 0.0) then                !YW! combining marsh and OW volumne
-      QSalSum = QSalSum + Qmarsh(j,2)*S(j,1)      ! add marsh-openwater flow exchange to salinity flux
+      !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
+      !QSalSum = QSalSum + Qmarsh(j,2)*S(j,1)      ! add marsh-openwater flow exchange to salinity flux
       !endif
 
       
@@ -87,11 +87,11 @@ enddo
 !     &      /(As(j,1)*dddy+(Qsum_in(j)-Qsum_out(j)+QRain)*dt)
 
 !>> updated salinity mass balance equation - with treatment for dry cells - Jan 21
-      if (Es(j,2) - Bed(j) <= 0.01) then 
-          S(j,2) = S(j,1) ! 0.10      ! if dry, don't update salinity, previously this set salinity to min value
-      else
-          S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
-      endif
+!      if (Es(j,2) - Bed(j) <= 0.01) then 
+!          S(j,2) = S(j,1) ! 0.10      ! if dry, don't update salinity, previously this set salinity to min value
+!      else
+!          S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
+!      endif
 
       !>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
       !>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
@@ -101,11 +101,7 @@ enddo
       !>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
       !>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
       !>>       - marsh-openwater exchange flow
-      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly
-
-
-
-      
+      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly      
       
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
 
@@ -131,21 +127,21 @@ enddo
 !      endif
 
 !>> ZW TEST 07/22/2020 - better than YW TEST
-!      ddym1=Eh(j,1)-BedM(j)
-!      ddym2=Eh(j,2)-BedM(j)
-!      if(Ahf(j)>0 .AND. (ddym1>0.1 .AND. ddym2>0.1))then
-!	      vol1=(Es(j,1)-Bed(j))*As(j,1)+(Eh(j,1)-BedM(j))*Ahf(j)
-!	      vol2=(Es(j,2)-Bed(j))*As(j,1)+(Eh(j,2)-BedM(j))*Ahf(j)
-!	  else
-!	      vol1=(Es(j,1)-Bed(j))*As(j,1)
-!	      vol2=(Es(j,2)-Bed(j))*As(j,1)
-!	  endif
+      ddym1=Eh(j,1)-BedM(j)
+      ddym2=Eh(j,2)-BedM(j)
+      if(Ahf(j)>0 .AND. (ddym1>0.1 .AND. ddym2>0.1))then
+	      vol1=(Es(j,1)-Bed(j))*As(j,1)+(Eh(j,1)-BedM(j))*Ahf(j)
+	      vol2=(Es(j,2)-Bed(j))*As(j,1)+(Eh(j,2)-BedM(j))*Ahf(j)
+	  else
+	      vol1=(Es(j,1)-Bed(j))*As(j,1)
+	      vol2=(Es(j,2)-Bed(j))*As(j,1)
+	  endif
 	  
-!	  if((Es(j,2)-Bed(j))>0.1)then
-!	      S(j,2)= (S(j,1)*vol1-QSalsum*dt)/vol2
-!     else
-!          S(j,2) = S(j,1)
-!      endif
+	  if((Es(j,2)-Bed(j))>0.1)then
+	      S(j,2)= (S(j,1)*vol1-QSalsum*dt)/vol2
+      else
+          S(j,2) = S(j,1)
+      endif
       
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
