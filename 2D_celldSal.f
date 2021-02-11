@@ -38,7 +38,7 @@ cjam     c Salinity  computations ****************************
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*
      &			Qmult(j,ktrib)
-enddo
+      enddo
 
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
