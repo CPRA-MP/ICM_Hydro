@@ -376,10 +376,10 @@ subroutine cal_R08(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
                 lateralFlow(latFlowLocations(i)) = r_interpol(lateralFlowTable(1, :, i), &
                     lateralFlowTable(2, :, i),dataInEachLatFlow(i),oldQ(latFlowLocations(i)))
 			elseif (latFlowType(i) .eq. 3) then
-				if(Q_lat_from_ICM(i)<-99990.)then
-					print*,'R08 ERROR: Q_lat_from_ICM at #',i
-					stop
-				endif
+			!	if(Q_lat_from_ICM(i)<-99990.)then
+			!		print*,'R08 ERROR: Q_lat_from_ICM at #',i
+			!		stop
+			!	endif
                   lateralFlow(latFlowLocations(i)) = Q_lat_from_ICM(i)             ! Q coupling from ICM to MESH; (+)ve Q adds discharge to MESH
             endif
                 lateralFlow(latFlowLocations(i)) = lateralFlow(latFlowLocations(i))/ &
