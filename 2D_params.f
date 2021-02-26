@@ -351,6 +351,7 @@
       real(sp),dimension(:),allocatable :: Latr8
       real(sp),dimension(:),allocatable :: Latr9
       real(sp),dimension(:),allocatable :: Latr10
+      real(sp),dimension(:),allocatable :: Latr11      
       real(sp),dimension(:),allocatable :: fa_mult
 
       integer,dimension(:,:),allocatable :: hourclosed

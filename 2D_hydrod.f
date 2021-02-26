@@ -597,50 +597,81 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> This does not take into account which stage (u/s or d/s) is greater
               if (Latr9(i) == 1) then
                   if (abs(ES(upN,2)-ES(downN,2)) > Latr10(i)) then
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
           !>> Set zero multiplier if lock is closed due to time of day
               elseif (Latr9(i) == 2) then
                   if (hourclosed(i,simhr+1) == 1) then
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream water level
               elseif (Latr9(i) == 3) then
                   if(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream salinity
               elseif (Latr9(i) == 4) then
                   if(S(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
 
           !>> Set zero multiplier if lock should be closed due to high downstream water level OR salinity
               elseif (Latr9(i) == 5) then
                   if(S(jds(i),2) > Latr2(i)) then          ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
                   elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-                      dkd = 0.0
+ !                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep                      
                   endif
 
           !>> Set zero multiplier if lock should be closed based on observed daily timeseries
               elseif (Latr9(i) == 6) then
                   if (lockhours(lockrow,Latr10(i)) <= 0.0) then    ! lockrow is data timestep counter updated in main.f
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
 
               !endif
           !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
               elseif (Latr9(i) == 7) then
                   if (Q(Latr2(i),2) <= Latr10(i)) then
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high uptream water level
               elseif (Latr9(i) == 8) then
                   if(Es(jus(i),2) > Latr10(i)) then       ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-                      dkd = 0.0
+!                      dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
-              endif              
+              endif    
+              if (Latr11(i) < 0) then
+                  Latr11(i) = 0
+              elseif (Latr11(i) > 1) then
+                  Latr11(i) = 1
+              endif
+              
            !>> If both upstream and downstream water stages are lower than channel invert, flow is zero
               !if (Es(upN,2) < latr1(i)) then
               if (Es(upN,2) <= latr1(i) ) then
@@ -677,10 +708,11 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Put a low pass filter on Deta to avoid infinity and NaN values
                   !Deta = min(abs(Deta),100.)	  !zw 3/14/2015 comments out:Es is already checked in celldQ
 
-                  Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
-                  EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
+                  Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd*Latr11(i)
+                  EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd*Latr11(i)  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Type3 Lock Link',i,' flow is NaN'
+                      write(*,*) 'Latr11(i)=', Latr11(i)
                       write(*,*) 'Deta=', Deta
                       write(*,*) 'Res=',Res
                       write(*,*) 'Resist=',Resist

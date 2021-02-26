@@ -325,6 +325,7 @@
       allocate(Latr8(links))
       allocate(Latr9(links))
       allocate(Latr10(links))
+      allocate(Latr11(links))      
       allocate(fa_mult(links))
       allocate(hourclosed(links,24))
 

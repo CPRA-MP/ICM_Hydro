@@ -385,7 +385,8 @@
               maxmarel = max(Latr1(i),Latr2(i),Latr10(i))
               Latr1(i) = maxmarel
           endif
-      enddo
+          Latr11(i) = 0.0            
+      enddo    
 924   Format(7x,a,x,I0,x,a,x,I0,x,a)
 925   Format(7x,a,x,I0,x,a)
       write(1,*)
