@@ -76,10 +76,8 @@ subroutine common_init(nr)
 	do i=1, nr
 
     if(nlat_R(i)>0)then
-        write(*,*) 'region', i,nlat_R(i)
-		read(999,*) dmptx !(latFlowLoc_R(i,j), j=1, nlat_R(i))
-        write(*,*) dmptx
-		do j=1,nlat_R(i)
+		read(999,*)(latFlowLoc_R(i,j), j=1, nlat_R(i))
+        do j=1,nlat_R(i)
 			if ((latFlowLoc_R(i,j)-1)*(latFlowLoc_R(i,j)-ncomp_R(i)) .eq. 0) then
 				print*, 'Region ',i, ' ERROR: Lateral flow cannot be applied at the boundaries'
 				stop
