@@ -12,7 +12,7 @@
       integer :: cells,links,maxconnect,simdays,lastdaystep,daystep
       integer :: lasttidestep,tidestep,tiderow,surgerow
       integer :: lastwindstep,windstep,windrow
-      integer :: lastlockstep,lockstep,lockrow
+      integer :: lastlockstep,lockstep,lockrow,lockOPstep
       integer :: windgages,raingages,etgages,tidegages 
       integer :: writehourly,modeloverland
       integer :: iSed,iSal,iTemp,iWQ
