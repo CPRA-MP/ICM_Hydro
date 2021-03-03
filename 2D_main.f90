@@ -960,8 +960,10 @@
               !>> -- linking terminal connections
               if (n1d>0) then
                   if (ntc>0) then
+                      write(*,*) ' terminal connection flows:'
                       do i = 1,ntc
                           WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
+                          write(*,*) '   link',i,'Q',WL_terminal_from_ICM_R(tcr1D(i))
                           if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
                               SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
                           endif
@@ -979,11 +981,13 @@
                   
                   !>> -- linking lateral connections    
                   if (nlc>0) then
+                      write(*,*) 'lateral connection flows:'
                       k = 0
                       do i = 1,n1D
-                          do j = 1,nlat_R(i)
-			      if (lcr1D(k+j)>0) then
+                        do j = 1,nlat_R(i)
+			                if (lcr1D(k+j)>0) then
                                   Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
+                                  write(*,*) '   region',i,'link',j,'Q',Q_lat_from_ICM_R(i,j)
                                   if (Nctr_SAL_R(i) .eq. 1) then
                                       SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
                                   endif
@@ -996,9 +1000,9 @@
                                   if (Nctr_SAND_R(i) .eq. 1) then
                                       SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
                                   endif
-			      endif	  
-                          enddo
-                          k = k+nlat_R(i)
+                            endif	  
+                        enddo
+                        k = k+nlat_R(i)
                       enddo
                   endif
                   
