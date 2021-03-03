@@ -5,7 +5,8 @@ subroutine common_init(nr)
     implicit none
     integer, intent(out) :: nr
     integer :: i, j, NGCD_array, NGCD, max_nlat
-
+    character*1000 :: dmptx
+    
 ! read dimensions for each region
 	open(999,file='../region_input.txt')
 !	read(999,*)nr, days_all, ndt_ICM
@@ -76,7 +77,8 @@ subroutine common_init(nr)
 
     if(nlat_R(i)>0)then
         write(*,*) 'region', i,nlat_R(i)
-		read(999,*) (latFlowLoc_R(i,j), j=1, nlat_R(i))
+		read(999,*) dmptx !(latFlowLoc_R(i,j), j=1, nlat_R(i))
+        write(*,*) dmptx
 		do j=1,nlat_R(i)
 			if ((latFlowLoc_R(i,j)-1)*(latFlowLoc_R(i,j)-ncomp_R(i)) .eq. 0) then
 				print*, 'Region ',i, ' ERROR: Lateral flow cannot be applied at the boundaries'
