@@ -987,7 +987,7 @@
                         do j = 1,nlat_R(i)
 			                if (lcr1D(k+j)>0) then
                                   Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-                                  write(*,*) '   region',i,'link',j,'/',nlat_R(i),'Q',Q_lat_from_ICM_R(i,j)
+                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
                                   if (Nctr_SAL_R(i) .eq. 1) then
                                       SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
                                   endif
