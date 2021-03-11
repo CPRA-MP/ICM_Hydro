@@ -668,9 +668,9 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Lock is closed if upstream stage is lower than the downstream stage, or is within the stage trigger
           !>> This is the same as Latr9(i) == 1, except it only allows drainage from upstream-to-downstream (e.g., flapgate/backflow preventer)
               elseif (Latr9(i) == 9) then
-                  if ((ES(upN,2)-ES(downN,2)) > Latr10(i)) then
+                  if ((ES(upN,2)-ES(downN,2)) < Latr10(i)) then
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) n dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif    
