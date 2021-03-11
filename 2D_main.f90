@@ -955,15 +955,20 @@
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
               call hydrod(mm)
-
+              
+              do ii = 1,n
+                 if (Latr9(ii) == 9) then
+                     write(*,'(A,I,F8.2,F8.2,F8.2,F8.2,F8.2,F10.2)') 'lock',ii,ES(jus(ii),2),ES(jds(ii),2),ES(jus(ii),2)-ES(jds(ii),2),Latr10(ii),Latr11(ii),Q(ii,2)
+                 endif
+              end do
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
               if (n1d>0) then
                   if (ntc>0) then
-                      write(*,*) ' terminal connection flows:'
+!debug                      write(*,*) ' terminal connection flows:'
                       do i = 1,ntc
                           WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
-                          write(*,*) '   link',i,'Q',WL_terminal_from_ICM_R(tcr1D(i))
+!debug                          write(*,*) '   link',i,'Q',WL_terminal_from_ICM_R(tcr1D(i))
                           if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
                               SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
                           endif
@@ -981,13 +986,13 @@
                   
                   !>> -- linking lateral connections    
                   if (nlc>0) then
-                      write(*,*) 'lateral connection flows:'
+!debug                      write(*,*) 'lateral connection flows:'
                       k = 0
                       do i = 1,n1D
                         do j = 1,nlat_R(i)
 			                if (lcr1D(k+j)>0) then
                                   Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
+!debug                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
                                   if (Nctr_SAL_R(i) .eq. 1) then
                                       SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
                                   endif

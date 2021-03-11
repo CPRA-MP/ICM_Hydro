@@ -550,7 +550,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 7, Latr10 = discharge (cms)
                       ! if Latr9 = 8, Latr10 = u/s WSEL (m)
           !>> Initialize link's on/off flag to on
-              dkd=1.0	  !zw 3/14/2015 moved to here from below
+              dkd=1.0	  
 
           !>> Check for missing roughness attribute values and reassign to default values if missing
               if (Latr5(i) < 0.0) then
@@ -597,7 +597,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> This does not take into account which stage (u/s or d/s) is greater
               if (Latr9(i) == 1) then
                   if (abs(ES(upN,2)-ES(downN,2)) > Latr10(i)) then
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
@@ -605,7 +605,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock is closed due to time of day
               elseif (Latr9(i) == 2) then
                   if (hourclosed(i,simhr+1) == 1) then
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
@@ -613,7 +613,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock should be closed due to high downstream water level
               elseif (Latr9(i) == 3) then
                   if(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
@@ -621,7 +621,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock should be closed due to high downstream salinity
               elseif (Latr9(i) == 4) then
                   if(S(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
@@ -630,10 +630,10 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock should be closed due to high downstream water level OR salinity
               elseif (Latr9(i) == 5) then
                   if(S(jds(i),2) > Latr2(i)) then          ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
- !                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep                      
@@ -642,17 +642,16 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock should be closed based on observed daily timeseries
               elseif (Latr9(i) == 6) then
                   if (lockhours(lockrow,Latr10(i)) <= 0.0) then    ! lockrow is data timestep counter updated in main.f
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
 
-              !endif
           !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
               elseif (Latr9(i) == 7) then
                   if (Q(Latr2(i),2) <= Latr10(i)) then
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
@@ -660,12 +659,23 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !>> Set zero multiplier if lock should be closed due to high uptream water level
               elseif (Latr9(i) == 8) then
                   if(Es(jus(i),2) > Latr10(i)) then       ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
-!                      dkd = 0.0
+                      !dkd = 0.0
                       Latr11(i) = Latr11(i) - dt/lockOPstep
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif
-              endif    
+          !>> Set zero multiplier if upstream differential head is greater than usptream differential stage trigger
+          !>> Lock is closed if upstream stage is lower than the downstream stage, or is within the stage trigger
+          !>> This is the same as Latr9(i) == 1, except it only allows drainage from upstream-to-downstream (e.g., flapgate/backflow preventer)
+              elseif (Latr9(i) == 9) then
+                  if ((ES(upN,2)-ES(downN,2)) > Latr10(i)) then
+                      !dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  endif    
+              endif
+                  
               if (Latr11(i) < 0) then
                   Latr11(i) = 0
               elseif (Latr11(i) > 1) then
