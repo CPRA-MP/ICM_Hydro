@@ -955,12 +955,7 @@
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
               call hydrod(mm)
-              
-              do ii = 1,M
-                 if (Latr9(ii) == 9) then
-                     write(*,'(A,I,F8.2,F8.2,F8.2,F8.2,F8.2,F10.2)') 'lock',ii,ES(jus(ii),2),ES(jds(ii),2),ES(jus(ii),2)-ES(jds(ii),2),Latr10(ii),Latr11(ii),Q(ii,2)
-                 endif
-              end do
+
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
               if (n1d>0) then
