@@ -954,7 +954,7 @@
 
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
-!debug!              call hydrod(mm)
+              call hydrod(mm)
 
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
@@ -985,7 +985,7 @@
                       k = 0
                       do i = 1,n1D
                         do j = 1,nlat_R(i)
-			                if (lcr1D(k+j)>0) then
+			    if (lcr1D(k+j)>0) then
                                   Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
 !debug                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
                                   if (Nctr_SAL_R(i) .eq. 1) then
@@ -1053,7 +1053,8 @@
 
 
 !>> Call 1D channel routing subroutines
-          if (n1d> 0) then
+!speed_debug          if (n1d> 0) then
+	  if (n1d> 10) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
@@ -1096,8 +1097,9 @@
 !>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
 !>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
 !>> -- saving calculated values for terminal connections from 1D array to the 2D array
-          if (n1d>0) then  
-              if (ntc>0) then                                
+!speed_debug           if (n1d>0) then  
+          if (n1d>10) then 
+	      if (ntc>0) then                                
                   do i = 1,ntc
                       Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
                       Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
