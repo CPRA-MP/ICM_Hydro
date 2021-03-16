@@ -431,28 +431,28 @@
       
       
 !>> Set initial conditions for constants and model parameters that are not included in input text files
-!	Initial Conditions
-	  g=9.81					! Gravity (m/s2)
-	  pi=4.0*atan(1.0)
-	  TemI = 15.				! Initial Water Temperature
-	  KnN= 20.				! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-	  KnP= 3.					! (ug/L) P Michaelis Constant
-	  KnSS= 50.				! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-	  KnSal=4.				! (ppt) Salinity  Michaelis Constant
-
-	  ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
-	  ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
-	  PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
-	  ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
-	  Pardpmr= 0.05
-	  PPMR=1.-ParPMR-Pardpmr
-	  ParSand=0.05			! sand/TSS in Tribs and MR typical
-	  ParCLa=0.03				! Partition LivA --> ChlA
-
-	  consd=24*3600			! sec to days
-	  conv=0.001*consd		! (mg/L)*(m3/s) --> kg/d
-	  floodf(:)=0.0
-	  nuo=0.000001			! DEFAULT Viscosity
+!   Initial Conditions
+     g=9.81					! Gravity (m/s2)
+     pi=4.0*atan(1.0)
+     TemI = 15.				! Initial Water Temperature
+     KnN= 20.				! (ug/L) DIN Michaelis Constant  Thomann & Mueller
+     KnP= 3.					! (ug/L) P Michaelis Constant
+     KnSS= 50.				! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
+     KnSal=4.				! (ppt) Salinity  Michaelis Constant
+    
+     ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
+     ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
+     PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
+     ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
+     Pardpmr= 0.05
+     PPMR=1.-ParPMR-Pardpmr
+     ParSand=0.05			! sand/TSS in Tribs and MR typical
+     ParCLa=0.03				! Partition LivA --> ChlA
+    
+     consd=24*3600			! sec to days
+     conv=0.001*consd		! (mg/L)*(m3/s) --> kg/d
+     floodf(:)=0.0
+     nuo=0.000001			! DEFAULT Viscosity
 
 !>> Generate array for Day of Year value for the first day of each month
       month_DOY(1) = 1
@@ -475,13 +475,13 @@
       endif
 
 !C> initially set GrowAlgae array equal to zero
-	  do j=1,N
+      do j=1,N
           do ichem=1,14
               do me=1,14
                   GrowAlgae(j,ichem,me) = 0.
               enddo
           enddo
-	  enddo
+      enddo
 
 !>> determine upper CSS threshold for each sediment class where resuspension of bed material will be deactivated
 !>> These values are based on an assumption that at a TSS value equal to the threshold concentration, the particle size distribution is 10% sand, 45% silt, and 45% clay.
@@ -1053,8 +1053,7 @@
 
 
 !>> Call 1D channel routing subroutines
-!speed_debug          if (n1d> 0) then
-	  if (n1d> 10) then
+	  if (n1d> 0) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
@@ -1097,9 +1096,8 @@
 !>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
 !>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
 !>> -- saving calculated values for terminal connections from 1D array to the 2D array
-!speed_debug           if (n1d>0) then  
-          if (n1d>10) then 
-	      if (ntc>0) then                                
+          if (n1d>0) then 
+              if (ntc>0) then                                
                   do i = 1,ntc
                       Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
                       Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
@@ -1124,7 +1122,7 @@
                   k = 0
                   do i = 1,n1D
                       do j = 1,nlat_R(i)   
-		          if (lcr1D(k+j)>0) then
+                          if (lcr1D(k+j)>0) then
                               Es(lcf2D(k+j),2) =  y_R(i,lcn1D(k+j))                            ! need to check y be the average of the XSs
                               if (Nctr_SAL_R(i) .eq. 1) then
                                   S(lcf2D(k+j),2) = sal_R(i,lcn1D(k+j)) 
@@ -1140,7 +1138,7 @@
                               if (Nctr_SAND_R(i) .eq. 1) then
                                   CSS(lcf2D(k+j),2,1) = sand_R(i,lcn1D(k+j))                                              ! check unit
                               endif
-			  endif
+                          endif
                       enddo
                       k = k+nlat_R(i)                  
                   enddo
@@ -1361,12 +1359,12 @@
       call ICM_MapToGrid(8,500)               ! Map summer maximum 2-wk mean salinity to grid
       call ICM_MapToGrid(9,500)               ! Map percent sand in bed to grid
 
-	  do kk=301,312
-		call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TKN values to grid
+      do kk=301,312
+        call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TKN values to grid
       enddo
 
       do kk=401,412
-		call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TSS values to grid
+        call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TSS values to grid
       enddo
 
 !>> Calculate water depth for 500 m-grid cells.
@@ -1384,11 +1382,11 @@
       call ICM_InterpolateToGrid(5,500)       ! Interpolate summer maximum 2-wk mean salinity to grid
 
       do kk=101,112
-		call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean salinity values to grid
+          call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean salinity values to grid
       enddo
 
       do kk=201,212
-		call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean temperatures to grid
+          call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean temperatures to grid
       enddo
 
 !>> Call 'ICM_TreeConditions_Veg' subroutine which determines if tree establishment conditions are met for each grid cell of the Veg model.
