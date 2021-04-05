@@ -246,8 +246,9 @@ subroutine init_R03(npr, ifile, input_file, rday, ndt, nlat_ori, nlat, latFlowLo
 
     ! applying boundary
     ! interpolation of boundaries at the initial time step
-
+    write(*,*) 'oldQ init'
     oldQ(1)    =r_interpol(USBoundary(1, 1:ppp),USBoundary(2, 1:ppp),ppp,t) ! t is in min
+    write(*,*) 'oldY init'
     oldY(ncomp)=r_interpol(DSBoundary(1, 1:qqq),DSBoundary(2, 1:qqq),qqq,t) ! t is in min
 
     ! DS Boundary treatment: from water level to area time series
@@ -256,6 +257,7 @@ subroutine init_R03(npr, ifile, input_file, rday, ndt, nlat_ori, nlat, latFlowLo
 
 	!open(unit=81,file=trim(output_path)//'DS_area.txt', status='unknown')
     xt=oldY(ncomp)
+    write(*,*) 'oldArea init'
     oldArea(ncomp)=r_interpol(ncompElevTable,ncompAreaTable,nel,xt)
     !write(81, *) t, oldArea(ncomp)
 
@@ -354,8 +356,10 @@ subroutine cal_R03(n, npr, ifile, nlat, outa, outb, outc, outd, wl_lat, WL_termi
 
         ! interpolation of boundaries at the desired time step
 		!pause 1
+	write(*,*) 'newQ dt=',n
         newQ(1)     =r_interpol(USBoundary(1, 1:ppp),USBoundary(2, 1:ppp),ppp,t+dtini/60.) ! t is in min, dtini is in sec
-        newY(ncomp) =r_interpol(DSBoundary(1, 1:qqq),DSBoundary(2, 1:qqq),qqq,t+dtini/60.) ! t is in min, dtini is in sec
+        write(*,*) 'newY dt=',n
+	newY(ncomp) =r_interpol(DSBoundary(1, 1:qqq),DSBoundary(2, 1:qqq),qqq,t+dtini/60.) ! t is in min, dtini is in sec
 		! coupling if WL_lat_from_ICM has a valid value
 		if (WL_terminal_from_ICM > -9999.) newY(ncomp) = WL_terminal_from_ICM
 		! End coupling
