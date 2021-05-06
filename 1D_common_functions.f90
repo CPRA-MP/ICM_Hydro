@@ -87,13 +87,13 @@ function r_interpol(x,y,jj,xt)
     else
         print*, xt, ' is not within the limit'
         print*, 'maxval(x)= ', maxval(x), 'and minval(x)=', minval(x),'so',  xt, ' is not within the limit'
-      !  print*, 'jj', jj
-      !  print*, 'x', (x(i), i=1, jj)
+       ! print*, 'jj', jj
+       ! print*, 'x', (x(i), i=1, jj)
        ! print*, 'y', (y(i), i=1, jj)
-        !stop
+       ! pause
         if (xt.le. minval(x)) yt=minval(y)
         if (xt.ge. maxval(x)) yt=maxval(y)
-		if (isnan(xt))yt=minval(y)
+	if (isnan(xt)) yt=minval(y)
     end if
         
 
