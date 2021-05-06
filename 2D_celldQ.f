@@ -206,7 +206,7 @@ cccccccccc cjam collects flow from connecting links
      & deltaZ set to max value allowed in RunControlR.dat'
           write(1,898) 'Large deltaZ in compartment ',j,'timestep=',mm,'
      & deltaZ set to max value allowed in RunControlR.dat'
-          pause
+          stop !pause
 898   Format(x,A,I0,x,A,x,I0,x,A)
       endif
 

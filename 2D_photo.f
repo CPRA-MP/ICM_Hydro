@@ -149,7 +149,8 @@
       
       if(isNan(ke)) then
           write(*,*) alphai,alphao,alphap,alphapn,iss,det,alg
-          pause
+          write(*,*) 'NaN encountered in Photosynthesis calculations'
+          stop!pause
       endif
       
       

@@ -71,13 +71,7 @@
       windy_value = max(0.01,windy(j))
       wind_spd = sqrt(windx_value**2 + windy_value**2)
       wind_dir_rads = atan(windy_value/windx_value)
-      if (day > 360) then
-          write(*,*) 'j:', j
-          write(*,*) 'windx:', windx(j)
-          write(*,*) 'windx:', windy(j)
-          write(*,*) 'wind_spd:', wind_spd
-          write(*,*) 'wind_dir_rads:', wind_dir_rads
-      endif
+
 !>> Convert wind direction to degrees and lookup fetch from 16 different directions (each separated by 22.5 degrees)      
       wind_dir_degs = wind_dir_rads*180./pi
       if (wind_dir_degs <= 0.) then

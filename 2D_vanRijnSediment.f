@@ -222,7 +222,8 @@
 				write(*,*) 'D50 for sand is greater than 2 mm.'
 				write(*,*) 'The van Rijn equation should not be used.'
 				write(*,*) 'Correct grain size definitions and re-run.' 
-				pause
+				stop !pause
+                  
 			endif
                   
 !>> -- calculate van Rijn terms

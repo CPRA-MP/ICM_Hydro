@@ -406,12 +406,12 @@
           if (n1D /= n_region) then
               write(*,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
               write(1,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              pause
+              stop !pause
           endif
           if (nlc /= sum(nlat_R(1:n_region))) then
               write(*,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
               write(1,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              pause
+              stop !pause
           endif	  
           do iir=1, n_region
               write(*,*) 'Initializing 1D model for region: ',iir
@@ -1173,7 +1173,7 @@
                   write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
                   write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
                   write(*,*) '  Linkt=',linkt(i)
-                  pause
+                  stop !pause
               endif
           enddo                  
 
@@ -1207,7 +1207,7 @@
               if(isNAN(Es(j,2))) then  
                   write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
                   write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
-                  pause
+                  stop !pause
               endif          
 !!>> -- Check that some  calculated water quality values do not exceed default threshold values. If they do, set equal to the threshold
 !              if(Chem(j,10,2) > 0.00025) then

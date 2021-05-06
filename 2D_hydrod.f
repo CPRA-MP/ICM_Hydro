@@ -385,7 +385,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'invert=',latr1(i)
                       write(*,*) 'Es(jus)=',Es(jus(i),2)
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
-                      pause
+                      stop !pause
                   endif
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow case
               endif
@@ -488,7 +488,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'p=',p
                       write(*,*) 'Es(jus)=',Es(jus(i),2)
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
-                      pause
+                      stop !pause
                   endif
 				  
               endif
@@ -734,7 +734,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'invert=',latr1(i)
                       write(*,*) 'Es(jus)=',Es(jus(i),2)
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
-                      pause
+                      stop !pause
                   endif
               endif
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
@@ -838,7 +838,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                 write(*,*) 'beta=',Es(upN,2)-invup
                 write(*,*) 'Es(jus)=',Es(jus(i),2)
                 write(*,*) 'Es(jds)=',Es(jds(i),2)
-                pause
+                stop !pause
             endif
 			
 ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
@@ -988,7 +988,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'invert=',latr1(i)
                       write(*,*) 'Eh(jus)=',Eh(jus(i),2)
                       write(*,*) 'Eh(jds)=',Eh(jds(i),2)
-                      pause
+                     stop ! pause
                   endif
 
               endif
@@ -1107,7 +1107,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'htupf=',htupf
                       write(*,*) 'Es(jus)=',Es(jus(i),2)
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
-                      pause
+                      stop !pause
                   endif
 				  
               endif
@@ -1165,7 +1165,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   write(*,*) 'reg_r=',reg_r
                   write(*,*) 'reg_s=',reg_s
                   write(*,*) 'sn=',sn
-                  pause
+                  stop !pause
               endif
 
 !>> Check to see if regime channel link flow is greater than original channel flow
@@ -1236,7 +1236,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Link',i,'flow is NaN after Qmax filter'
                       write(*,*) 'Qmax=',Qmax
-                      pause
+                      stop !pause
                   endif
               endif
           endif
