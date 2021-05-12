@@ -60,7 +60,6 @@
       !real(sp) :: dday
       !real(sp) :: hday
       !integer :: kday
-      !integer :: kthr
       integer :: NTs
 	real(sp) :: dtwind
       real(sp) :: dttide

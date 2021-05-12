@@ -6,7 +6,7 @@
 
       integer :: ichem
       integer :: day_int,i,j,jj,jjk,k,kk,kl,klk,mm
-      integer :: sedclass,kthr,kmon,kday,simhr,khr
+      integer :: sedclass,kmon,kday,simhr,khr
       real :: dday,ttday
       real :: Rh,AK,Res,Resist,Deta,Detah,Dmarsh,Sf,sn,dkd,linkdepth,dhr
       real :: time,thour,tmon,tday,tdayj,hday
@@ -14,9 +14,9 @@
       real :: thourj
       real :: tt0,tt1,tt2,tt3,tt4,tt5,tt6,agulf3,Sseason
       real :: shour,sday,f1,f2,f3,t1,t2,t3,tlag,aset
-      real :: fcrop,Tres,Vettl,dref,CSSTRIBj,Saltribj,dmon,dmod
+      real :: fcrop,Vettl,dmon,dmod
       real :: akL,akns
-      real :: QSalSum,QTmpSum,QMarshKK
+      real :: QMarshKK
       real :: rca,rna,rnd,rcd,rcn
       real :: Q_filter1,Q_filter2                                                ! yw flow filter
       integer :: flag_apply                                                      ! yw apply flag
@@ -43,7 +43,6 @@
       time=float(mm)*dt           ! elapsed time
       thour=mm*dt/3600            ! elapsed time in hours
       tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
-      kthr=int(thour+1)
       kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
 !
 !! calculate various versions of time to be used as flags throughout program
@@ -63,12 +62,7 @@
 c Temporary values
       Cp =0.5
       fcrop=0.5          !0.1  !0.59                        !potential coef
-      Tres = 3600.
-! 	Vsettl=8/24/3600 !-EDW not used
-      dref=4.0
-!>> default CSS and salinity concentrations in tributary flow
-      CSSTRIBj=25.
-      Saltribj=0.205
+
 
 
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -159,15 +153,6 @@ c     These parameters should be moved to input to start at any time of year ** 
       tlag=0.								!Tide lag time along the eastern boundary in the Gulf
       aset=0.01
 
-c***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
-c***********************************************************************************************
-
-!      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
-!	    jj=KBC(jjk)
-!          Call TideBC(jj,jjk)
-!! kthr and kday now global parameters - no longer needed to be passed into subroutine
-!!          Call TideBC(jj,kthr,kday)
-!      enddo
 !>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
       Call TideBC
 c***********************END TIDE****************************************************************
@@ -1504,36 +1489,23 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 !============================cell updating
 	do j=1,N
 !============================cell continuity
-! day, dday, kthr, and kday now global parameters - no longer needed to be passed into subroutines
       if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
 
           call CelldQ(j,kday,fcrop,mm,dday)
 
           if (iSed == 1) then
               call waves_YV(j)                                                            !-EDW
-              call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
+              call CelldSS(j,kday)
           endif
           
           if (iSal == 1) then
-              call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+              call CelldSal(j,kday)
           endif
 
           if (iTemp == 1) then
-              call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+              call CelldTmp(j,kday)
           endif
 
-!          call Celldage(QageSUM,Dz,j,kday,kthr,ageTRIBj,dref,Tres)
-
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)                                                            !-EDW
-! QSSUM is now global parameter - doesn't need to be passed into subroutine
-! QSsumh is calculated in CelldSS - therefore it is no longer passed into subroutine but is calculated only locally
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)
-
-!          call CelldSS(Dz,j,CSSTRIBj,dref,Tres)               !JAM Oct 2010
-!	    call CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-!          call CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 
 
 !>> reset photosynthesis parameters so they can be reset for current compartment at timestep in photo.f
