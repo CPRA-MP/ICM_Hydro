@@ -24,10 +24,10 @@
 
       QTMPsum=0
 
-!      do kdiv=1,Ndiv
-!	    QTMPsum=QTMPsum  -Qdiv(kdiv,kday)*TempMR(kday)*
-!     &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
-!      enddo
+      do kdiv=1,Ndiv
+	    QTMPsum=QTMPsum  -Qdiv(kdiv,kday)*TempMR(kday)*
+     &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
+      enddo
 
 	do ktrib=1,Ntrib
 !>> If Qtrib is negative, flow is leaving system via tributary, use compartment temp if this is the case
