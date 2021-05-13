@@ -1,4 +1,4 @@
-	Subroutine hydrod(mm,j,kday)			!face densities from node densities
+	Subroutine hydrod(mm)			!face densities from node densities
 
       use params
 
