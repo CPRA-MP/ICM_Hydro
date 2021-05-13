@@ -2,9 +2,6 @@
 
 
       use params
-! need to sort out implicit  none and use of intent(in) -EDW
-! carry the fix through for all subroutines that do not have implicit none
-      
 !      implicit none
       
 !      integer, intent(in) :: j, kday              ! local variables declared in hydrod.f
@@ -17,8 +14,8 @@
       real ::  Saltrib, vol1, vol2
 !      real :: dddy, dddym                         ! filtered water and marsh depths to use in denominators to avoid div by 0 error
 
-      !>> Set minimum depth value to set dry cells to turn off salinity change calculations
-      dry_depth = 0.05             ! depth value underwhich the open water (or marsh area) will be considered dry
+      !>> Set minimum depth value (avoids div-by-zero errors and sets dry cells to turn off salinity change calculations)
+      dry_depth = 0.1             ! depth value underwhich the open water (or marsh area) will be considered dry
 
       ddy1  = Es(j,1) - Bed(j)    ! previous timestep water area depth
       ddy2  = Es(j,2) - Bed(j)    ! current timestep water area depth
@@ -46,7 +43,11 @@
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
           endif             
-
+          write(*,*) 'kt',ktrib
+          write(*,*) 'kd',kday
+          write(*,*) 'j',j
+          write(*,*) 'saltrib', Saltrib
+          write(*,*) 'qsalsum',QSalsum
           QSalsum = QSalsum - Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
 
