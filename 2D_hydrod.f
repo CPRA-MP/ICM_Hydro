@@ -1,10 +1,11 @@
-	Subroutine hydrod(mm,j,kday)			!face densities from node densities
+	Subroutine hydrod(mm)			!face densities from node densities
 
       use params
 
       implicit none
       
-      integer, intent(out) :: j,kday
+      !integer,intent(out) :: j, kday
+      integer :: j,kday
       integer :: ichem
       integer :: day_int,i,jj,jjk,k,kk,kl,klk,mm
       integer :: sedclass,kmon,simhr,khr
