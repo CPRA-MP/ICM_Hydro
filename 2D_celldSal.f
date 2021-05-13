@@ -1,14 +1,12 @@
-      Subroutine CelldSal(j,kday)!,QSalSum,iab,jnb)
+      Subroutine CelldSal(j,kday,QSalSum,iab,jnb)
 
 
       use params
-!      implicit none
+      implicit none
       
-!      integer, intent(in) :: j, kday              ! local variables declared in hydrod.f
-!      real, intent(inout) :: QSalSum              ! summation of salinity masses from all tributaries, diversions, and links
-!      integer, intent(out) :: iab, jnb
-      real :: QSalSum
-      integer :: iab, jnb
+      integer, intent(in) :: j, kday              ! local variables declared in hydrod.f
+      real, intent(inout) :: QSalSum              ! summation of salinity masses from all tributaries, diversions, and links
+      integer, intent(out) :: iab, jnb
       integer :: k, ktrib, kdiv
       real :: dry_depth, ddy1, ddy2, ddym1, ddym2
       real ::  Saltrib, vol1, vol2

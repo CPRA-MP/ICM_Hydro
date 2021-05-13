@@ -3,10 +3,10 @@ c***********************Start Subroutine for face salinity**********************
       Subroutine salinity(iab,jnb,j,k,Qsalsum)		!face densities from node densities
 
       use params
-!      implicit none
+      implicit none
       
-!      real, intent(inout) :: QSalSum              ! summation of salinity masses from all tributaries, diversions, and links
-!      real, intent(in) :: iab, jnb,j,k
+      real, intent(inout) :: QSalSum              ! summation of salinity masses from all tributaries, diversions, and links
+      real, intent(in) :: iab, jnb,j,k
       real :: Csalface, diffus
       
 !>@par General Structure of Subroutine Logic:
