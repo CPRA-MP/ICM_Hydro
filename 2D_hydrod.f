@@ -3,11 +3,10 @@
       use params
 
       implicit none
-      
-      integer, intent(out) :: j,kday
+
       integer :: ichem
-      integer :: day_int,i,jj,jjk,k,kk,kl,klk,mm
-      integer :: sedclass,kmon,simhr,khr
+      integer :: day_int,i,j,jj,jjk,k,kk,kl,klk,mm
+      integer :: sedclass,kmon,kday,simhr,khr
       real :: dday,ttday
       real :: Rh,AK,Res,Resist,Deta,Detah,Dmarsh,Sf,sn,dkd,linkdepth,dhr
       real :: time,thour,tmon,tday,tdayj,hday
@@ -1488,84 +1487,86 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
      
 !============================cell updating
-      do j=1,N
+	do j=1,N
 !============================cell continuity
-          if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
+      if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
 
-              call CelldQ(j,kday,fcrop,mm,dday)
+          call CelldQ(j,kday,fcrop,mm,dday)
 
-              if (iSed == 1) then
-                  call waves_YV(j)                                                            !-EDW
-                  call CelldSS(j,kday)
-              endif
-            
-              if (iSal == 1) then
-                  call CelldSal(j,kday)
-              endif
+          if (iSed == 1) then
+              call waves_YV(j)                                                            !-EDW
+              call CelldSS(j,kday)
+          endif
+          
+          if (iSal == 1) then
+              call CelldSal(j,kday)
+          endif
 
-              if (iTemp == 1) then
-                  call CelldTmp(j,kday)
-              endif
+          if (iTemp == 1) then
+              call CelldTmp(j,kday)
+          endif
 
 
 
 !>> reset photosynthesis parameters so they can be reset for current compartment at timestep in photo.f
-              muph = 0.0
-              fpp = 0.0
+          muph = 0.0
+          fpp = 0.0
 
 !>> call photosnythesis rate calculation to pass into water quality routines that require it, this updates muph and fpp values
-              if (iWQ == 1) then
-                  call photo(j)
+          if (iWQ == 1) then
+              call photo(j)
 
 !>> loop through WQ constituents for each WQ type that utilizes transport equation
-                  do ichem = 1,2
-                      call CelldChem(j,kday,ichem)
-                  enddo
-!              write(*,*) chem(j,kday,1),chem(j,kday,2)
-                  ichem = 5
+              do ichem = 1,2
                   call CelldChem(j,kday,ichem)
+		    enddo
+!              write(*,*) chem(j,kday,1),chem(j,kday,2)
+              ichem = 5
+              call CelldChem(j,kday,ichem)
 
-                  do ichem = 7,11
-                      call CelldChem(j,kday,ichem)
-                  enddo
+              do ichem = 7,11
+                  call CelldChem(j,kday,ichem)
+		    enddo
 
-          
+              !ichem = 14
+              !call CelldChem(j,kday,ichem)  !zw 4/28/2015 POP calculated in MP2012 by ALG and DET see below
+
 !>> Update WQ concentrations that are calculated from other constituents and did not rely on the transport equation
 !>>-- set carbon-to-chlorophyll A ratio
-                  rca = 75.0
+	        rca = 75.0
 !>>-- set nitrogen-chlorophyll A stoichiometric mass ratio for Organic N calculation
-                  rna = 0.176*rca
+	        rna = 0.176*rca
 !>>-- set nitrogen-detritus stoichiometric mass ratio for Organic N calculation
-                  rnd = 0.072
+              rnd = 0.072
 !>>-- set carbron-detritus stoichiometric mass ratio for Organic C calculation
-                  rcd = 0.41
+              rcd = 0.41
 !>>-- set carbon-nitrogen stoichiometric mass ratio for Organic C calculation
-                  rcn = 5.69
+              rcn = 5.69
 
 !>>-- Dissolved Inorganic N is function of NO3 and NH4
-                  Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
+              Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
 
 !>>-- Organic N is function of: dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-                  Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
+              Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
 
 !>>-- Total Organic Carbon is function of:dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-                  Chem(j,6,2) = rcn*Chem(j,10,2)+
+              Chem(j,6,2) = rcn*Chem(j,10,2)+
      &                        rca*Chem(j,8,2)+rcd*Chem(j,9,2)
 
 !>>-- Dissolved Inorganic P is function of Total Inorganic P (ichem = 5) and fraction of TIP that is in particulate form (calculated in photo.f)
-                  Chem(j,12,2) = (1-fpp)*chem(j,5,2)
+              Chem(j,12,2) = (1-fpp)*chem(j,5,2)
 
 !>>-- Chlorophyll A not calculated - set to -9999
-                  Chem(j,13,2) = -9999
+              Chem(j,13,2) = -9999
 
 ! used to be located at end of hydrod
-                  Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
+		    Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
 
 ! Particulate Organic P (POP) is function of ALG and DET
-                  Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
+			Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
 
-              endif
           endif
+      endif
 
 !>> Apply low and high pass filters to newly calculated WQ concentrations
 	    !zw 4/28/2015 rove the WQ low and high pass filters
