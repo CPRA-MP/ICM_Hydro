@@ -1,26 +1,50 @@
 !      Subroutine CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
-	Subroutine CelldSal(QSalSUM,j,kday,k	,SalTRIBj,dref,Tres)
-! kthr was passed into this subroutine as k which was then overwritten during DO loop
-cjam     c Salinity  computations ****************************
+	Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+      
+      !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
+      !>>       - tributary flows into compartment
+      !>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
+      !>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
+      !>>       - marsh-openwater exchange flow
+      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly      
 
-	use params
+      !*************************************************************************************************************************************
+      !>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
+      !>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
+      !*************************************************************************************************************************************    
+
+
+      use params
       
       real :: Saltrib
+      real :: dry_depth
+      real :: vol1, vol2
+      real :: marsh_vol1, marsh_vol2
+      real :: ddy1, ddy2 
+      real :: ddym1, ddym2
 
-!>> Set minimum depth value (avoids div-by-zero errors)
-      ddy= Es(j,1)-Bed(j)
-	
-      if(ddy <= 0.01) then
+!>> Define depth, in meters, for dry cells that will turn off salinity change calculations
+      dry_depth = 0.05
+      dry_cell_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
+!      dry_cell_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
+      
+!>> Calculate water and marsh depths for current and previous timesteps
+      ddy1 = Es(j,1)-Bed(j)
+      ddy2 = Es(j,2)-Bed(j)
+      ddym1 = Eh(j,1)-BedM(j)
+      ddym2 = Eh(j,2)-BedM(j)
+
+
+!>> Set minimum depth value to avoid div-by-zero errors
+      if(ddy1 <= 0.01) then
           dddy = 0.01
       else
           dddy = ddy
       endif
-      
-      ddym= Eh(j,1)-BedM(j)
-	
-      if(ddym <= 0.01) then
+
+      if(ddym1 <= 0.01) then
           dddym = 0.01
       else
           dddym = ddym
@@ -31,35 +55,33 @@ cjam     c Salinity  computations ****************************
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
 !>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
-          Saltrib = Saltribj
+          Saltrib = 0.1
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
           endif             
-          QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*
-     &			Qmult(j,ktrib)
+          QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
 
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
-          QSalsum=QSalsum-Qdiv(kdiv,kday)*0.15*	!JAM jan 09 11
-     &			Qmultdiv(j,kdiv)
+          QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
       enddo
 
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
           if(icc(j,k) /= 0) then
               if(icc(j,k) < 0) then
-		        jnb=jus(abs(icc(j,k)))
-		    elseif(icc(j,k) > 0) then
+                  jnb=jus(abs(icc(j,k)))
+              elseif(icc(j,k) > 0) then
                   jnb=jds(abs(icc(j,k)))
-	        endif  
+              endif  
           endif
           
-	    iab=abs(icc(j,k))
+          iab=abs(icc(j,k))
     
-	    call salinity(mm,iab,jnb,j,k,Qsalsum)
-      enddo										!k do loop   
+          call salinity(mm,iab,jnb,j,k,Qsalsum)
+      enddo
 
       
       !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
@@ -93,15 +115,6 @@ cjam     c Salinity  computations ****************************
 !          S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
 !      endif
 
-      !>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
-      !>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
-          
-      !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
-      !>>       - tributary flows into compartment
-      !>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
-      !>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
-      !>>       - marsh-openwater exchange flow
-      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly      
       
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
 
@@ -127,20 +140,35 @@ cjam     c Salinity  computations ****************************
 !      endif
 
 !>> ZW TEST 07/22/2020 - better than YW TEST
-      ddym1=Eh(j,1)-BedM(j)
-      ddym2=Eh(j,2)-BedM(j)
-      if(Ahf(j)>0 .AND. (ddym1>0.1 .AND. ddym2>0.1))then
-	      vol1=(Es(j,1)-Bed(j))*As(j,1)+(Eh(j,1)-BedM(j))*Ahf(j)
-	      vol2=(Es(j,2)-Bed(j))*As(j,1)+(Eh(j,2)-BedM(j))*Ahf(j)
-	  else
-	      vol1=(Es(j,1)-Bed(j))*As(j,1)
-	      vol2=(Es(j,2)-Bed(j))*As(j,1)
-	  endif
-	  
-	  if((Es(j,2)-Bed(j))>0.1)then
-	      S(j,2)= (S(j,1)*vol1-QSalsum*dt)/vol2
+
+!>> Check if the marsh area of the compartment should be used for calculating total water volume in salinity concentration calculations
+      marsh_vol1 = 0.0
+      marsh_vol2 = 0.0
+      if( Ahf(j) > 0 ) then                     ! check if there is marsh area
+          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
+                  marsh_vol1 = ddym1*Ahf(j)
+                  marsh_vol2 = ddym2*Ahf(j)
+              else
+                  marsh_vol1 = 0.0
+                  marsh_vol2 = 0.0
+              endif
+          else
+              marsh_vol1 = 0.0
+              marsh_vol2 = 0.0
+          endif
       else
-          S(j,2) = S(j,1)
+          marsh_vol1 = 0.0
+          marsh_vol2 = 0.0
+      endif
+
+      vol1 = ddy1*As(j,1) + marsh_vol1
+      vol2 = ddy2*As(j,1) + marsh_vol2
+
+      if(ddy2 > dry_depth) then
+          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
+      else
+          S(j,2) = dry_cell_salinity
       endif
       
 !>> equation for MP2017 to avoid salinity spike
@@ -151,7 +179,7 @@ cjam     c Salinity  computations ****************************
 !          DSal = 0.0
 !      endif
 !      
-!	S(j,2)=S(j,1)+DSal
+!     S(j,2)=S(j,1)+DSal
          
 !      if (S(j,2) > 100) then
 !          write(*,*)'comp = ',j
@@ -171,22 +199,22 @@ cjam     c Salinity  computations ****************************
       if(S(j,2) < 0.0) then           ! try a lower floor on allowed salinity value
           S(j,2) = 0.0
       elseif (S(j,2) > 36.) then
-	    S(j,2)=36.
+          S(j,2)=36.
       endif
 
 !>> Set marsh salinity equal to open water salinity
-	Sh(j,2)=S(j,2)  
+      Sh(j,2)=S(j,2)  
 
 
 !!>> Calculate daily average values reported out to output files ! moved to hydro
-!	if(daystep == 1) then
-!	!>> reset average salinity value at start of day
-!		SALAV(j) = S(j,2)*dt/(3600.*24.)
+!     if(daystep == 1) then
+!     !>> reset average salinity value at start of day
+!         SALAV(j) = S(j,2)*dt/(3600.*24.)
 !      else
 !          !>> Update average salinity by timestep's contribution to daily average 
-!		SALAV(j)=SALAV(j) + S(j,2)*dt/(3600.*24.)
-!	endif
+!         SALAV(j)=SALAV(j) + S(j,2)*dt/(3600.*24.)
+!     endif
 
       return 
-	end
+      end
 c***********************End Subroutine for Change in Cell Salinity*******JAM Oct 2010***********
