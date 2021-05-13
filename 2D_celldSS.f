@@ -107,27 +107,27 @@
                   endif
               endif
           enddo
-!>> Calculate sediment flux from diversions 
-!>> Negative flux is FROM diversion TO open water
-!>> positive diversion flow is INTO compartment - multiply by -1 to keep sign convention of negative sediment flux is INTO open water
-          do it = 1,ndiv
-              jit = jdiv(it)
-              divflow = -Qmultdiv(j,it)*Qdiv(it,kday)
-              if (divflow <= 0.0) then
-                  QSdiv(k) = Qsdiv(k)
-     &                 + divflow*cssTdiv(jit,kday,k)
-              else
-!>> if tributary flow is leaving compartment and there are suspended solids in compartment, determine maximum possible sediment flux (g/sec) based on available sediment
-                  if(CSS(j,1,k) > CSSmin) then
-                      QSdiv_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
-                      QSdiv(k) = QSdiv(k)
-     &                     + min(divflow*css(j,1,k),QSdiv_avail)
-                  else
-                      QSdiv(k) = QSdiv(k) + 0.0
-                  endif
-              endif
-          enddo
-	enddo
+!!>> Calculate sediment flux from diversions 
+!!>> Negative flux is FROM diversion TO open water
+!!>> positive diversion flow is INTO compartment - multiply by -1 to keep sign convention of negative sediment flux is INTO open water
+!          do it = 1,ndiv
+!              jit = jdiv(it)
+!              divflow = -Qmultdiv(j,it)*Qdiv(it,kday)
+!              if (divflow <= 0.0) then
+!                  QSdiv(k) = Qsdiv(k)
+!     &                 + divflow*cssTdiv(jit,kday,k)
+!              else
+!!>> if tributary flow is leaving compartment and there are suspended solids in compartment, determine maximum possible sediment flux (g/sec) based on available sediment
+!                  if(CSS(j,1,k) > CSSmin) then
+!                      QSdiv_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
+!                      QSdiv(k) = QSdiv(k)
+!     &                     + min(divflow*css(j,1,k),QSdiv_avail)
+!                  else
+!                      QSdiv(k) = QSdiv(k) + 0.0
+!                  endif
+!              endif
+!          enddo
+      enddo
 ! End loop over sediment classes
 
 !>> Calculate sediment flux from link network

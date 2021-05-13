@@ -44,10 +44,10 @@
           QSalsum = QSalsum - Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
 
-!>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
-      do kdiv=1,Ndiv
-          QSalsum = QSalsum - Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
-      enddo
+!!>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
+!      do kdiv=1,Ndiv
+!          QSalsum = QSalsum - Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
+!      enddo
 
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
