@@ -41,6 +41,11 @@
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
           endif             
+          write(*,*) 'kt',ktrib
+          write(*,*) 'kd',kday
+          write(*,*) 'j',j
+          write(*,*) 'saltrib', Saltrib
+          write(*,*) 'qsalsum',QSalsum
           QSalsum = QSalsum - Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
 
