@@ -19,7 +19,7 @@
       use params
       
       real :: Saltrib
-      real :: dry_depth
+      real :: dry_depth, dry_salinity
       real :: vol1, vol2
       real :: marsh_vol1, marsh_vol2
       real :: ddy1, ddy2 
@@ -27,8 +27,8 @@
 
 !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
       dry_depth = 0.05
-      dry_cell_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
-!      dry_cell_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
+      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
+!      dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
       
 !>> Calculate water and marsh depths for current and previous timesteps
       ddy1 = Es(j,1)-Bed(j)
@@ -166,9 +166,9 @@
       vol2 = ddy2*As(j,1) + marsh_vol2
 
       if(ddy2 > dry_depth) then
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
+          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)
       else
-          S(j,2) = dry_cell_salinity
+          S(j,2) = dry_salinity
       endif
       
 !>> equation for MP2017 to avoid salinity spike
