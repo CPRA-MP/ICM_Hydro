@@ -171,6 +171,7 @@
 !> @param[out] day                    elapsed model time in decimals days
 !> @param[out] thour                  elapsed model time in decimal hours
 !> @param[out] tmon                   elapsed model time in decimal months
+!> @param[out] kthr                   integer of hourly elapsed model time +1
 !> @param[out] kmon				    integer of monthly elapsed model time +1
 !> @param[out] kday                   integer of daily elapsed model time +1
 !> @param[out] dday                   decimal portion of day, dday=0.0 at 0:00 (midnight)

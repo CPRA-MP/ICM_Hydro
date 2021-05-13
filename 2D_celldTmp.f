@@ -1,5 +1,7 @@
-      Subroutine CelldTmp(j,kday)
-!     Temperature  computations ****************************
+!	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
+! kthr and kday now global parameters - no longer needed to be passed into subroutine      
+	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+cJAM     c Salinity  computations ****************************
 	
       use params
 

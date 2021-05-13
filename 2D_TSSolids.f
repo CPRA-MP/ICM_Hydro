@@ -1,6 +1,6 @@
 cc**********************Start Subroutine for TSS Solids*****************************************
     
-      Subroutine TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,sedclass)		!face densities from node densities
+      Subroutine TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)		!face densities from node densities
 
       use params
       

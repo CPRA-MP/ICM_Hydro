@@ -1,5 +1,8 @@
-      Subroutine CelldSS(j,kday)
-!>      Tributary and resuspension/deposition contributions to SS
+!       Subroutine CellDSS(Dz,j,CSSTRIBj,dref,Tres)
+
+! QSSUM, QSSumh, kthr and kday now global parameters - no longer needed to be passed into subroutine      
+  	Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
+cJAM      Tributary and resuspension/deposition contributions to SS
 
 !> @param     QSsum(k)        sediment flux in Open Water from all links - negative value is flux INTO open water (g/s)
 !> @param     QSsumh(k)       sediment flux in Marsh from all marsh links - negative value is flux INTO marsh (g/s)
@@ -145,7 +148,7 @@
           if (iab /= 0) then
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
-			    call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,sedclass)
+			    call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
 		    enddo
           endif
       enddo
