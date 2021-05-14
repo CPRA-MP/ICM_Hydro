@@ -1718,7 +1718,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               TSSAve(kl) = TSSAve(kl) + ( CSS(kl,2,1)+CSS(kl,2,2)
      &                  + CSS(kl,2,3)+CSS(kl,2,4) )*dt/(3600.*24.)
               QmarshAve(kl) = QmarshAve(kl)+Qmarsh(kl,2)*dt/(3600.*24.)
-			  
+
               !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
               ESMX(kl,2) = max(ESMX(kl,2),ES(kl,2))
               ESMN(kl,2) = min(ESMN(kl,2),ES(kl,2))
