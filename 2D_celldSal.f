@@ -21,8 +21,15 @@
       real :: marsh_vol1, marsh_vol2
       real :: ddy1, ddy2 
       real :: ddym1, ddym2
-
-!>> Define depth, in meters, for dry cells that will turn off salinity change calculations
+      real :: DSal, maxDSal
+      
+!>> set default value that will cap the allowable change in salinity for the current timestep
+!>> this dS cap will cap a change in salinity to 10% of the background mean salinity of the compartment
+!>> (mean salinity is updated every day using a rolling window that will equal the mean one-day salinity at the end of Jan 1, 
+!>>  will equal the 6 month salinity on June 30, and so on
+      maxDSal = 0.1*SALAV(j)
+      
+      !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
       dry_depth = 0.05
       dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
 !      dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
@@ -160,10 +167,29 @@
       
       if(ddy2 > dry_depth) then
           S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)
+          
+          ds = S(j,2) - S(j,1)
+          
+          !>> check to see if the compartment is 10% open water or less (indicates possibly location in swamp/forested region
+          !>> if it is small water-to-land ratio, then check to see if it is fresh
+          !>> if both criteria are met - do not allow the salinity to increase a large amount for the current timestep
+          !>> this is a filter to prevent spiking of salinity due to swamp forest compartment geographic representation issues
+          if ( Apctwater(j) < 0.1) then
+              if (SALAV(j) < 2.0) then
+                  if ( abs(DSal) > maxDSal ) then
+                      S(J,2) = S(j,1) + maxds*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
+                  endif
+              endif
+          endif
+                  
+                      
+          
       else
           S(j,2) = dry_salinity
       endif
 
+      
+      
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
 !          DSal =  -QSalsum/(As(j,1)*dddy)*dt

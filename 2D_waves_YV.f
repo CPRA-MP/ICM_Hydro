@@ -78,14 +78,10 @@
           wind_dir_degs = wind_dir_degs + 360.
       endif
       fetch_lookup = max(1, int(floor(wind_dir_degs/22.5)+1) )
-      if (day > 360) then
-          write(*,*) 'fetch_lookup:', fetch_lookup
-      endif
+
 !>> Pull appropriate fetch for compartment and wind direction from lookup array      
       fetch_value = max(0.1,Fetch(j,fetch_lookup))
-      if (day > 360) then
-          write(*,*) 'fetch_value:', fetch_value
-      endif
+
 !>> Calculate dimensionless factor for use in Young & Verhagen wave equations
       dim_factor  = g/(wind_spd**2)
  
