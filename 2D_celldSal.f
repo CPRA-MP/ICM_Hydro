@@ -1,7 +1,4 @@
-!      Subroutine CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-
-! kthr and kday now global parameters - no longer needed to be passed into subroutine      
-	Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
       
       !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
       !>>       - tributary flows into compartment
@@ -35,8 +32,6 @@
       ddy2 = Es(j,2)-Bed(j)
       ddym1 = Eh(j,1)-BedM(j)
       ddym2 = Eh(j,2)-BedM(j)
-
-      write(*,'(I,6F0.4)')j,dry_depth,dry_salinity,ddy1,ddy2,ddym1,ddym2
       
 !>> Set minimum depth value to avoid div-by-zero errors
       if(ddy1 <= 0.01) then
@@ -52,7 +47,6 @@
       endif
       
       QSalsum = 0
-      write(*,*) 'QS1:',QSalsum
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
 !>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
@@ -63,7 +57,6 @@
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
-      write(*,*) 'QS2:',QSalsum
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
           QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
@@ -83,8 +76,6 @@
     
           call salinity(mm,iab,jnb,j,k,Qsalsum)
       enddo
-      
-      write(*,*) 'QS3:',QSalsum
       
       !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
       !QSalSum = QSalSum + Qmarsh(j,2)*S(j,1)      ! add marsh-openwater flow exchange to salinity flux
@@ -163,19 +154,16 @@
           marsh_vol1 = 0.0
           marsh_vol2 = 0.0
       endif
-      write(*,'(I,2F0.3)') j,marsh_vol1,marsh_vol2
       
       vol1 = ddy1*As(j,1) + marsh_vol1
       vol2 = ddy2*As(j,1) + marsh_vol2
-      
-      write(*,'(I,2F0.3)') j,vol1,vol2
       
       if(ddy2 > dry_depth) then
           S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)
       else
           S(j,2) = dry_salinity
       endif
-      write(*,*) j,S(j,1),S(j,2)
+
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
 !          DSal =  -QSalsum/(As(j,1)*dddy)*dt
