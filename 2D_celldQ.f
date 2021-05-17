@@ -201,12 +201,12 @@ cccccccccc cjam collects flow from connecting links
       !endif
       !
       if(abs(Dz) > maxdz) then
-          Dz = sndz*maxdz
+          Dz = sndz*oscilflag   ! Dz = sndz*maxdz
           write(*,898) 'Large deltaZ in compartment ',j,'timestep=',mm,'
      & deltaZ set to max value allowed in RunControlR.dat'
           write(1,898) 'Large deltaZ in compartment ',j,'timestep=',mm,'
      & deltaZ set to max value allowed in RunControlR.dat'
-          stop !pause
+          !pause
 898   Format(x,A,I0,x,A,x,I0,x,A)
       endif
 
