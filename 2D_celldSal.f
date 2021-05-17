@@ -23,11 +23,6 @@
       real :: ddym1, ddym2
       real :: DSal, maxDSal
       
-!>> set default value that will cap the allowable change in salinity for the current timestep
-!>> this dS cap will cap a change in salinity to 10% of the background mean salinity of the compartment
-!>> (mean salinity is updated every day using a rolling window that will equal the mean one-day salinity at the end of Jan 1, 
-!>>  will equal the 6 month salinity on June 30, and so on
-      maxDSal = 0.1*SALAV(j)
       
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
       dry_depth = 0.05
@@ -169,7 +164,14 @@
           S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)
           
           ds = S(j,2) - S(j,1)
+
+          !>> set default value that will cap the allowable change in salinity for the current timestep
+          maxDSal = 0.1           ! this dS cap will cap salinity changes to 0.1 ppt but is only applied to forested compartments below
           
+          ! maxDSal = 0.1*SALAV(j)  ! this dS cap will cap a change in salinity to 10% of the background mean salinity of the compartment
+                                  ! (mean salinity is updated every day using a rolling window that will equal the mean one-day salinity at the end of Jan 1, 
+                                  ! will equal the 6 month salinity on June 30, and so on      
+
           !>> check to see if the compartment is 10% open water or less (indicates possibly location in swamp/forested region
           !>> if it is small water-to-land ratio, then check to see if it is fresh
           !>> if both criteria are met - do not allow the salinity to increase a large amount for the current timestep
