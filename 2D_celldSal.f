@@ -179,7 +179,7 @@
           if ( Apctwater(j) < 0.1) then
               if (SALAV(j) < 2.0) then
                   if ( abs(DSal) > maxDSal ) then
-                      S(J,2) = S(j,1) + maxds*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
+                      S(J,2) = S(j,1) + maxDSal*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
                   endif
               endif
           endif
