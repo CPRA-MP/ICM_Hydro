@@ -16,6 +16,7 @@
       use params
       
       real :: Saltrib
+      real :: cden
       real :: dry_depth, dry_salinity
       real :: vol1, vol2
       real :: marsh_vol1, marsh_vol2
@@ -23,7 +24,8 @@
       real :: ddym1, ddym2
       real :: DSal, maxDSal
       
-      
+      cden=1./1000./24./3600.		! mm/d to m/s conversion
+
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
       dry_depth = 0.05
       dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
@@ -161,10 +163,13 @@
       vol2 = ddy2*As(j,1) + marsh_vol2
       
       if(ddy2 > dry_depth) then
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)
-          
+          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
           ds = S(j,2) - S(j,1)
-
+          
+          !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 
+          !>> this net precip volumetric change does not need to be included in Qsalsum since precip and ET are 
+          !>> always assumed to have zero salinity mass in those water volumes
+          
           !>> set default value that will cap the allowable change in salinity for the current timestep
           maxDSal = 0.1           ! this dS cap will cap salinity changes to 0.1 ppt but is only applied to forested compartments below
           
