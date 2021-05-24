@@ -201,19 +201,18 @@
                                   ! (mean salinity is updated every day using a rolling window that will equal the mean one-day salinity at the end of Jan 1, 
                                   ! will equal the 6 month salinity on June 30, and so on      
 
-          !>> check to see if the compartment is 10% open water or less (indicates possibly location in swamp/forested region
-          !>> if it is small water-to-land ratio, then check to see if it is fresh
-          !>> if both criteria are met - do not allow the salinity to increase a large amount for the current timestep
-          !>> this is a filter to prevent spiking of salinity due to swamp forest compartment geographic representation issues
-          if ( Apctwater(j) < 0.1) then
-              if (SALAV(j) < 2.0) then
-                  if ( abs(DSal) > maxDSal ) then
-                      S(J,2) = S(j,1) + maxDSal*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
-                      write(*,'(A,x,I)') 'max dsal exceeded. comp:',j
-                      pause
-                  endif
-              endif
-          endif
+!          !>> check to see if the compartment is 10% open water or less (indicates possibly location in swamp/forested region
+!          !>> if it is small water-to-land ratio, then check to see if it is fresh
+!          !>> if both criteria are met - do not allow the salinity to increase a large amount for the current timestep
+!          !>> this is a filter to prevent spiking of salinity due to swamp forest compartment geographic representation issues
+!          if ( Apctwater(j) < 0.1) then
+!              if (SALAV(j) < 2.0) then
+!                  if ( abs(DSal) > maxDSal ) then
+!                      S(J,2) = S(j,1) + maxDSal*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
+!                      write(*,'(A,x,I)') 'max dsal exceeded. comp:',j
+!                  endif
+!              endif
+!          endif
                   
                       
           
