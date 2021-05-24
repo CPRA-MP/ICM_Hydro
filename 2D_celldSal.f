@@ -15,8 +15,8 @@
 
       use params
       
+      integer :: marsh_link_flow,Qsalsum_b4link
       real :: Saltrib
-      real :: cden
       real :: dry_depth, dry_salinity
       real :: vol1, vol2
       real :: marsh_vol1, marsh_vol2
@@ -51,6 +51,8 @@
       endif
       
       QSalsum = 0
+      
+          
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
 !>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
@@ -66,6 +68,10 @@
           QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
       enddo
 
+!>> flag that will be set if overland marsh links have flow
+      marsh_link_flow = 0          
+      Qsalsum_b4link = 0
+      
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
           if(icc(j,k) /= 0) then
@@ -77,8 +83,17 @@
           endif
           
           iab=abs(icc(j,k))
-    
+          
+          Qsalsum_b4link = Qsalsum
+
           call salinity(mm,iab,jnb,j,k,Qsalsum)
+          
+          !>> check if marsh overland links have salinity convection and/or dispersion through link flow
+          if (linkt(iab) == 8) then
+              if ( Qsalsum_b4link .ne. Qsalsum ) then
+                  marsh_link_flow = 1
+              endif
+          endif
       enddo
       
       !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
@@ -141,7 +156,7 @@
 !>> Check if the marsh area of the compartment should be used for calculating total water volume in salinity concentration calculations
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
-      if( Ahf(j) > 0 ) then                     ! check if there is marsh area
+      if( Ahf(j) > 0 ) then                           ! check if there is marsh area
           if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
               if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
                   marsh_vol1 = ddym1*Ahf(j)
@@ -157,6 +172,15 @@
       else
           marsh_vol1 = 0.0
           marsh_vol2 = 0.0
+      endif
+      
+      !>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
+      !>> check if there was flow into the marsh that could potentially add salinity mass
+      !>> if so, then include volume of shallow water over marsh surface in total volume
+      if (marsh_vol2 == 0.0) then
+          if (marsh_link_flow == 1) then
+              marsh_vol2 = dry_depth*Ahf(j)
+          endif
       endif
       
       vol1 = ddy1*As(j,1) + marsh_vol1
@@ -185,6 +209,8 @@
               if (SALAV(j) < 2.0) then
                   if ( abs(DSal) > maxDSal ) then
                       S(J,2) = S(j,1) + maxDSal*DSal/abs(Dsal)      ! ds/abs(ds) gets the directionality of the ds vector and applies the max dS filter to the current timestep
+                      write(*,'(A,x,I)') 'max dsal exceeded. comp:',j
+                      pause
                   endif
               endif
           endif

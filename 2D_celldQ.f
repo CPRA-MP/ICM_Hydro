@@ -14,7 +14,7 @@
 	Qsum=0.0						!JAM Oct 2010
 	Qsumh=0.0
       Qlink = 0.0
-	cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
+	cden=1./1000./24./3600.		! mm/d to m/s conversion
 
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'At start: ',Qsumh
@@ -55,7 +55,7 @@
       enddo
 
 c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
-	fpc= percent(j)*(1.-fcrop)/100.+fcrop
+	fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
 	soilm = max(0.0001, esho(j)-BedM(j))				!JAM Oct 2010
 	shh   = max(0.0001, Eh(j,1)-BedM(j))				!JAM Oct 2010
 	rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
@@ -75,6 +75,11 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
+      ! cden: mm/day to m/s conversion factor
+      ! Rain: mm/day rainfall
+      ! PET:  mm/day potential ET
+      ! fpet: 1=use PET input data; 0: use average ET value
+      ! ETA:  average ET value to use if fpet = 0
       Qsum=Qsum-(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
      &	  -fpet*PET(kday,Jet(j)))*As(j,1)*cden
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on marsh area

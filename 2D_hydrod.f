@@ -61,8 +61,8 @@
 ! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
 c Temporary values
-      Cp =0.5
-      fcrop=0.5          !0.1  !0.59                        !potential coef
+      Cp = 0.5
+      fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
       Tres = 3600.
 ! 	Vsettl=8/24/3600 !-EDW not used
       dref=4.0
@@ -976,7 +976,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
      &                            (delh/Latr3(i))**(1./2.)
 
               ! set flow area for EAOL calculation
-                  Ach = avdep*latr4(i)
+                  Ach = avdep*cwidth   !avdep*latr4(i)
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Type8 Marsh Link',i,' flow is NaN after Q calculation'
                       write(*,*) 'dkd=',dkd
@@ -996,7 +996,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
           !        fa(i) = 1.0
           !    endif
-				  
+  
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
 !>> Link type 9 = ridges/levees

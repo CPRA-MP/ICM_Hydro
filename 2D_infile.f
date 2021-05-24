@@ -1144,6 +1144,7 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       endif
 
 !>> Calculate average annual ET (mm/day) at ET gage
+      ! this is only used if fpet flag is set to 0,
       do kk=1,etgages
           ETA(kk) = 0.0
           do kt=1,simdays
