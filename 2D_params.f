@@ -41,7 +41,7 @@
       real(sp) :: oscilflag
       real(sp) :: minwater
       real(sp) :: maxdz
-      real(sp) :: salmaxcon
+
       
       ! input variables with error terms to perturb to output files
       real(dp) :: sal_0_1_error

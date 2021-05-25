@@ -38,16 +38,16 @@ c***********************Start Subroutine for face salinity**********************
 !              endif  
 !          else    
               if(Q(iab,2) >= 0.0) then
-				Csalface= ((fa(iab)*S(jus(abs(icc(j,k))),1)				!cell face values
-     &				+fb(iab)*S(jds(abs(icc(j,k))),1)))
+				Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
+     &				+fb(iab)*S(jds(iab),1)))
               else
-				Csalface= ((fa(iab)*S(jds(abs(icc(j,k))),1)+
-     &					fb(iab)*S(jus(abs(icc(j,k))),1)))
+				Csalface= ((fa(iab)*S(jds(iab),1)+
+     &					fb(iab)*S(jus(iab),1)))
 			endif
               diffus = EAOL(iab)              
    		!endif
    
-          QSalSum=QSalSum + sicc(j,k)*(Q(abs(icc(j,k)),2))*Csalface
+          QSalSum=QSalSum + sicc(j,k)*(Q(iab,2))*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
 
           SL(iab,2)=Csalface

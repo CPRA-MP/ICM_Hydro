@@ -22,7 +22,8 @@
       real :: marsh_vol1, marsh_vol2
       real :: ddy1, ddy2 
       real :: ddym1, ddym2
-      real :: DSal, maxDSal
+      real :: salmaxcon
+      !real :: DSal, maxDSal
       
       cden=1./1000./24./3600.		! mm/d to m/s conversion
 
@@ -51,7 +52,7 @@
       endif
       
       QSalsum = 0
-      
+      salmaxcon = 0.0      
           
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
@@ -64,11 +65,13 @@
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
       
-      salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries
+      if (Qsalsum .ne. 0) then
+          salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries if there was any tributary flow
+      endif
       
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
-          QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore
+          QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore since Ndiv is always set to 0
       enddo
 
 !>> flag that will be set if overland marsh links have flow
@@ -77,28 +80,31 @@
       
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
+          iab=abs(icc(j,k))
           if(icc(j,k) /= 0) then
               if(icc(j,k) < 0) then
-                  jnb=jus(abs(icc(j,k)))
+                  jnb=jus(iab)
               elseif(icc(j,k) > 0) then
-                  jnb=jds(abs(icc(j,k)))
+                  jnb=jds(iab)
               endif  
           endif
-          
-          iab=abs(icc(j,k))
-          
+
           Qsalsum_b4link = Qsalsum
 
           call salinity(mm,iab,jnb,j,k,Qsalsum)
           
-          salmaxcon = max( salmaxcon,SL(iab,2) )        ! SL() is the updated face salinity concentration for link iab calculated in salinity()
+!>> check if current link has flow during timestep
+          if (Q(iab,2) .ne. 0.0) then
+              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
+          endif
           
-          !>> check if marsh overland links have salinity convection and/or dispersion through link flow
+!>> check if marsh overland links have salinity convection and/or dispersion through link flow
           if (linkt(iab) == 8) then
               if ( Qsalsum_b4link .ne. Qsalsum ) then
                   marsh_link_flow = 1
               endif
           endif
+      
       enddo
       
       !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
@@ -132,7 +138,7 @@
 !          S(j,2) = ( S(j,1)*As(j,1)*dddy - QSalsum*dt ) / ( As(j,1)*( Es(j,2)-Bed(j) ) )
 !      endif
 
-      
+
 !>> YW testing equation for MP 2023. combining marsh and OW volumne
 
 !      if (dddy > 0.1) then 
@@ -156,12 +162,11 @@
 !          S(j,2) = S(j,1)
 !      endif
 
-!>> ZW TEST 07/22/2020 - better than YW TEST
 
 !>> Check if the marsh area of the compartment should be used for calculating total water volume in salinity concentration calculations
-      !>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
-      !>> check if there was flow into the marsh that could potentially add salinity mass
-      !>> if so, then include volume of shallow water over marsh surface in total volume
+!>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
+!>> check if there was flow into the marsh that could potentially add salinity mass
+!>> if so, then include volume of shallow water over marsh surface in total volume
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
       if( Ahf(j) > 0 ) then                           ! check if there is marsh area
@@ -172,22 +177,13 @@
               else
                   marsh_vol1 = 0.0
                   marsh_vol2 = 0.0
-                  if (marsh_link_flow == 1) then
-                      !write(*,'(A,I)') 'marsh is dry but has shallow flow in comp:',j
+                  if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
                       marsh_vol2 = ddym2*Ahf(j)
                   endif
-!                  else
-!                      marsh_vol2 = 0.0
-!                  endif
               endif
           else
               marsh_vol1 = 0.0
               marsh_vol2 = 0.0
-!              if (marsh_link_flow == 1) then
-!                  marsh_vol2 = ddym2*Ahf(j)
-!              else
-!                  marsh_vol2 = 0.0
-!              endif
           endif
       else
           marsh_vol1 = 0.0
@@ -196,7 +192,7 @@
 
       vol1 = ddy1*As(j,1) + marsh_vol1
       vol2 = ddy2*As(j,1) + marsh_vol2
-      
+
       if(ddy2 > dry_depth) then
           S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
           ds = S(j,2) - S(j,1)
@@ -262,8 +258,10 @@
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
           S(j,2) = 0.0
-      elseif (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
-          S(j,2) = salmaxcon
+      elseif (salmaxcon > 0.0) then       ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+          if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+              S(j,2) = salmaxcon
+          endif
       elseif (S(j,2) > 36.) then
           S(j,2)=36.
       endif
