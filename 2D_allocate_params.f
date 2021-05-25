@@ -469,7 +469,7 @@
 	allocate(Q(links,3))
 !	allocate(QSal(links,3))
 !	allocate(Qss(links,3))
-      allocate(SL(links,12))
+      allocate(SL(links,2))
       allocate(Tcoef(links,25))
       allocate(TL(links,3))
 !      allocate(uplandNP(links,14))

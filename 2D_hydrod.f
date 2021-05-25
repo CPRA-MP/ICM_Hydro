@@ -1633,18 +1633,6 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 	endif
 
 
-! Save salinity values at mid-day to calculate average daily salinities
-!	if (hday == 0.0) then
-!          ! save mid-day compartment salinities
-!          do j=1,N						!JAM Aug 1, 2009 time averaging
-!			STEMP(j,2)=S(j,2)
-!		enddo
-!          ! save mid-day link salinities
-!          do kk=1,M
-!              SLTEMP(kk,2)=SL(kk,2)
-!          enddo
-!	endif
-
 !>> generate array of hourly water level in boundary condition compartments (if flag is set to write hourly output file)
       if (dhr == 0.0) then
 

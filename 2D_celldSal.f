@@ -63,9 +63,12 @@
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
+      
+      salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries
+      
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
-          QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)
+          QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore
       enddo
 
 !>> flag that will be set if overland marsh links have flow
@@ -87,6 +90,8 @@
           Qsalsum_b4link = Qsalsum
 
           call salinity(mm,iab,jnb,j,k,Qsalsum)
+          
+          salmaxcon = max( salmaxcon,SL(iab,2) )        ! SL() is the updated face salinity concentration for link iab calculated in salinity()
           
           !>> check if marsh overland links have salinity convection and/or dispersion through link flow
           if (linkt(iab) == 8) then
@@ -154,6 +159,9 @@
 !>> ZW TEST 07/22/2020 - better than YW TEST
 
 !>> Check if the marsh area of the compartment should be used for calculating total water volume in salinity concentration calculations
+      !>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
+      !>> check if there was flow into the marsh that could potentially add salinity mass
+      !>> if so, then include volume of shallow water over marsh surface in total volume
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
       if( Ahf(j) > 0 ) then                           ! check if there is marsh area
@@ -164,25 +172,28 @@
               else
                   marsh_vol1 = 0.0
                   marsh_vol2 = 0.0
+                  if (marsh_link_flow == 1) then
+                      !write(*,'(A,I)') 'marsh is dry but has shallow flow in comp:',j
+                      marsh_vol2 = ddym2*Ahf(j)
+                  endif
+!                  else
+!                      marsh_vol2 = 0.0
+!                  endif
               endif
           else
               marsh_vol1 = 0.0
               marsh_vol2 = 0.0
+!              if (marsh_link_flow == 1) then
+!                  marsh_vol2 = ddym2*Ahf(j)
+!              else
+!                  marsh_vol2 = 0.0
+!              endif
           endif
       else
           marsh_vol1 = 0.0
           marsh_vol2 = 0.0
       endif
-      
-      !>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
-      !>> check if there was flow into the marsh that could potentially add salinity mass
-      !>> if so, then include volume of shallow water over marsh surface in total volume
-      if (marsh_vol2 == 0.0) then
-          if (marsh_link_flow == 1) then
-              marsh_vol2 = dry_depth*Ahf(j)
-          endif
-      endif
-      
+
       vol1 = ddy1*As(j,1) + marsh_vol1
       vol2 = ddy2*As(j,1) + marsh_vol2
       
@@ -218,6 +229,8 @@
           
       else
           S(j,2) = dry_salinity
+!          write(*,'(A,I,A,F,A,F,A,I)') 'dry sal in comp: ',j,' vol:',vol2,' m_vol: ',marsh_vol2,' marsh_flow: ',marsh_link_flow
+
       endif
 
       
@@ -247,8 +260,10 @@
 !>> High-pass and low-pass filters on salinity calculation
 !      if(S(j,2) < 0.10) then
 !          S(j,2) = 0.10
-      if(S(j,2) < 0.0) then           ! try a lower floor on allowed salinity value
+      if(S(j,2) < 0.0) then
           S(j,2) = 0.0
+      elseif (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+          S(j,2) = salmaxcon
       elseif (S(j,2) > 36.) then
           S(j,2)=36.
       endif
