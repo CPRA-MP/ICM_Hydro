@@ -316,11 +316,17 @@
       real(sp), dimension(:), allocatable :: stage_ave_summer         ! average summertime stage values for compartments
       real(sp), dimension(:), allocatable :: stage_summer_500m        ! average summertime stage values mapped to 500m grid cells - no smoothing/interpolation
       real(sp), dimension(:), allocatable :: depth_summer_500m        ! average summertime depth values mapped to 500m grid cells - no smoothing/interpolation
-      integer, dimension(:), allocatable :: tree_est                 ! tree establishment condition for 500 m grid cells
+      integer, dimension(:), allocatable :: tree_est                  ! tree establishment condition for 500 m grid cells
       
       real(sp), dimension(:,:), allocatable :: difmean                ! temporary array used in calculating variance in stage
       real(sp), dimension(:), allocatable :: stage_var_summer         ! variance in summertime stage for compartments
-      real(sp), dimension(:), allocatable :: stage_var_summer_500m    ! variance in summertime stage mapped to 500m grid cells
+      real(sp), dimension(:), allocatable :: stage_stdv_summer        ! standard deviation of summertime stage for compartments
+
+      real(sp), dimension(:,:), allocatable :: trg_summer             ! daily summertime tidal range values for compartments
+      real(sp), dimension(:), allocatable :: trg_ave_summer           ! average summertime tidal range for compartments
+      
+      real(sp), dimension(:), allocatable :: stage_wlv_summer         ! water level variablilty in summertime stage
+      real(sp), dimension(:), allocatable :: stage_wlv_summer_500m    ! water level variablilty in summertime stage mapped to 500m grid cells (as used by ICM-LAVegMod)
       
       real(sp), dimension(:), allocatable :: SedOW                    ! annual sediment accumulation in Open Water portion of compartment
       real(sp), dimension(:), allocatable :: SedMarshInt              ! annual sediment accumulation in interior of Marsh portion of compartment

@@ -10,7 +10,7 @@
 !> @param[in]     depth_summer_500m(grid_cell)      
 !> @param[in]     salinity_IDW_500m(grid_cell)                            Interpolated salinity values for each 500-m grid cell
 !> @param[in]     salinity_summer_IDW_500m(grid_cell)                     Interpolated summertime salinity values for each 500-m grid cell
-!> @param[in]     stage_var_summer_500m(grid_cell)                        Variance in summertime stage mapped to each 500-m grid cell
+!> @param[in]     stage_wlv_summer_500m(grid_cell)                        Water level variability in summertime stage mapped to each 500-m grid cell used by ICM-LAVegMod
 !> @param[in]     tmp_summer_IDW_500m(grid_cell)                          Interpolated summertime water temperature for each 500-m grid cell
 !> @param[in]     veg_matrix_cols                                         Number of columns in the matrix structure of the Vegetation I/O files
 !> @param[in]     veg_matrix_rows                                         Number of rows in the matrix structure of the Vegetation I/O files      
@@ -18,7 +18,7 @@
 !> @param[out]    depth_summer_forVeg(j,k)                                Mean summertime depth formatted for Vegetation ICM routine
 !> @param[out]    salinity_forVeg(veg_matrix_cols,veg_matrix_rows)        Mean salinity formatted for Vegetation ICM routine
 !> @param[out]    salinity_summer_forVeg(veg_matrix_cols,veg_matrix_rows) Mean summer salinity formatted for Vegetation ICM routine
-!> @param[out]    stage_var_forVeg(j,k)                                   Variance in summertime stage formatted for Vegetation ICM routine
+!> @param[out]    stage_var_forVeg(j,k)                                   Variability in summertime stage formatted for Vegetation ICM routine
 !> @param[out]    tmp_summer_forVeg(j,k)                                  Mean summertime water temperature formatted for Vegetation ICM routine
 
 !> @param         grid_cell                                               temporary storage of 500-m grid cell ID number used to lookup respective value
@@ -72,7 +72,7 @@
      &                            tmp_summer_IDW_500m(grid_cell))
 !>> -- High-pass & Low-pass filter on summer water level standard deviation for Veg model input files (ICM_summaries calculates WSEL variance, convert to st dev here)
                   stage_var_forVeg(j,k)=max(-rangemax,min(rangemax,
-     &                           stage_var_summer_500m(grid_cell)**0.5))
+     &                           stage_wlv_summer_500m(grid_cell)))
 !>> -- High-pass & Low-pass filter on summer water depth for Veg model input files 
                   depth_summer_forVeg(j,k)= max(-depthmax,min(depthmax,
      &                            depth_summer_500m(grid_cell)))
@@ -99,7 +99,7 @@
       write(301,1117)'NCOLS',veg_matrix_cols
       write(301,1117)'XLLCORNER',veg_xllcorner
       write(301,1117)'YLLCORNER',veg_yllcorner
-      write(301,1117)'CELLSIZE 500'
+      write(301,1117)'CELLSIZE 480'
       write(301,1117)'NODATA_VALUE -9999.00'
       write(301,1118) salinity_forVeg
       
@@ -108,7 +108,7 @@
       write(302,1117)'NCOLS',veg_matrix_cols
       write(302,1117)'XLLCORNER',veg_xllcorner
       write(302,1117)'YLLCORNER',veg_yllcorner
-      write(302,1117)'CELLSIZE 500'
+      write(302,1117)'CELLSIZE 480'
       write(302,1117)'NODATA_VALUE -9999.00'
       write(302,1118) salinity_summer_forVeg       
           
@@ -117,7 +117,7 @@
       write(303,1117)'NCOLS',veg_matrix_cols
       write(303,1117)'XLLCORNER',veg_xllcorner
       write(303,1117)'YLLCORNER',veg_yllcorner
-      write(303,1117)'CELLSIZE 500'
+      write(303,1117)'CELLSIZE 480'
       write(303,1117)'NODATA_VALUE -9999.00'
       write(303,1118) depth_summer_forVeg  
       
@@ -126,7 +126,7 @@
       write(304,1117)'NCOLS',veg_matrix_cols
       write(304,1117)'XLLCORNER',veg_xllcorner
       write(304,1117)'YLLCORNER',veg_yllcorner
-      write(304,1117)'CELLSIZE 500'
+      write(304,1117)'CELLSIZE 480'
       write(304,1117)'NODATA_VALUE -9999.00'
       write(304,1118) stage_var_forVeg
       
@@ -144,7 +144,7 @@
       write(306,1117)'NCOLS',veg_matrix_cols
       write(306,1117)'XLLCORNER',veg_xllcorner
       write(306,1117)'YLLCORNER',veg_yllcorner
-      write(306,1117)'CELLSIZE 500'
+      write(306,1117)'CELLSIZE 480'
       write(306,1117)'NODATA_VALUE -9999.00'
       write(306,1119) tree_est_forVeg
 
@@ -153,7 +153,7 @@
       write(307,1117)'NCOLS',veg_matrix_cols
       write(307,1117)'XLLCORNER',veg_xllcorner
       write(307,1117)'YLLCORNER',veg_yllcorner
-      write(307,1117)'CELLSIZE 500'
+      write(307,1117)'CELLSIZE 480'
       write(307,1117)'NODATA_VALUE -9999.00'
       write(307,1118) ht_abv_water_forVeg
       
@@ -162,7 +162,7 @@
       write(308,1117)'NCOLS',veg_matrix_cols
       write(308,1117)'XLLCORNER',veg_xllcorner
       write(308,1117)'YLLCORNER',veg_yllcorner
-      write(308,1117)'CELLSIZE 500'
+      write(308,1117)'CELLSIZE 480'
       write(308,1117)'NODATA_VALUE -9999.00'
       write(308,1118) per_land_forVeg
       

@@ -21,7 +21,7 @@
 !> @param[in]     sal_ave_summmer(N)                      mean summertime salinity for compartments
 !> @param[in]     stage_ave(N)                            mean stage for compartments
 !> @param[in]     stage_ave_summer(N)                     mean summertime stage for compartments
-!> @param[in]     stage_var_summer(N)                     variance in summertime stage for compartments
+!> @param[in]     stage_wlv_summer(N)                     water level variability in summertime stage for compartments
 !> @param[in]     tmp_ave(N)                              mean water temperature for compartments
 !> @param[in]     tmp_ave_summer(N)                       mean summertime water temperature for compartments
       
@@ -31,7 +31,7 @@
 !> @param[out]    salinity_summer_500m(n_500m_cells)      global array for compartment-to-grid overlay salinities for 500m grid
 !> @param[out]    stage_500m(n_500m_cells)                global array for compartment-to-grid overlay stage for 500m grid
 !> @param[out]    stage_summer_500m(n_500m_cells)         global array for compartment-to-grid overlay summertime stage  for 500m grid
-!> @param[out]    stage_var_summer_500m(n_500m_cells)     global array for compartment-to-grid overlay summertime stage variance for 500m grid
+!> @param[out]    stage_wlv_summer_500m(n_500m_cells)     global array for compartment-to-grid overlay summertime stage water level variability for 500m grid
 !> @param[out]    tmp_500m(n_500m_cells)                  global array for compartment-to-grid overlay water temp for 500m grid
 !> @param[out]    tmp_summer_500m(n_500m_cells)           global array for compartment-to-grid overlay summertime water temp  for 500m grid
 
@@ -128,9 +128,9 @@
           map_comp_input = stage_ave_summer
 
       elseif(output_flag == 7) then
-          write(1,*)' Mapping mean summer stage output to grid.'
-          write(*,*)' Mapping mean summer stage output to grid.'
-          map_comp_input = stage_var_summer
+          write(1,*)' Mapping mean summer stage variability output to grid.'
+          write(*,*)' Mapping mean summer stage variability output to grid.'
+          map_comp_input = stage_wlv_summer
       
       elseif(output_flag == 8) then
           write(1,*)' Mapping max 2-wk summer salinity output to grid.'
@@ -168,7 +168,7 @@
       elseif (output_flag == 6) then
           stage_summer_500m = grid_no_interp
       elseif (output_flag == 7) then
-          stage_var_summer_500m = grid_no_interp
+          stage_wlv_summer_500m = grid_no_interp
       elseif (output_flag == 8) then
           sal_thresh_500m = grid_no_interp
       elseif (output_flag == 9) then

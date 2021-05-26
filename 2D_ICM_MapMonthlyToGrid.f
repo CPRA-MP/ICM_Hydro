@@ -28,7 +28,6 @@
 !> @param[out]    salinity_summer_500m(n_500m_cells)      global array for compartment-to-grid overlay salinities for 500m grid
 !> @param[out]    stage_500m(n_500m_cells)                global array for compartment-to-grid overlay stage for 500m grid
 !> @param[out]    stage_summer_500m(n_500m_cells)         global array for compartment-to-grid overlay summertime stage  for 500m grid
-!> @param[out]    stage_var_summer_500m(n_500m_cells)     global array for compartment-to-grid overlay summertime stage variance for 500m grid
 !> @param[out]    tmp_500m(n_500m_cells)                  global array for compartment-to-grid overlay water temp for 500m grid
 !> @param[out]    tmp_summer_500m(n_500m_cells)           global array for compartment-to-grid overlay summertime water temp  for 500m grid
 

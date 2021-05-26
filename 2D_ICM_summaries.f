@@ -78,7 +78,7 @@
       tmp_summer = 0.0
       sal_summer_links = 0.0
       tmp_summer_links = 0.0
-      
+      trg_summer = 0.0
       
 !>> Take subset of daily values for days that correspond to summertime.
       ! subset daily values to generate summertime timeseries
@@ -93,6 +93,7 @@
               sal_summer(jj,k) = sal_daily(j,k)
               stage_summer(jj,k) = stage_daily(j,k)
               tmp_summer(jj,k) = tmp_daily(j,k)
+              trg_summer(jj,k) = tidal_range_daily(j,k)
           enddo
           do kk=1,M
               sal_summer_links(jj,kk) = sal_daily_links(j,kk)
@@ -169,6 +170,7 @@
       tmp_ave_summer = sum(tmp_summer,DIM=1)/float(summerlength)
       tmp_ave_summer_links = sum(tmp_summer_links,DIM=1)/
      &                         float(summerlength)
+      trg_ave_summer = sum(trg_summer,DIM=1)/float(summerlength)
 
 !>> Calculate mean stage values for bird HSIs.
 	do k = 1,N
@@ -212,6 +214,23 @@
       enddo
       stage_var_summer = sum(difmean,DIM=1)/float(summerlength)
 
+!>> Convert variance in stage to standard deviation
+      do k = 1,N
+          stage_stdv_summer(k) = stage_var_summer(k)**0.5
+      end do
+      
+!>> Set water level variabilty equal to the Hydro-calculated standard deviation in daily water levels (2017 method - replaced for 2023 model)
+      !stage_wlv_summer = stage_stdv_summer
+      
+!>> Set water level variability for use in ICM-LAVegMod from tidal range
+!>> relationship to convert from tidal range to WLV used by Veg was determined by:
+!>> - calculating WLV from hourly stage standard deviation from 2006-2018 at all CRMS sites (same method used to build CRMS input tables according to Scott D-S in 2017)
+!>> - comparing to the mean tidal range at each CRMS site
+!>> - R-squared from above regression = 0.7674        hourly stdv WLV = 0.2647*mean tidal range + 0.0659      Rsq=0.7674
+      do k = 1,N
+          stage_wlv_summer(k) = 0.2647*trg_ave_summer(k) + 0.0659
+      end do
+      
 !>> Calculate variance in TSS       
       do j=1, simdays
           do k = 1,N
@@ -234,7 +253,9 @@
           tss_ave(k) = max(0.0,tss_ave(k) + tss_error)
           stage_ave(k) = stage_ave(k) + stage_error
           stage_max(k) = stage_max(k) + stage_error
-          stage_var_summer(k)=max(0.0,stage_var_summer(k) + stvar_error)
+!          stage_var_summer(k) = max(0.0,stage_var_summer(k) + stvar_error)
+!          stage_stdv_summer(k) = max(0.0,stage_stdv_summer(k) + stvar_error)
+          stage_wlv_summer(k) = max(0.0,stage_wlv_summer(k) + stvar_error)
           
           sa = sal_ave(k)
           if(sa < 1.0) then

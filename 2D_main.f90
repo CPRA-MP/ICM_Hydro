@@ -1469,7 +1469,7 @@
          'IDW_ave_summer_temp',		&
          'stage_ave',		&
          'stage_summer_ave',		&
-         'var_stage_summer',		&
+         'WLV_stage_summer',		&
          'ave_depth_summer',		&
          'ave_depth'
 	write(206,1119)'GRID_ID',		&
@@ -1541,14 +1541,14 @@
          min(tmpmax,tmp_summer_IDW_500m(k)),		&
          max(-stagemax,min(stagemax,stage_500m(k))),		&
          max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
-         max(-rangemax,min(rangemax,stage_var_summer_500m(k))),		&
+         max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
          max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
          max(-depthmax,min(depthmax,depth_500m(k)))
 
  		write(206,1120) k,		&
      	   min(salmax,sal_IDW_500m_month(1,k)),		&
      	   min(salmax,sal_IDW_500m_month(2,k)),		&
-            min(salmax,sal_IDW_500m_month(3,k)),		&
+           min(salmax,sal_IDW_500m_month(3,k)),		&
      	   min(salmax,sal_IDW_500m_month(4,k)),		&
      	   min(salmax,sal_IDW_500m_month(5,k)),		&
      	   min(salmax,sal_IDW_500m_month(6,k)),		&
