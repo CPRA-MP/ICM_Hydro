@@ -42,13 +42,13 @@
       if(ddy1 <= 0.01) then
           dddy = 0.01
       else
-          dddy = ddy
+          dddy = ddy1
       endif
 
       if(ddym1 <= 0.01) then
           dddym = 0.01
       else
-          dddym = ddym
+          dddym = ddym1
       endif
       
       QSalsum = 0
@@ -56,7 +56,7 @@
           
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
-!>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
+!>> set salinity in tributary to default freshwater salinity value (0.1 ppt)
           Saltrib = 0.1
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
