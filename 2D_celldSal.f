@@ -178,6 +178,7 @@
                   marsh_vol1 = 0.0
                   marsh_vol2 = 0.0
                   if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
+                      marsh_vol1 = ddym1*Ahf(j)
                       marsh_vol2 = ddym2*Ahf(j)
                   endif
               endif
