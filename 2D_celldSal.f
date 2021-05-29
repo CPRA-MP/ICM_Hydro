@@ -29,8 +29,8 @@
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
       dry_depth = 0.05
-      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
-!      dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
+!      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
+      dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
       
 !>> Calculate water and marsh depths for current and previous timesteps
       ddy1 = Es(j,1)-Bed(j)
@@ -42,13 +42,13 @@
       if(ddy1 <= 0.01) then
           dddy = 0.01
       else
-          dddy = ddy
+          dddy = ddy1
       endif
 
       if(ddym1 <= 0.01) then
           dddym = 0.01
       else
-          dddym = ddym
+          dddym = ddym1
       endif
       
       QSalsum = 0
@@ -56,7 +56,7 @@
           
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
-!>> set salinity in tributary to default freshwater salinity value (assigned in hydrod)
+!>> set salinity in tributary to default freshwater salinity value (0.1 ppt)
           Saltrib = 0.1
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
@@ -259,9 +259,11 @@
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
           S(j,2) = 0.0
-      elseif (salmaxcon > 0.0) then       ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
-          if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
-              S(j,2) = salmaxcon
+      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
+              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+                  S(j,2) = salmaxcon
+              endif
           endif
       elseif (S(j,2) > 36.) then
           S(j,2)=36.
