@@ -955,7 +955,8 @@
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
               call hydrod(mm)
-
+	      write(*,*) "don't panic"
+	    
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
               if (n1d>0) then
