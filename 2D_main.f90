@@ -971,10 +971,10 @@
                               TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
                           endif
                           if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
-                              FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
+                              FINE_terminal_from_ICM_R(tcr1D(i)) = 10 ! CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
                           endif
                           if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
-                              SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
+                              SAND_terminal_from_ICM_R(tcr1D(i)) = 10 ! CSS(tcr2D(i),2,1)                                            ! check unit
                           endif
                       enddo
                   endif
@@ -995,10 +995,10 @@
                                       TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
                                   endif
                                   if (Nctr_FINE_R(i) .eq. 1) then
-                                      FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
+                                      FINE_lat_from_ICM_R(i,j) = 10 !CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
                                   endif
                                   if (Nctr_SAND_R(i) .eq. 1) then
-                                      SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
+                                      SAND_lat_from_ICM_R(i,j) = 10 !CSS(lcr2D(k+j),2,1)                                              ! check unit
                                   endif
                             endif	  
                         enddo
