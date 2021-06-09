@@ -639,15 +639,15 @@ allocate(tmp2D(nt, nplat))
 
 write(*, *) 'Applying spline interpolation in time on the lateral flow Conc'
 do i = 1, nplat
-  Bcoef = 0.0_fp; Ccoef = 0.0_fp; Dcoef = 0.0_fp
+    Bcoef = 0.0_fp; Ccoef = 0.0_fp; Dcoef = 0.0_fp
 
-  call spline(ntlat, TimeLAT(:, i), ConcLAT(:, i), Bcoef, Ccoef, Dcoef)
+    call spline(ntlat, TimeLAT(:, i), ConcLAT(:, i), Bcoef, Ccoef, Dcoef)
 
-  do n = 1, nt
-    fval = ispline(time(n), ntlat, TimeLAT(:, i), ConcLAT(:, i), Bcoef, Ccoef, Dcoef)
-    tmp1D(n) = fval
-  end do
-  tmp2D(:, i) = tmp1D
+    do n = 1, nt
+      fval = ispline(time(n), ntlat, TimeLAT(:, i), ConcLAT(:, i), Bcoef, Ccoef, Dcoef)
+      tmp1D(n) = fval
+    end do
+    tmp2D(:, i) = tmp1D
 end do
 
 deallocate(ConcLAT); allocate(ConcLAT(nt, nplat))
@@ -687,37 +687,37 @@ end subroutine init_SAND_R02
 
 
 subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, out_sand, Q_lat_from_ICM, SAND_lat_from_ICM, SAND_upstream_from_ICM, SAND_terminal_from_ICM)
-  use precision
-!  use params
-  use mod_arrays_SAND_R02
+    use precision
+!    use params
+    use mod_arrays_SAND_R02
 
-  use sed_properties_SAND_R02
-  use spline_func
+    use sed_properties_SAND_R02
+    use spline_func
 
-  implicit none
-  integer, intent(in) :: n, npr, ioutfile, nlatt
-  real(kind=4), intent(in) :: SAND_upstream_from_ICM, SAND_terminal_from_ICM
-  real(kind=4), dimension(npr), intent(in) :: inp_depth, inp_area, inp_flow
-  real(kind=4), dimension(nlatt), intent(in) :: Q_lat_from_ICM, SAND_lat_from_ICM
-  real(kind=4), dimension(npr), intent(out) :: out_sand
-  integer :: nx, nt, np
-  !integer, intent(out) :: 
-  
+    implicit none
+    integer, intent(in) :: n, npr, ioutfile, nlatt
+    real(kind=4), intent(in) :: SAND_upstream_from_ICM, SAND_terminal_from_ICM
+    real(kind=4), dimension(npr), intent(in) :: inp_depth, inp_area, inp_flow
+    real(kind=4), dimension(nlatt), intent(in) :: Q_lat_from_ICM, SAND_lat_from_ICM
+    real(kind=4), dimension(npr), intent(out) :: out_sand
+    integer :: nx, nt, np
+    !integer, intent(out) :: 
+    
 
-  integer :: i, j, k, ilat, jlat, klat
+    integer :: i, j, k, ilat, jlat, klat
 
-  real(fp) :: fval, fval1, fval2  !modu_user
-  integer :: ival, ival1, ival2
-  !integer :: cntUserDt, flgUserDt
+    real(fp) :: fval, fval1, fval2  !modu_user
+    integer :: ival, ival1, ival2
+    !integer :: cntUserDt, flgUserDt
 
-  !character(len=256) :: reach_dist, reach_flow, reach_cbnd, reach_depth, reach_area,  reach_qm  !out_dir,
-  ! Downstream  bnd file /lateral flow
-  !character(len=256) :: reach_dbnd, reach_lat
-  
-  
-  !character(len=128) :: outSTR
+    !character(len=256) :: reach_dist, reach_flow, reach_cbnd, reach_depth, reach_area,  reach_qm  !out_dir,
+    ! Downstream  bnd file /lateral flow
+    !character(len=256) :: reach_dbnd, reach_lat
+    
+    
+    !character(len=128) :: outSTR
 
-  !integer :: LUN, ioerr
+    !integer :: LUN, ioerr
   
     nt = NDt
     nx = NDx
@@ -737,22 +737,22 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
   !  flgUserDt = 1
   !endif
   
-  depth=inp_depth
-  area=inp_area
-  flow=inp_flow
-  
-  do i = 1, nx
-  ! Interpolate the time/space varying water depth, cross-section area and flow rate
-  ! using cubic splines (the coefficients are calculated above)
-  !  depth(i) = ispline(time(n), ntfl, TimeFL(:, i), DepthFL(:, i), Bdp(:, i), Cdp(:, i), Ddp(:, i))
-  !  area(i)  = ispline(time(n), ntfl, TimeFL(:, i), AreaFL(:, i), Bar(:, i), Car(:, i), Dar(:, i))
-  !  flow(i)  = ispline(time(n), ntfl, TimeFL(:, i), FlowFL(:, i), Bfl(:, i), Cfl(:, i), Dfl(:, i))
-    width(i) = area(i)/depth(i)
-    ! Calculate the total suspended sediment concentration
-    sumConc(i) = sum(CN(i, :))
-  end do
+    depth=inp_depth
+    area=inp_area
+    flow=inp_flow
+    
+    do i = 1, nx
+    ! Interpolate the time/space varying water depth, cross-section area and flow rate
+    ! using cubic splines (the coefficients are calculated above)
+    !  depth(i) = ispline(time(n), ntfl, TimeFL(:, i), DepthFL(:, i), Bdp(:, i), Cdp(:, i), Ddp(:, i))
+    !  area(i)  = ispline(time(n), ntfl, TimeFL(:, i), AreaFL(:, i), Bar(:, i), Car(:, i), Dar(:, i))
+    !  flow(i)  = ispline(time(n), ntfl, TimeFL(:, i), FlowFL(:, i), Bfl(:, i), Cfl(:, i), Dfl(:, i))
+      width(i) = area(i)/depth(i)
+      ! Calculate the total suspended sediment concentration
+      sumConc(i) = sum(CN(i, :))
+    end do
 
- 20  format(<3*nx+1>f12.2)
+20  format(<3*nx+1>f12.2)
 30  format(<nx*np+1>f12.2)    
   !if ( flgUserDt > 0 ) then
   !! These are used to calculate the sediment loads outside the time loop
@@ -772,264 +772,269 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
   ! the discretized equation. At timestep nt -1 CN1 (concentration at nt)
   ! has been calculated and its value(s) have been stored into the CN and
   ! subsequently into the C(:,:,:) array (see above)
-  if (n /= nt) then
+    if (n /= nt) then
+        do k = 1, np            ! loop over sediment partical classes
+            do i = 2, nx - 1    ! loop over cross-sections
+                ! Calculate the coefficients of the equation first
+                ! This assumes uneven spatial spacing and central differences.
 
-    do k = 1, np
-      do i = 2, nx - 1
-        ! Calculate the coefficients of the equation first
-        ! This assumes uneven spatial spacing and central differences.
+                ! This is to use the 2nd order central differencing for the differential equation
+                ! for unequally spaced grid points or cross-sections
+                dx  = xx(i+1) - xx(i)
+                dx1 = xx(i) - xx(i-1)
 
-        ! This is to use the 2nd order central differencing for the differential equation
-        ! for unequally spaced grid points or cross-sections
-        dx  = xx(i+1) - xx(i)
-        dx1 = xx(i) - xx(i-1)
+                ! This is the lamda parameter (see notes)
+                lmd1 = dx1 / dx
 
-        ! This is the lamda parameter (see notes)
-        lmd1 = dx1 / dx
+                !!! The coefficients of the f' discretizetion (see notes)
+                denom = lmd1 * (1.0 + lmd1) * dx
 
-        !!! The coefficients of the f' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * dx
+                a0 = (lmd1 ** 2.0) / denom
+                a1 = (1.0 - lmd1 ** 2.0) / denom
+                a2 = -1.0 / denom
 
-        a0 = (lmd1 ** 2.0) / denom
-        a1 = (1.0 - lmd1 ** 2.0) / denom
-        a2 = -1.0 / denom
+                !!! The coefficients of the f'' discretizetion (see notes)
+                denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
 
-        !!! The coefficients of the f'' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
+                b0 = 2.0 * lmd1 / denom
+                b1 = -2.0 * (1.0 + lmd1) / denom
+                b2 = 2.0 / denom
 
-        b0 = 2.0 * lmd1 / denom
-        b1 = -2.0 * (1.0 + lmd1) / denom
-        b2 = 2.0 / denom
+                  mu = a0 * area(i+1) + a1 * area(i) + a2 * area(i-1)
+                mu = ( dt / area(i) ) * ( flow(i) - ks * mu )
 
-          mu = a0 * area(i+1) + a1 * area(i) + a2 * area(i-1)
-        mu = ( dt / area(i) ) * ( flow(i) - ks * mu )
+                xi = ks * dt
 
-        xi = ks * dt
+                aa = - a0 * mu + b0 * xi
+                bb = 1.0 - a1 * mu + b1 * xi
+                cc = - a2 * mu + b2 * xi
 
-        aa = - a0 * mu + b0 * xi
-        bb = 1.0 - a1 * mu + b1 * xi
-        cc = - a2 * mu + b2 * xi
+                arni = area(i)
+                SrcTerm = 0.0
+                if( useSRC ) then
+                    if (D50(k) < 0.000062) then
+                      SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
+                    else
+                      SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
+                      !write(*, *) time(n), arni, SrcTerm
+                    endif
+                
+                    SrcTerm = (dt / arni) * SrcTerm
+                endif
 
-        arni = area(i)
-        SrcTerm = 0.0
-        if( useSRC ) then
-          if (D50(k) < 0.000062) then
-            SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
-          else
-            SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
-            !write(*, *) time(n), arni, SrcTerm
-          endif
-		    SrcTerm = (dt / arni) * SrcTerm
-        endif
-		
-		! Add lateral input
-		do j=1, Nlat
-			ilat=Idlat(j)
-			jlat=Nsclat(j)
-			klat=Ntplat(j)
-			if (i >= ilat .AND. i < (ilat+jlat))then
-				if (FlowLAT(n+1,j) > 0. .and. klat .eq. 1)then
-					SrcTerm = SrcTerm + FlowLAT(n+1,j)/real(jlat)*(ConcLAT(n+1,j)-CN(i,k))/(abs(flow(i))+FlowLAT(n+1,j)/real(jlat))
-				endif
-				!coupling from ICM
-				if (Q_lat_from_ICM(j) .gt. 0. .and. SAND_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
-					SrcTerm = SrcTerm + Q_lat_from_ICM(j)/real(jlat)*(SAND_lat_from_ICM(j)-CN(i,k))/(abs(flow(i))+Q_lat_from_ICM(j)/real(jlat))
-				endif
 
-				if (klat.eq.2) then
-					print*, 'Rating curves for lateral SAND input have not been supported yet.'
-					stop
-				endif
+                ! Add lateral input
+                do j=1, Nlat
+                    ilat=Idlat(j)
+                    jlat=Nsclat(j)
+                    klat=Ntplat(j)
+                    if (i >= ilat .AND. i < (ilat+jlat))then
+                        if (FlowLAT(n+1,j) > 0. .and. klat .eq. 1)then
+                            SrcTerm = SrcTerm + FlowLAT(n+1,j)/real(jlat)*(ConcLAT(n+1,j)-CN(i,k))/(abs(flow(i))+FlowLAT(n+1,j)/real(jlat))
+                        endif
+                        !coupling from ICM
+                        if (Q_lat_from_ICM(j) .gt. 0. .and. SAND_lat_from_ICM(j) .ge. 0. .and. klat .eq. 3)then
+                            SrcTerm = SrcTerm + Q_lat_from_ICM(j)/real(jlat)*(SAND_lat_from_ICM(j)-CN(i,k))/(abs(flow(i))+Q_lat_from_ICM(j)/real(jlat))
+                        endif
+                        
+                        if (klat.eq.2) then
+                            print*, 'Rating curves for lateral SAND input have not been supported yet.'
+                            stop
+                        endif
+                    
+                    endif
+                enddo       
 
-			endif
-		enddo
-		
- !       CN1(i, k) = aa * CN(i+1, k) + bb * CN(i, k) + cc * CN(i-1, k) + (dt / arni) * SrcTerm
-        CN1(i, k) = aa * CN(i+1, k) + bb * CN(i, k) + cc * CN(i-1, k) + SrcTerm
-        if( CN1(i, k) <= smallC ) CN1(i, k) = 0.0
-      end do
+                !CN1(i, k) = aa * CN(i+1, k) + bb * CN(i, k) + cc * CN(i-1, k) + (dt / arni) * SrcTerm
+                CN1(i, k) = aa * CN(i+1, k) + bb * CN(i, k) + cc * CN(i-1, k) + SrcTerm
+                if( CN1(i, k) <= smallC ) CN1(i, k) = 0.0
+            
+            end do  ! end loop over cross-sections
 
-      !!!!! Apply the boundary conditions -> (upstream: i = 1), (downstream: i = nx)
-      !!!!! For upstream boundary use fixed concentration BC
-      CN1(1, k) = ConcBND(n+1, k)
-	  if(SAND_upstream_from_ICM .ge. 0. )CN1(1, k)=SAND_upstream_from_ICM   !coupling from ICM
-	  if (flow(i) < 0.)then
-		CN1(1, k)=CN1(2, k)
-	  endif
+            !!!!! Apply the boundary conditions -> (upstream: i = 1), (downstream: i = nx)
+            !!!!! For upstream boundary use fixed concentration BC
+            CN1(1, k) = ConcBND(n+1, k)
+            if(SAND_upstream_from_ICM .ge. 0. )CN1(1, k)=SAND_upstream_from_ICM   !coupling from ICM
+            if (flow(i) < 0.)then
+              CN1(1, k)=CN1(2, k)
+            endif
+ 
+            !!!!! For downstream boundary use downwind flux BC or downwind differencing
+            if (flow(i) > 0. )then
+                if (bc_option == 1) then
+                    ! This is for the downstream BC: Q*C - Ks*A*dC/dx = 0
+                    ! Here we consider the ghost point at i = m+1 and second order
+                    ! central differences
+                    dx1 = xx(nx) - xx(nx-1)
+                    dx = dx1
 
-	 
-      !!!!! For downstream boundary use downwind flux BC or downwind differencing
-		if (flow(i) > 0. )then
-	 if (bc_option == 1) then
-        ! This is for the downstream BC: Q*C - Ks*A*dC/dx = 0
-        ! Here we consider the ghost point at i = m+1 and second order
-        ! central differences
-        dx1 = xx(nx) - xx(nx-1)
-        dx = dx1
+                    ! This is the lamda parameter (see notes)
+                    lmd1 = dx1 / dx
 
-        ! This is the lamda parameter (see notes)
-        lmd1 = dx1 / dx
+                    !!! The coefficients of the f' discretizetion (see notes)
+                    denom = lmd1 * (1.0 + lmd1) * dx
 
-        !!! The coefficients of the f' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * dx
+                    a0 = (lmd1 ** 2.0) / denom
+                    a1 = (1.0 - lmd1 ** 2.0) / denom
+                    a2 = -1.0 / denom
 
-        a0 = (lmd1 ** 2.0) / denom
-        a1 = (1.0 - lmd1 ** 2.0) / denom
-        a2 = -1.0 / denom
+                    !!! The coefficients of the f'' discretizetion (see notes)
+                    denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
 
-        !!! The coefficients of the f'' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
+                    b0 = 2.0 * lmd1 / denom
+                    b1 = -2.0 * (1.0 + lmd1) / denom
+                    b2 = 2.0 / denom
 
-        b0 = 2.0 * lmd1 / denom
-        b1 = -2.0 * (1.0 + lmd1) / denom
-        b2 = 2.0 / denom
+                    ! Here we assume that area(nx+1) = area(nx)
+                      mu = a0 * area(nx) + a1 * area(nx) + a2 * area(nx-1)
+                    mu = ( dt / area(nx) ) * ( flow(nx) - ks * mu )
 
-        ! Here we assume that area(nx+1) = area(nx)
-          mu = a0 * area(nx) + a1 * area(nx) + a2 * area(nx-1)
-        mu = ( dt / area(nx) ) * ( flow(nx) - ks * mu )
+                    xi = ks * dt
 
-        xi = ks * dt
+                    aa = - a0 * mu + b0 * xi
+                    bb = 1.0 - a1 * mu + b1 * xi
+                    cc = - a2 * mu + b2 * xi
 
-        aa = - a0 * mu + b0 * xi
-        bb = 1.0 - a1 * mu + b1 * xi
-        cc = - a2 * mu + b2 * xi
+                    dd = aa * (flow(nx) / (a0 * ks * area(nx)) - a1 / a0) + bb
+                    ee = - aa * (a2 / a0) + cc
 
-        dd = aa * (flow(nx) / (a0 * ks * area(nx)) - a1 / a0) + bb
-        ee = - aa * (a2 / a0) + cc
+                    arni = area(nx)
+                    SrcTerm = 0.0
+                    if( useSRC ) then
+                        if (D50(k) < 0.000062) then
+                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                        else
+                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                        endif
+                    endif
+                    CN1(nx, k) = dd * CN(nx, k) + ee * CN(nx - 1, k) + (dt / arni) * SrcTerm
+                    if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
+                
+                elseif (bc_option == 2) then
+                    ! This is for the downstream BC: Ks*A*dC/dx = 0, that is C(nx+1, k) = C(nx, k)
+                    ! Here we consider the ghost point at i = m+1 and second order
+                    ! central differences
+                    dx1 = xx(nx) - xx(nx-1)
+                    dx = dx1
 
-        arni = area(nx)
-        SrcTerm = 0.0
-        if( useSRC ) then
-          if (D50(k) < 0.000062) then
-            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
-          else
-            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
-          endif
-        endif
-        CN1(nx, k) = dd * CN(nx, k) + ee * CN(nx - 1, k) + (dt / arni) * SrcTerm
-        if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
-      elseif (bc_option == 2) then
-        ! This is for the downstream BC: Ks*A*dC/dx = 0, that is C(nx+1, k) = C(nx, k)
-        ! Here we consider the ghost point at i = m+1 and second order
-        ! central differences
-        dx1 = xx(nx) - xx(nx-1)
-        dx = dx1
+                    ! This is the lamda parameter (see notes)
+                    lmd1 = dx1 / dx
 
-        ! This is the lamda parameter (see notes)
-        lmd1 = dx1 / dx
+                    !!! The coefficients of the f' discretizetion (see notes)
+                    denom = lmd1 * (1.0 + lmd1) * dx
 
-        !!! The coefficients of the f' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * dx
+                    a0 = (lmd1 ** 2.0) / denom
+                    a1 = (1.0 - lmd1 ** 2.0) / denom
+                    a2 = -1.0 / denom
 
-        a0 = (lmd1 ** 2.0) / denom
-        a1 = (1.0 - lmd1 ** 2.0) / denom
-        a2 = -1.0 / denom
+                    !!! The coefficients of the f'' discretizetion (see notes)
+                    denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
 
-        !!! The coefficients of the f'' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * (dx ** 2.0)
+                    b0 = 2.0 * lmd1 / denom
+                    b1 = -2.0 * (1.0 + lmd1) / denom
+                    b2 = 2.0 / denom
 
-        b0 = 2.0 * lmd1 / denom
-        b1 = -2.0 * (1.0 + lmd1) / denom
-        b2 = 2.0 / denom
+                    ! Here we assume that area(nx+1) = area(nx)
+                      mu = a0 * area(nx) + a1 * area(nx) + a2 * area(nx-1)
+                    mu = ( dt / area(nx) ) * ( flow(nx) - ks * mu )
 
-        ! Here we assume that area(nx+1) = area(nx)
-          mu = a0 * area(nx) + a1 * area(nx) + a2 * area(nx-1)
-        mu = ( dt / area(nx) ) * ( flow(nx) - ks * mu )
+                    xi = ks * dt
 
-        xi = ks * dt
+                    aa = - a0 * mu + b0 * xi
+                    bb = 1.0 - a1 * mu + b1 * xi
+                    cc = - a2 * mu + b2 * xi
 
-        aa = - a0 * mu + b0 * xi
-        bb = 1.0 - a1 * mu + b1 * xi
-        cc = - a2 * mu + b2 * xi
+                    arni = area(nx)
+                    SrcTerm = 0.0
+                    if( useSRC ) then
+                      if (D50(k) < 0.000062) then
+                        SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                      else
+                        SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                      endif
+                    endif
+                    CN1(nx, k) = (aa + bb) * CN(nx, k) + cc * CN(nx-1, k) + (dt / arni) * SrcTerm
+                    if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
+                
+                elseif (bc_option == 3) then
+                    ! This is to use the 2nd order upwind differencing for the downstream BC
+                    ! for unequally spaced grid points or cross-sections
+                    dx  = xx(nx) - xx(nx-1)
+                    dx1 = xx(nx-1) - xx(nx-2)
+                    dx2 = xx(nx-2) - xx(nx-3)
 
-        arni = area(nx)
-        SrcTerm = 0.0
-        if( useSRC ) then
-          if (D50(k) < 0.000062) then
-            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
-          else
-            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
-          endif
-        endif
-        CN1(nx, k) = (aa + bb) * CN(nx, k) + cc * CN(nx-1, k) + (dt / arni) * SrcTerm
-        if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
-      elseif (bc_option == 3) then
-        ! This is to use the 2nd order upwind differencing for the downstream BC
-        ! for unequally spaced grid points or cross-sections
-        dx  = xx(nx) - xx(nx-1)
-        dx1 = xx(nx-1) - xx(nx-2)
-        dx2 = xx(nx-2) - xx(nx-3)
+                    ! These are the lamda1 and lamda2 in the notes
+                    lmd1 = dx1 / dx
+                    lmd2 = dx2 / dx
 
-        ! These are the lamda1 and lamda2 in the notes
-        lmd1 = dx1 / dx
-        lmd2 = dx2 / dx
+                    !!! The coefficients of the f' discretizetion (see notes)
+                    denom = lmd1 * (1.0 + lmd1) * dx
 
-        !!! The coefficients of the f' discretizetion (see notes)
-        denom = lmd1 * (1.0 + lmd1) * dx
+                    a0 = lmd1 * (2.0 + lmd1) / denom
+                    a1 = - ((1.0 + lmd1) ** 2.0) / denom
+                    a2 = 1.0 / denom
 
-        a0 = lmd1 * (2.0 + lmd1) / denom
-        a1 = - ((1.0 + lmd1) ** 2.0) / denom
-        a2 = 1.0 / denom
+                    !!! The coefficients of the f'' discretizetion (see notes)
+                    denom = lmd1 * lmd2 * (lmd1 + lmd2) * ((1.0 + lmd1) ** 3.0)
+                    denom = denom * (1.0 + lmd1 + lmd2) * (dx ** 2.0)
 
-        !!! The coefficients of the f'' discretizetion (see notes)
-        denom = lmd1 * lmd2 * (lmd1 + lmd2) * ((1.0 + lmd1) ** 3.0)
-        denom = denom * (1.0 + lmd1 + lmd2) * (dx ** 2.0)
+                    b0 = lmd2 * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2) * ((1.0 + lmd1) ** 3.0 - 1.0)
+                    b0 = 2.0 * ( b0 - lmd1 * (2.0 + lmd1) * ((1.0 + lmd1 + lmd2) ** 3.0 - (1.0 + lmd1) ** 3.0) )
+                    b0 = b0 / denom
 
-          b0 = lmd2 * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2) * ((1.0 + lmd1) ** 3.0 - 1.0)
-          b0 = 2.0 * ( b0 - lmd1 * (2.0 + lmd1) * ((1.0 + lmd1 + lmd2) ** 3.0 - (1.0 + lmd1) ** 3.0) )
-        b0 = b0 / denom
+                    b1 = -2.0 * lmd2 * ((1.0 + lmd1) ** 3.0) * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2)
+                    b1 = b1 / denom
 
-          b1 = -2.0 * lmd2 * ((1.0 + lmd1) ** 3.0) * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2)
-        b1 = b1 / denom
+                    b2 = lmd2 * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2)
+                    b2 = 2.0 * ( b2 + lmd1 * (2.0 + lmd1) * ((1.0 + lmd1 + lmd2) ** 3.0) )
+                    b2 = b2 / denom
 
-          b2 = lmd2 * (1.0 + lmd1 + lmd2) * (2.0 + 2.0 * lmd1 + lmd2)
-          b2 = 2.0 * ( b2 + lmd1 * (2.0 + lmd1) * ((1.0 + lmd1 + lmd2) ** 3.0) )
-        b2 = b2 / denom
+                    b3 = -2.0 * lmd1 * (2.0 + lmd1) * (1.0 + lmd1) ** 3.0
+                    b3 = b3 / denom
 
-          b3 = -2.0 * lmd1 * (2.0 + lmd1) * (1.0 + lmd1) ** 3.0
-        b3 = b3 / denom
+                  ! The coefficients of the discretized differential equation
+                    mu = a0 * area(nx) + a1 * area(nx-1) + a2 * area(nx-2)
+                    mu = (dt / area(nx)) * (flow(nx) - ks * mu)
 
-        ! The coefficients of the discretized differential equation
-          mu = a0 * area(nx) + a1 * area(nx-1) + a2 * area(nx-2)
-        mu = (dt / area(nx)) * (flow(nx) - ks * mu)
+                    xi = ks *dt
 
-        xi = ks *dt
+                    aa = 1.0 - a0 * mu + b0 * xi
+                    bb = - a1 * mu + b1 * xi
+                    cc = - a2 * mu + b2 * xi
+                    dd = b3 * xi
 
-        aa = 1.0 - a0 * mu + b0 * xi
-        bb = - a1 * mu + b1 * xi
-        cc = - a2 * mu + b2 * xi
-        dd = b3 * xi
+                    arni = area(nx)
+                    SrcTerm = 0.0
+                    if( useSRC ) then
+                        if (D50(k) < 0.000062) then
+                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                        else
+                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                          !write(*, *) time(n), arni, SrcTerm
+                        endif
+                    endif
+                    CN1(nx, k) = aa  * CN(nx, k) + bb * CN(nx-1, k) + cc * CN(nx - 2, k) + dd * CN(nx - 3, k) + (dt / arni) * SrcTerm
+                    if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
+                else
+                    write(*,*) 'Wrong value for bc_option: bc_option = 1,2 or 3'
+                    stop
+                endif
+      
+            else
+                CN1(nx, k)=ConcDOW(n+1, k)
+                if(SAND_terminal_from_ICM .ge. 0. )CN1(nx, k)=SAND_terminal_from_ICM  !coupling from ICM
+            endif
+    
+            CN = CN1
 
-        arni = area(nx)
-        SrcTerm = 0.0
-        if( useSRC ) then
-          if (D50(k) < 0.000062) then
-            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
-          else
-            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
-            !write(*, *) time(n), arni, SrcTerm
-          endif
-        endif
-        CN1(nx, k) = aa  * CN(nx, k) + bb * CN(nx-1, k) + cc * CN(nx - 2, k) + dd * CN(nx - 3, k) + (dt / arni) * SrcTerm
-        if( CN1(nx, k) <= smallC ) CN1(nx, k) = 0.0
-      else
-        write(*,*) 'Wrong value for bc_option: bc_option = 1,2 or 3'
-        stop
-      endif
-	  
-	else
-		CN1(nx, k)=ConcDOW(n+1, k)
-		if(SAND_terminal_from_ICM .ge. 0. )CN1(nx, k)=SAND_terminal_from_ICM  !coupling from ICM
-	endif
-	
-      CN = CN1
-    end do ! End of nclass loop
-	out_sand(:)=CN(:,1)
-	   if(modulo(time(n+1), DtUser).eq.0. .or. n.eq.(nt-1))then
+        end do ! End of nclass loop
+
+        out_sand(:)=CN(:,1)
+        if(modulo(time(n+1), DtUser).eq.0. .or. n.eq.(nt-1))then
         !write(ioutfile,20)time(n), (depth(i),i=1, nx), (area(i),i=1, nx),(flow(i),i=1, nx)
-        write(ioutfile,30)time(n+1)/60, ((CN(i,j),i=1,nx),j=1,np)
-    endif
+            write(ioutfile,30)time(n+1)/60, ((CN(i,j),i=1,nx),j=1,np)
+        endif
 
-  endif ! End of n /= nt
+    endif ! End of n /= nt
 
 end subroutine cal_SAND_R02
