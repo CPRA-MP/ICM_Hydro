@@ -955,8 +955,7 @@
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
               call hydrod(mm)
-	      write(*,*) "don't panic"
-	    
+
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
               if (n1d>0) then
@@ -972,10 +971,10 @@
                               TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
                           endif
                           if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
-                              FINE_terminal_from_ICM_R(tcr1D(i)) = 10 ! CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
+                              FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
                           endif
                           if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
-                              SAND_terminal_from_ICM_R(tcr1D(i)) = 10 ! CSS(tcr2D(i),2,1)                                            ! check unit
+                              SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
                           endif
                       enddo
                   endif
@@ -985,8 +984,8 @@
 !debug                      write(*,*) 'lateral connection flows:'
                       k = 0
                       do i = 1,n1D
-                        do j = 1,nlat_R(i)
-			    if (lcr1D(k+j)>0) then
+                          do j = 1,nlat_R(i)
+                              if (lcr1D(k+j)>0) then
                                   Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
 !debug                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
                                   if (Nctr_SAL_R(i) .eq. 1) then
@@ -996,14 +995,14 @@
                                       TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
                                   endif
                                   if (Nctr_FINE_R(i) .eq. 1) then
-                                      FINE_lat_from_ICM_R(i,j) = 10 !CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
+                                      FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
                                   endif
                                   if (Nctr_SAND_R(i) .eq. 1) then
-                                      SAND_lat_from_ICM_R(i,j) = 10 !CSS(lcr2D(k+j),2,1)                                              ! check unit
+                                      SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
                                   endif
                             endif	  
-                        enddo
-                        k = k+nlat_R(i)
+                          enddo
+                          k = k+nlat_R(i)
                       enddo
                   endif
                   
