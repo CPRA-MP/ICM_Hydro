@@ -132,8 +132,11 @@ module params_FINE_R02
   real(fp) :: SrcTerm
 
   real(fp), allocatable :: sumConc(:)  !, mACLD(:, :, :), diffACLD(:, :, :)
-
-	character(len=256) :: out_dir
+  
+  real(fp), allocatable :: bed_t(:,:)   ! sediment bed thickness at cross section for particle size class
+  real(fp) :: bed_bd                    ! bulk density of bed sediments
+  
+  character(len=256) :: out_dir
 
 
 end module params_FINE_R02

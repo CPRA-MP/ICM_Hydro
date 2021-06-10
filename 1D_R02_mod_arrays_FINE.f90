@@ -56,7 +56,10 @@ contains
     allocate(resuspension(Nclass))
     allocate(SedAccumRate(Nclass))
     allocate(CSSresusOff(Nclass))
-
+    
+    allocate(bed_t(NDx, Nclass))
+    bed_bd = 835000.0               ! bulk density of water bottoms [g/m^3]   0.835 g/cm^3 = 835,000 g/m^3 = 835.0 kg/m^3
+    
   end subroutine aloc_arrays
 
 end module mod_arrays_FINE_R02
