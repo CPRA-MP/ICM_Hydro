@@ -2,7 +2,7 @@
 !
 !  Developer: Vasilia Velissariou <vvelissariou@tulane.edu>
 !
-!  Version: 0.3
+!  Version: 0.4
 !
 !    Version - 0.1 Thu Nov 21 2019
 !            - Basic code development that uses an explicit
@@ -16,6 +16,9 @@
 !            - General code cleanup
 !            - Improved array manipulation for code speed-up and memory requirements
 !            - Code modifications to account for variable (unequally spaced) cross-sections
+!    Version - 0.4 Fri Jun 11 2021
+!            - General code cleanup & updates to indentation/tabs
+!            - Add sediment bed depth to source term to prevent over-scour
 !-------------------------------------------------------------------------------
 !
 
