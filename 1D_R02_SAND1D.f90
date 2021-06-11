@@ -692,7 +692,7 @@ end subroutine init_SAND_R02
 
 subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, out_sand, Q_lat_from_ICM, SAND_lat_from_ICM, SAND_upstream_from_ICM, SAND_terminal_from_ICM)
     use precision
-!    use params
+    !use params
     use mod_arrays_SAND_R02
 
     use sed_properties_SAND_R02
@@ -940,9 +940,9 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
                         endif
                     endif
                     CN1(nx, k) = dd * CN(nx, k) + ee * CN(nx - 1, k) + (dt / arni) * SrcTerm
@@ -986,9 +986,9 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
                         endif
                     endif
                     CN1(nx, k) = (aa + bb) * CN(nx, k) + cc * CN(nx-1, k) + (dt / arni) * SrcTerm
@@ -1045,10 +1045,10 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
-                          !write(*, *) time(n), arni, SrcTerm
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            !write(*, *) time(n), arni, SrcTerm
                         endif
                     endif
                     CN1(nx, k) = aa  * CN(nx, k) + bb * CN(nx-1, k) + cc * CN(nx - 2, k) + dd * CN(nx - 3, k) + (dt / arni) * SrcTerm
@@ -1069,7 +1069,7 @@ subroutine cal_SAND_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
 
         out_sand(:)=CN(:,1)
         if(modulo(time(n+1), DtUser).eq.0. .or. n.eq.(nt-1))then
-        !write(ioutfile,20)time(n), (depth(i),i=1, nx), (area(i),i=1, nx),(flow(i),i=1, nx)
+            !write(ioutfile,20)time(n), (depth(i),i=1, nx), (area(i),i=1, nx),(flow(i),i=1, nx)
             write(ioutfile,30)time(n+1)/60, ((CN(i,j),i=1,nx),j=1,np)
         endif
 
