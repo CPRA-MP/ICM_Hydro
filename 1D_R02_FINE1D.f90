@@ -691,7 +691,7 @@ end subroutine init_FINE_R02
 
 subroutine cal_FINE_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, out_fine, Q_lat_from_ICM, FINE_lat_from_ICM, FINE_upstream_from_ICM, FINE_terminal_from_ICM)
     use precision
-!    use params
+    !use params
     use mod_arrays_FINE_R02
     
     use sed_properties_FINE_R02
@@ -822,9 +822,9 @@ subroutine cal_FINE_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                 SrcTerm = 0.0
                 if( useSRC ) then
                     if (D50(k) < 0.000062) then
-                      SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
+                        SrcTerm = srcchsv(D50(k), depth(i), width(i), flow(i), flow(i) / area(i), CN(i, k), sumConc(i), Tcrit(k)) !! Change Nazmul
                     else
-                      SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
+                        SrcTerm = srcsand(D50(k), depth(i), width(i), flow(i) / area(i), CN(i, k), sumConc(i)) !! Change Nazmul
                     endif
                     ! SrcTerm from srchsv and srcsand is sediment flux per unit length - units: g/m/s
                     ! bed_t(i,k) = thickness of bed sediments (per particle class, k) in cross-section, i [m]
@@ -940,9 +940,9 @@ subroutine cal_FINE_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
                         endif
                     endif
                     CN1(nx, k) = dd * CN(nx, k) + ee * CN(nx - 1, k) + (dt / arni) * SrcTerm
@@ -985,9 +985,9 @@ subroutine cal_FINE_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
                         endif
                     endif
                     CN1(nx, k) = (aa + bb) * CN(nx, k) + cc * CN(nx-1, k) + (dt / arni) * SrcTerm
@@ -1044,10 +1044,10 @@ subroutine cal_FINE_R02(n, npr, ioutfile, nlatt, inp_depth, inp_area, inp_flow, 
                     SrcTerm = 0.0
                     if( useSRC ) then
                         if (D50(k) < 0.000062) then
-                          SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
+                            SrcTerm = srcchsv(D50(k), depth(nx), width(nx), flow(nx),flow(nx) / area(nx), CN(nx, k), sumConc(nx), Tcrit(k)) !! Change Nazmul
                         else
-                          SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
-                          !write(*, *) time(n), arni, SrcTerm
+                            SrcTerm = srcsand(D50(k), depth(nx), width(nx), flow(nx) / area(nx), CN(nx, k), sumConc(nx)) !! Change Nazmul
+                            !write(*, *) time(n), arni, SrcTerm
                         endif
                     endif
                     CN1(nx, k) = aa  * CN(nx, k) + bb * CN(nx-1, k) + cc * CN(nx - 2, k) + dd * CN(nx - 3, k) + (dt / arni) * SrcTerm
