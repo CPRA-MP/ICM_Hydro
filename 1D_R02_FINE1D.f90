@@ -505,7 +505,8 @@ subroutine init_FINE_R02(npr, ioutfile, input_file, rday, ndtr, nlatr_ori, nlatr
     endif
     !! Lateral flow end
       
-      ! read Dis manning tableopen(unit = LUN, file = trim(reach_qm))
+      ! read Dis manning table
+    open(unit = LUN, file = trim(reach_qm))
     do i=1,100
         read(LUN,*,end=300)Q_Sk_Table(1,i), Q_Sk_Table(2,i)
     enddo
