@@ -1433,7 +1433,8 @@
              max(-stagemax,min(stagemax,stage_max(kj))),		&
              max(-stagemax,min(stagemax,stage_ave(kj))),		&
              max(-stagemax,min(stagemax,stage_ave_summer(kj))),		&
-             max(-rangemax,min(rangemax,stage_var_summer(kj))),		&
+             !max(-rangemax,min(rangemax,stage_var_summer(kj))),		&
+             max(-rangemax,min(rangemax,stage_wlv_summer(kj))),		&
              min(salmax,sal_ave(kj)),		&
              min(salmax,sal_ave_summer(kj)),		&
              min(salmax,sal_2wk_ave_max(kj)),		&
