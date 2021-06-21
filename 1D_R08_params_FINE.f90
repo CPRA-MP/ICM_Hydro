@@ -10,7 +10,7 @@
 !            - Modifications to inlude all latest options and arrays
 !-------------------------------------------------------------------------------
 !
-module params_SAND_R08
+module params_FINE_R08
 
   use precision
 
@@ -38,7 +38,7 @@ module params_SAND_R08
   ! This is the reference date for the simulation. Tstart and Tstop are times [s]
   ! from the reference date. - (Currently RefDate is not used)
   !character(len=19) :: RefDate
-  real(fp) :: sand_init, Tstart, Tstop, Dt
+  real(fp) :: fine_init, Tstart, Tstop, Dt
   integer  :: Nclass                            ! number of sediment classes to be considered
   integer  :: NDt                               ! number of time steps in the simulation
   integer  :: NDx                               ! number of spatial increments (cross-sections) in the simulation
@@ -78,7 +78,7 @@ module params_SAND_R08
 
   real(fp), allocatable :: xx(:), time(:), depth(:), area(:), flow(:), width(:)
   real(fp), allocatable :: CN(:, :), CN1(:, :)
-  
+
   !real(fp), allocatable :: C(:, :, :), CLD(:, :, :), ACLD(:, :, :)
   !real(fp), allocatable :: timeUser(:), depthUser(:, :), areaUser(:, :), flowUser(:, :)
 
@@ -139,4 +139,4 @@ module params_SAND_R08
   character(len=256) :: out_dir
 
 
-end module params_SAND_R08
+end module params_FINE_R08
