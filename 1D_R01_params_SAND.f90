@@ -78,7 +78,7 @@ module params_SAND_R01
 
   real(fp), allocatable :: xx(:), time(:), depth(:), area(:), flow(:), width(:)
   real(fp), allocatable :: CN(:, :), CN1(:, :)
-
+  
   !real(fp), allocatable :: C(:, :, :), CLD(:, :, :), ACLD(:, :, :)
   !real(fp), allocatable :: timeUser(:), depthUser(:, :), areaUser(:, :), flowUser(:, :)
 
@@ -132,8 +132,11 @@ module params_SAND_R01
   real(fp) :: SrcTerm
 
   real(fp), allocatable :: sumConc(:)  !, mACLD(:, :, :), diffACLD(:, :, :)
-
-	character(len=256) :: out_dir
+  
+  real(fp), allocatable :: bed_t(:,:)   ! sediment bed thickness at cross section for particle size class
+  real(fp) :: bed_bd                    ! bulk density of bed sediments
+  
+  character(len=256) :: out_dir
 
 
 end module params_SAND_R01
