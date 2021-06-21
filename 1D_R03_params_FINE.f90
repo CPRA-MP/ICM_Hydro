@@ -10,7 +10,7 @@
 !            - Modifications to inlude all latest options and arrays
 !-------------------------------------------------------------------------------
 !
-module params_FINE_R03
+module params_SAND_R03
 
   use precision
 
@@ -38,7 +38,7 @@ module params_FINE_R03
   ! This is the reference date for the simulation. Tstart and Tstop are times [s]
   ! from the reference date. - (Currently RefDate is not used)
   !character(len=19) :: RefDate
-  real(fp) :: fine_init, Tstart, Tstop, Dt
+  real(fp) :: sand_init, Tstart, Tstop, Dt
   integer  :: Nclass                            ! number of sediment classes to be considered
   integer  :: NDt                               ! number of time steps in the simulation
   integer  :: NDx                               ! number of spatial increments (cross-sections) in the simulation
@@ -78,7 +78,7 @@ module params_FINE_R03
 
   real(fp), allocatable :: xx(:), time(:), depth(:), area(:), flow(:), width(:)
   real(fp), allocatable :: CN(:, :), CN1(:, :)
-
+  
   !real(fp), allocatable :: C(:, :, :), CLD(:, :, :), ACLD(:, :, :)
   !real(fp), allocatable :: timeUser(:), depthUser(:, :), areaUser(:, :), flowUser(:, :)
 
@@ -132,8 +132,11 @@ module params_FINE_R03
   real(fp) :: SrcTerm
 
   real(fp), allocatable :: sumConc(:)  !, mACLD(:, :, :), diffACLD(:, :, :)
+  
+  real(fp), allocatable :: bed_t(:,:)   ! sediment bed thickness at cross section for particle size class
+  real(fp) :: bed_bd                    ! bulk density of bed sediments
+  
+  character(len=256) :: out_dir
 
-	character(len=256) :: out_dir
 
-
-end module params_FINE_R03
+end module params_SAND_R03
