@@ -161,6 +161,13 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> marsh accumulation deltas are running sums (since deposition zone varies based on available edge-vs-interior area)
       dSacch_edge = 0.0
       dSacch_int = 0.0
+      
+      if (j == 964) then
+          do k=1,4 
+              write(*,'(4I,1I,F,F,F,F,F,F)')  j,k,SedAccumRate(k),MEESedRate(k),QSmarsh(k),QSsum(k),QStrib(k),QSdiv(k)
+          end do
+      end if
+      
 !>> open water accumulation delta are kept by sediment class to account for erodible bed of each sediment class
       do k=1,4
           dSacc(k) = 0.0
@@ -174,7 +181,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
      &                - QStrib(k)
      &                - QSdiv(k))
      &                *dt/(As(j,1)*ddy_2)
-          
+
           
 !>> Update CSS for each sediment class - filter based on available sediment
           CSS(j,2,k)=min(max(CSSmin,CSS(j,2,k)),CSSmax)
