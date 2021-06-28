@@ -25,7 +25,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       
 !>> Initialize local sediment flux variables to zero          
       do k=1,4
-	    QSsum(k)=0.0
+          QSsum(k)=0.0
           QSsumh(k)=0.0
           QSmarsh(k) = 0.0
           QStrib(k) = 0.0
@@ -164,7 +164,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       
       if (j == 964) then
           do k=1,4 
-              write(*,'(4I,1I,F,F,F,F,F,F)')  j,k,SedAccumRate(k),MEESedRate(k),QSmarsh(k),QSsum(k),QStrib(k),QSdiv(k)
+              write(*,'(4I,1I,F,F,F,F,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k),QSmarsh(k),QSsum(k),QStrib(k),QSdiv(k)
           end do
       end if
       
