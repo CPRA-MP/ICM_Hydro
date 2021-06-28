@@ -164,7 +164,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       
       if (j == 964) then
           do k=1,4 
-              write(*,'(4I,1I,F,F,F,F,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k),QSmarsh(k),QSsum(k),QStrib(k),QSdiv(k)
+              write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
           end do
       end if
       
