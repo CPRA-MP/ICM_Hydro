@@ -27,7 +27,8 @@
       
       cden=1./1000./24./3600.		! mm/d to m/s conversion
 
-      !>> Define depth, in meters, for dry cells that will turn off salinity change calculations
+      !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
+      !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
       dry_depth = 0.05
 !      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
       dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep

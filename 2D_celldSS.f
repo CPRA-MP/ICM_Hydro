@@ -22,6 +22,11 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       real :: sed_avail_h,depo_avail_h,depo_settling_h
       real :: marshface,MEErho,e,insta_retreat,MEEvol,MEEom,MEheight
       real :: dSacch_int,dSacch_edge
+      real :: dry_depth
+    
+      !>> Define depth, in meters, for dry cells that will turn off TSS change calculations 
+      !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
+      dry_depth = 0.05
       
 !>> Initialize local sediment flux variables to zero          
       do k=1,4
@@ -162,11 +167,13 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       dSacch_edge = 0.0
       dSacch_int = 0.0
       
-      if (j == 964) then
-          do k=1,4 
-              write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
-          end do
-      end if
+!      if (j == 964) then
+!          do k=1,4 
+!              write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
+!              write(*,'(I,7F)') k, CSS(j,1,k)*As(j,1)*ddy_1/dt, SedAccumRate(k), MEESedRate(k), QSmarsh(k), QSsum(k), QStrib(k), QSdiv(k))
+!          end do
+!      end if
+
       
 !>> open water accumulation delta are kept by sediment class to account for erodible bed of each sediment class
       do k=1,4
@@ -255,6 +262,16 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               CSSh(j,2,k) = CSSh(j,1,k)
           endif
 
+!>> Check if depths are at or below dry-depth threshold
+          if (ddy_2 <= dry_depth) then
+              CSS(j,2,k) = 0.0
+              !CSS(j,2,k) = CSS(j,1,k)
+          endif
+          
+          if (ddh_2 <= dry_depth) then
+              CSSh(j,2,k) = 0.0
+              !CSSh(j,2,k) = CSSh(j,1,k)
+          endif
       enddo
       
      

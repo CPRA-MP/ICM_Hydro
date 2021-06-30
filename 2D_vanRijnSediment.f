@@ -167,7 +167,7 @@
       
 !>> Calculate total velocity at bed of open water compartment (winds, flows, waves).
       Ubed = Uwind + Uflows + Uorb(j,1)
-
+!      write(*,*) j,Uwind,Uflows,Uorb(j,1)
 !>> Calculate bed shear stress from velocity at bed.
 	Tbed = cf(j)*rhow*Ubed**2
 
