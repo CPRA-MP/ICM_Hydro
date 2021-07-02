@@ -135,29 +135,48 @@ cJAM      Tributary and resuspension/deposition contributions to SS
                   endif
               endif
           enddo
-	enddo
+      enddo
 ! End loop over sediment classes
 
-!>> Calculate sediment flux from link network
+!>> Calculate sediment flux and velocities from link network
 !>> note that negative QSSum values for sand (flux OUT of compartment)are included in the SedAccumRate for sand via the van Rijn equilibrium CSS calculation
+      ave_vel_sum(j) = 0.0
+      ave_vel_cnt(j) = 0.0
+      ave_vel(j) = 0.0
+      max_vel(j) = 0.0
+      min_vel(j) = 0.0
+
       do k = 1,nlink2cell(j)
           if(icc(j,k) /= 0) then
               if(icc(j,k) < 0)then
-			    jnb=jus(abs(icc(j,k)))
+                  jnb=jus(abs(icc(j,k)))
               else
-			    jnb=jds(abs(icc(j,k)))
-		    endif  
+                  jnb=jds(abs(icc(j,k)))
+              endif  
           endif
-		iab=abs(icc(j,k))
+              iab=abs(icc(j,k))
 !>> if link value in connectivity matrix is non-zero - call subroutine that will accumulate sediment flux from all links
           if (iab /= 0) then
+!>> calculate velocity magnitude of all flows into/out of compartment
+              if (linkt(iab) /= 8) then
+                  if (linkt(iab) /= 9) then
+                      ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
+                      ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
+                      max_vel(j) = max( max_vel(j),abs(link_vel(iab)) )
+                      min_vel(j) = min( min_vel(j),abs(link_vel(iab)) )
+                  endif
+              endif
+              
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
-			    call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
-		    enddo
+                  call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
+                  !if (j == 115) then
+                  !    write(*,*) sedclass,iab,jnb,j,QSsum(sedclass)
+                  !end if
+              enddo
           endif
       enddo
-
+      ave_vel(j) = ave_vel_sum(j)/ave_vel_cnt(j)
 
 !>> Call sediment resuspension and deposition subroutine - this calculates the net sediment accumulation rate (g/sec)      
       call vanRijnSediment(j,kday)
@@ -167,11 +186,13 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       dSacch_edge = 0.0
       dSacch_int = 0.0
       
-!      if (j == 964) then
+!      if (j == 115) then
 !          do k=1,4 
 !              write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
-!              write(*,'(I,7F)') k, CSS(j,1,k)*As(j,1)*ddy_1/dt, SedAccumRate(k), MEESedRate(k), QSmarsh(k), QSsum(k), QStrib(k), QSdiv(k))
+!              write(*,'(I,2(1x,F),A,6(1x,F))') k,CSS(j,1,k),CSS(j,1,k)*As(j,1)*ddy_1/dt, ' dep:',
+!     &         SedAccumRate(k), MEESedRate(k), QSmarsh(k), QSsum(k), QStrib(k), QSdiv(k)
 !          end do
+!          pause
 !      end if
 
       

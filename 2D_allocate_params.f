@@ -467,6 +467,12 @@
       !allocate(TMtrib(30,simdays))!-EDW   array size of 30 is too small when running in Debug mode
       allocate(TMtrib(cells,simdays))!-EDW
 
+      allocate(ave_vel_sum(cells))
+      allocate(ave_vel_cnt(cells))
+      allocate(ave_vel(cells))
+      allocate(max_vel(cells))
+      allocate(min_vel(cells))
+      
 
       ! arrays of length equal to number of links
       allocate(Depth(links,3))
@@ -476,6 +482,7 @@
       allocate(SL(links,2))
       allocate(Tcoef(links,25))
       allocate(TL(links,3))
+      allocate(link_vel(links))
 !      allocate(uplandNP(links,14))
 
 ! variables of (:,:,:) dimensions

@@ -459,7 +459,13 @@
       real(sp), dimension(:,:), allocatable :: denit
       real(sp), dimension(:,:), allocatable :: Depth
 
-      real(dp), dimension(:,:), allocatable :: Q
+      real(dp), dimension(:,:), allocatable :: Q                  ! discharge [m3/s] in each link - negative rate indicates flow into downstream compartment from upstream for the link
+      real(dp), dimension(:), allocatable :: link_vel             ! calculated velocity [m/s] in each link - 
+      real(dp), dimension(:), allocatable :: ave_vel_sum          ! array used to accumulate the numerator when calculating the average velocity magnitude of all links flowing into/out of each compartment
+      real(dp), dimension(:), allocatable :: ave_vel_cnt          ! array used to accumulate the denominator when calculating the average velocity magnitude of all links flowing into/out of each compartment
+      real(dp), dimension(:), allocatable :: ave_vel              ! average velocity magnitude [m/s] in each compartment during current timestep - determined by looping over all connecting links and averaging velocities together, neglecting directionality
+      real(dp), dimension(:), allocatable :: max_vel              ! maximum velocity magnitude [m/s] for each compartment during current timestep
+      real(dp), dimension(:), allocatable :: min_vel              ! minimum velocity magnitude [m/s] for each compartment during current timestep
       
       real(sp), dimension(:,:,:), allocatable :: GrowAlgae
       real(sp), dimension(:,:,:), allocatable :: GrowChlA

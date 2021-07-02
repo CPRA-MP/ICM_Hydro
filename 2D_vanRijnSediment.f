@@ -166,11 +166,12 @@
       Uflows = Qsum_abs(j)/(2*ddy_2*OWwidth) 
       
 !>> Calculate total velocity at bed of open water compartment (winds, flows, waves).
-      Ubed = Uwind + Uflows + Uorb(j,1)
-!      write(*,*) j,Uwind,Uflows,Uorb(j,1)
-!>> Calculate bed shear stress from velocity at bed.
-	Tbed = cf(j)*rhow*Ubed**2
+      Ubed = Uwind + Uorb(j,1) + ave_vel(j) !Uflows
+!      write(*,*) j,Uflows,ave_vel(j),min_vel(j),max_vel(j)
 
+!>> Calculate bed shear stress from velocity at bed.
+      Tbed = cf(j)*rhow*Ubed**2
+      !write(*,*) j,Uwind,Uflows,Uorb(j,1),Tbed
 !>> Loop over 4 sediment classes and determine maximum possible sediment accumulation rates based on flow conditions and an infinite sediment source    
       do k=1,4
           if (k /= 1) then

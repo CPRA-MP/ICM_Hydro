@@ -240,10 +240,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 			flag_offbc(jj)=1
       enddo    
 
+
+      
 !>> Link updates of Q
       do i=1,M
 !>> Reset upwind dispersion factor to default value - this will be updated to 1.0 if flows in each link are above threshold value
           fa(i) = fa_def*fa_mult(i)
+
+!>> initialize velocity in each link to zero at start of loop - this will be filled with link flow velocities for each type of link flow
+          link_vel(i) = 0.0
 
 !>> Link type < 0 = dummy link that is not active in current run
           if (linkt(i) <= 0) then
@@ -330,8 +335,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
      &                 (2.*(Latr2(i)-Latr1(i))+Latr4(i))
                   else
 		!>> Calculate hydraulic radius from average flow depth (if open channel)
-		      Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
-	          endif
+                  Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
+                  endif
 
                   Ach = linkdepth*Latr4(i)
 
@@ -388,9 +393,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       stop !pause
                   endif
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow case
+                  
+                  !>> calculate channel velocity
+                  if (Ach > 0.0) then
+                      link_vel(i) = Q(i,2)/Ach
+                  end if
+              
               endif
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-              if (abs(Q(i,2)/Ach) >= upwind_vel) then
+              if (abs(link_vel(i)) >= upwind_vel) then
                   fa(i) = 1.0
               endif
 
@@ -510,7 +521,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       Exy(i) = 100.0
                   endif
                   EAOL(i)=Exy(i)*htup*Latr4(i)/10.
-
+                  
+                  !>> calculate channel velocity
+                  Ach = htup*Latr4(i)
+                  if (Ach > 0.0) then
+                      link_vel(i) = Q(i,2)/Ach
+                  end if
+                  
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
           !        if (abs(Q(i,2)/(htup*Latr4(i))) >= upwind_vel) then
           !            fa(i) = 1.0
@@ -737,8 +754,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       stop !pause
                   endif
               endif
+              
+                            
+              !>> calculate channel velocity
+              if (Ach > 0.0) then
+                  link_vel(i) = Q(i,2)/Ach
+              end if        
+                  
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-              if (abs(Q(i,2)/Ach) >= upwind_vel) then
+              if (abs(link_vel(i)) >= upwind_vel) then
                   fa(i) = 1.0
               endif
 
@@ -840,7 +864,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                 write(*,*) 'Es(jds)=',Es(jds(i),2)
                 stop !pause
             endif
-			
+              
+              !>> calculate channel velocity
+              if (Ach > 0.0) then
+                  link_vel(i) = Q(i,2)/Ach
+              end if        
+            
+            
 ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
 !             if (abs(Q(i,2)/Ach) >= upwind_vel) then
 !                  fa(i) = 1.0
@@ -892,6 +922,10 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
               ! EAOL term is inactive for pumps due to no flow area/flow length properties
               EAOL(i) = 0.0
+              
+              !>> calculate channel velocity - no velocity calculated for pump links - keep set to zero
+              link_vel(i) = 0.0
+             
 
 !>> Link type 8 = marsh over land channels
           elseif (linkt(i) == 8) then
@@ -991,12 +1025,17 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                      stop ! pause
                   endif
 
-              endif
+                  endif
           ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
           !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
           !        fa(i) = 1.0
           !    endif
-  
+              
+               !>> calculate channel velocity
+               if (Ach > 0.0) then
+                   link_vel(i) = Q(i,2)/Ach
+               end if        
+            
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
 !>> Link type 9 = ridges/levees
@@ -1090,8 +1129,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       w_k=w_ksub*(Latr8(i)+0.05*htup/p)*
      &                          max(0.6,(1-0.2*htup/p))
                       Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*abs(htupf)**1.5
-
                   endif
+
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Type9 Ridge Link',i,' flow is NaN'
                       write(*,*) 'ridge crest elevation=',Latr1(i)
@@ -1109,13 +1148,17 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
-				  
               endif
           ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
           !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
           !        fa(i) = 1.0
           !    endif
 
+              !>> calculate channel velocity
+              if (Ach > 0.0) then
+                  link_vel(i) = Q(i,2)/Ach
+              end if        
+            
               EAOL(i)=Exy(i)*Ach/Latr3(i)
 
 !>> Link type 10 = regime channels for sediment distribution
@@ -1176,6 +1219,11 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               else
                   Q(i,2) = 0.0
               endif
+
+               !>> calculate channel velocity - not used for regime channels - keep set to zero
+               link_vel(i) = 0.0
+
+
               EAOL(i)=EAOL(Latr2(i))
 
 !>> end flowrate calculations based on linktype
@@ -1241,7 +1289,6 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               endif
           endif
 
-      
       
 !>> End link updates of Q
       enddo
