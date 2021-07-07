@@ -266,7 +266,7 @@
       allocate(ChLAo(cells))
       allocate(CSSo(cells))
       allocate(dAdz(cells))
-      allocate(Eho(cells))
+      allocate(CSSos(cells))
       allocate(Esho(cells))
       allocate(Eso(cells))
 !      allocate(flood(cells))

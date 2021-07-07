@@ -405,7 +405,8 @@
       
       real(sp), dimension(:,:), allocatable :: Aas
       real(dp), dimension(:,:), allocatable :: As
-      real(sp), dimension(:,:,:), allocatable :: CSS !new third array dimension for 4 different sediment classes
+      real(sp), dimension(:,:,:), allocatable :: CSS !third array dimension for 4 different sediment classes
+      real(sp), dimension(:), allocatable :: CSSos 
       real(sp), dimension(:,:), allocatable :: daymo
       real(sp), dimension(:,:), allocatable :: ds
       real(sp), dimension(:,:), allocatable :: ESAV
@@ -640,7 +641,7 @@
       
 ! old comdeck.h memory block: COMMON/Marsh
       real(sp),dimension(:),allocatable :: Ahf
-      real(sp),dimension(:),allocatable :: Eho
+!      real(sp),dimension(:),allocatable :: Eho
 !      real(sp),dimension(:),allocatable :: flood
       real(sp),dimension(:),allocatable :: floodf
 

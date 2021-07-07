@@ -76,8 +76,8 @@
      &        KKdepth(j),         !   Minimum marsh water depth allowed in Kadlec-Knight marsh flow (m)
      &        MEE(j),              !   Annual marsh edge erosion retreat rate for compartment (m/yr)
 !          READ(90,*) nodem,	!	Marsh node number										!JAM Oct 2010
-!     &	    Flood(j),			    !	portion of cells that is  (-)
-     &	    Eho(j),				!	initial stage of marsh storage cells		(m)			!JAM Oct 2010
+!     &	    Flood(j),           !	portion of cells that is  (-)
+     &	    CSSos(j),           !	TSS concentration to be applied to offshore cells - set to -9999 if not used		(mg/L)
      &	    BedMOrig(j),        !	bed elevation of marsh storage cells		(m)
      &        BedMSD(j),          !   marsh elevation standard deviation          (m)         ! yw Nov 2020     
      &	    Esho(j),			!	soil moisture depth in marsh storage cells	(m)			!JAM Oct 2010

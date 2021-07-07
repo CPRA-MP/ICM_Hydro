@@ -186,9 +186,9 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       dSacch_edge = 0.0
       dSacch_int = 0.0
       
-!      if (j == 115) then
+!      if (j == 113) then
 !          do k=1,4 
-!              write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
+!              !write(*,'(4I,1I,F,F,F,F)')  j,k,SedAccumRate(k),insta_retreat,MEE(j),MEESedRate(k)
 !              write(*,'(I,2(1x,F),A,6(1x,F))') k,CSS(j,1,k),CSS(j,1,k)*As(j,1)*ddy_1/dt, ' dep:',
 !     &         SedAccumRate(k), MEESedRate(k), QSmarsh(k), QSsum(k), QStrib(k), QSdiv(k)
 !          end do
@@ -293,6 +293,13 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               CSSh(j,2,k) = 0.0
               !CSSh(j,2,k) = CSSh(j,1,k)
           endif
+          
+!>> Check if compartment has an offshore TSS concentration assigned in Cells.csv
+!>> If set to -9999 then the CSS calculated above will be used, otherwise the value will be set to 
+          if (CSSos(j) >= 0)  then
+              Css(j,2,k) = CSSos(j)*BCSedRatio(k)
+          endif
+          
       enddo
       
      

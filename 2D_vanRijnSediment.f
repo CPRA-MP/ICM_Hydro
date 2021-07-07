@@ -307,7 +307,7 @@
               resus_avail = max(0.0,resus_avail) ! if resus_avail < 0, bed has already been eroded
 
 !>> -- limit resupsension rate to only erode the amount of erodible bed available for the sediment class
-              SedAccumRate(k) = max(SedAccumRate(k),-resus_avail) ! SedAccumRate and available sediment for resuspension are negative here, since resuspension is occurring)
+              SedAccumRate(k) = depo_on_off(j)**max(SedAccumRate(k),-resus_avail) ! SedAccumRate and available sediment for resuspension are negative here, since resuspension is occurring)
               
 !>> -- if CSS is greater than threshold value (in RuncontrolR.dat) do not allow any resuspension
               if (css(j,1,k) >= CSSresusOff(k)) then

@@ -100,7 +100,7 @@
 !c	Cellsh - Properties for marsh compontent of cells
 !> @param[out] Ahf(N)					Marsh area subject to flooding
 !> @param[out] flood(N)				Fraction of Ahydro subject to flooding
-!> @param[out] Eho(N)					Bed marsh elevation in flood prone area	(m)
+!> @param[out] CSSo(N)					TSS concentration to be applied to offshore cells - set to -9999 if not used		(mg/L)
 !> @param[out] Eh(N,3)				stage in flooded area of marsh.
 !> @param[out] CSSh(N,3)				TSS in flood area of marsh
 !> @param[out] Sh(N,3)				Salinity in flood area of marsh			(ppt)
