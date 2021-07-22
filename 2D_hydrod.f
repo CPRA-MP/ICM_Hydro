@@ -837,9 +837,14 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   ! set flow area for non-full orifice
 				Ach = Latr4(i)*htup
 	!>> If orifice crown is submerged, use orifice equation
+	
+	! use orifice coefficient adjustment eq. 8.22 from A Brief Introduction ot Fluid Mechanics, 3rd ed. Young, Munson and Okiishi. 2004.
+	! beta is the ratio of orifice opening to pipe diameter (this should be less than 1, since an orifice opening must be smaller than the diameter of the pipe)
+	! here we set a max beta value of 0.9 to avoid div by 0 errors
 			else
 				orarea = (Latr2(i)-Latr1(i))*Latr4(i)
-				beta = (Latr2(i)-Latr1(i))/(Es(upN,2)-invup)
+				!beta = min(0.99,(Latr2(i)-Latr1(i))/(Es(upN,2)-invup))
+				beta = 0.0  ! do not use adjustment on orifice coefficient - just use values from links.csv as calibration factor
 				orC = Latr8(i)/(1-beta**4.0)
 
 				Q(i,2) = sn*orC*orarea*sqrt(abs(2*delp*g))
