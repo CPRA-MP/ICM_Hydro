@@ -115,9 +115,9 @@ c  chemical change computations  *********************************
 
       
 !>> Transport equation for WQ constituents, dChem      
-      Chem(j,ichem,2) = (Chem(j,ichem,1)*As(j,1)*dyy-QChemSUM(ichem)*dt
-     &                + DChemSUM*dt/(24.0*3600.0)*As(j,1)*dyy) 
-     &                / (As(j,1)*dyy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt)      
+      Chem(j,ichem,2) = (Chem(j,ichem,1)*As(j,1)*dyy-QChemSUM(ichem)*(dt/max(1,NTs2_ICM))
+     &                + DChemSUM*(dt/max(1,NTs2_ICM))/(24.0*3600.0)*As(j,1)*dyy) 
+     &                / (As(j,1)*dyy +(Qsum_in(j)-Qsum_out(j)+QRain)*(dt/max(1,NTs2_ICM)))      
       
 !      DChem(ichem)=  -1.0*QChemSUM(ichem)/(As(j,1)*dyy)*dt
 !     &	-Dz*Chem(j,ichem,1)/dyy+DChemSUM*(dt/(24.0*3600.0))   !zw 4/28/2015 change dt from sec to day in DChemSUM term because the paramters in the source/sink terms are all in 1/day

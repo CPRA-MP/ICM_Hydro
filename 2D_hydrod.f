@@ -40,8 +40,8 @@
       real :: Atch_US_Q,BayouShaffer_Qold,Div_Q
 
 !c     time in seconds
-      time=float(mm)*dt           ! elapsed time
-      thour=mm*dt/3600            ! elapsed time in hours
+      time=float(mm)*dt+(ntim_vts-1)*dt2           ! elapsed time ! YW VTS TEST
+      thour=(mm*dt+(ntim_vts-1)*dt2)/3600            ! elapsed time in hours ! YW VTS TEST
       tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
       kthr=int(thour+1)
       kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
@@ -77,7 +77,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 cc		do jj=101,mds+101-1
       do jjk=1,mds  !AMc 8 oct 2013
 	    jj=KBC(jjk) !AMc 8 oct 2013
-		tday= t/24/3600
+		tday= (t+(ntim_vts-1)*dt2)/24/3600                                                      ! YW VTS TEST
 		tdayj=tday-(int(tday/365.25))*365.25					!cal julian day JAM Nov 2010
 
 cc _________________ JAM Nov 2010 revised
@@ -360,7 +360,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd
 
 !>> flow filter. Only apply to selected links
-                  Q_filter1 = abs(Deta)*As(downN,1)/dt
+                  Q_filter1 = abs(Deta)*As(downN,1)/dt*max(1,NTs2_ICM)    ! YW VTS TEST
                   Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)
 
                   flag_apply = 0
@@ -615,71 +615,71 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               if (Latr9(i) == 1) then
                   if (abs(ES(upN,2)-ES(downN,2)) > Latr10(i)) then
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
           !>> Set zero multiplier if lock is closed due to time of day
               elseif (Latr9(i) == 2) then
                   if (hourclosed(i,simhr+1) == 1) then
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream water level
               elseif (Latr9(i) == 3) then
                   if(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high downstream salinity
               elseif (Latr9(i) == 4) then
                   if(S(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
 
           !>> Set zero multiplier if lock should be closed due to high downstream water level OR salinity
               elseif (Latr9(i) == 5) then
                   if(S(jds(i),2) > Latr2(i)) then          ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep                      
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep                      
                   endif
 
           !>> Set zero multiplier if lock should be closed based on observed daily timeseries
               elseif (Latr9(i) == 6) then
                   if (lockhours(lockrow,Latr10(i)) <= 0.0) then    ! lockrow is data timestep counter updated in main.f
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
 
           !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
               elseif (Latr9(i) == 7) then
                   if (Q(Latr2(i),2) <= Latr10(i)) then
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
           !>> Set zero multiplier if lock should be closed due to high uptream water level
               elseif (Latr9(i) == 8) then
                   if(Es(jus(i),2) > Latr10(i)) then       ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif
           !>> Set zero multiplier if upstream differential head is greater than usptream differential stage trigger
           !>> Lock is closed if upstream stage is lower than the downstream stage, or is within the stage trigger
@@ -687,9 +687,9 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               elseif (Latr9(i) == 9) then
                   if ((ES(upN,2)-ES(downN,2)) < Latr10(i)) then
                       !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                      Latr11(i) = Latr11(i) - dt/max(1,NTs2_ICM)/lockOPstep
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = Latr11(i) + dt/max(1,NTs2_ICM)/lockOPstep
                   endif    
               endif
                   
@@ -1275,13 +1275,13 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           endif
 
 !>> Determine flowrate required to exchange all available water during timestep
-          Qmax = volavailable/dt
+          Qmax = volavailable/dt*max(1,NTs2_ICM)                                    ! YW VTS TEST
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to this max rate
           if (linkt(i) >= 0.0) then
               if (Qmax < abs(Q(i,2))) then
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
-                      if (daystep == lastdaystep) then
+                      if (daystep == lastdaystep*max(1,NTs2_ICM)) then               ! YW VTS TEST
                           Write(1,*) 'Max flowrate reached. Link:',i
                           Write(*,*) 'Max flowrate reached. Link:',i
                       endif
@@ -1702,15 +1702,15 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 !>> If first timestep of day, reset average flow term
           if (daystep == 1) then
               do jj = 1,nlinksw
-			    FLO(jj) = Q(linkswrite(jj),2)*dt/(3600.*24.)
+			    FLO(jj) = Q(linkswrite(jj),2)*dt/max(1,NTs2_ICM)/(3600.*24.)  ! YW VTS TEST
               enddo
           else
               do jj = 1,nlinksw
-                  FLO(jj) = FLO(jj) + Q(linkswrite(jj),2)*dt/(3600.*24.)
+                  FLO(jj) = FLO(jj) + Q(linkswrite(jj),2)*dt/max(1,NTs2_ICM)/(3600.*24.)  ! YW VTS TEST
               enddo
           endif
 !>> Write flow output for links named in 'links_to_write.csv'
-          if (daystep == lastdaystep) then
+          if (daystep == lastdaystep*max(1,NTs2_ICM)) then                                ! YW VTS TEST
               if (nlinksw == 1) then
                   WRITE(211,1113) (FLO(jj),jj=1,nlinksw)
               else
@@ -1743,31 +1743,31 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
               ESMX(kl,2) = ES(kl,2)
               ESMN(kl,2) = ES(kl,2)
-              ESAV(kl,1) = ES(kl,2)*dt/(3600.*24.)
-              EHAV(kl,1) = EH(kl,2)*dt/(3600.*24.)
+              ESAV(kl,1) = ES(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                            ! YW VTS TEST
+              EHAV(kl,1) = EH(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                            ! YW VTS TEST
               dailyHW(kl) = 0.0
               dailyLW(kl) = 0.0
-              SALAV(kl) = S(kl,2)*dt/(3600.*24.)
+              SALAV(kl) = S(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                            ! YW VTS TEST
 !>> Update average WQ values for compartments by timestep's contribution to daily average
           else
               do klk = 1,14  !zw 4/28/2015 replace ichem with 14
                   ChemAve(kl,klk) = ChemAve(kl,klk)
-     &                                + Chem(kl,klk,2)*dt/(3600.*24.)
+     &                                + Chem(kl,klk,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                    ! YW VTS TEST
               enddo
-              TempwAve(kl) = TempwAve(kl) + Tempw(kl,2)*dt/(3600.*24.)
+              TempwAve(kl) = TempwAve(kl) + Tempw(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                   ! YW VTS TEST
               TSSAve(kl) = TSSAve(kl) + ( CSS(kl,2,1)+CSS(kl,2,2)
-     &                  + CSS(kl,2,3)+CSS(kl,2,4) )*dt/(3600.*24.)
-              QmarshAve(kl) = QmarshAve(kl)+Qmarsh(kl,2)*dt/(3600.*24.)
+     &                  + CSS(kl,2,3)+CSS(kl,2,4) )*dt/max(1,NTs2_ICM)/(3600.*24.)                        ! YW VTS TEST
+              QmarshAve(kl) = QmarshAve(kl)+Qmarsh(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                  ! YW VTS TEST
 
               !zw added 04/15/2020 - move daily values calculations to here from subroutines celldQ/celldSal
               ESMX(kl,2) = max(ESMX(kl,2),ES(kl,2))
               ESMN(kl,2) = min(ESMN(kl,2),ES(kl,2))
-              ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/(3600.*24.)
-              EHAV(kl,1) = EHAV(kl,1) + EH(kl,2)*dt/(3600.*24.)
+              ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                  ! YW VTS TEST
+              EHAV(kl,1) = EHAV(kl,1) + EH(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                  ! YW VTS TEST
               dailyHW(kl) = max(dailyHW(kl),ES(kl,2))
               dailyLW(kl) = min(dailyLW(kl),ES(kl,2))
               EsRange(kl,1)=ESMX(kl,2)-ESMN(kl,2)
-              SALAV(kl)=SALAV(kl) + S(kl,2)*dt/(3600.*24.)
+              SALAV(kl)=SALAV(kl) + S(kl,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                       ! YW VTS TEST
           endif
       enddo
 
@@ -1776,17 +1776,17 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
       do kk=1,M
           if(daystep == 1) then
 !>> reset average salinity value for links at start of day
-		    SlkAve(kk) = SL(kk,2)*dt/(3600.*24.)
+		    SlkAve(kk) = SL(kk,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                       ! YW VTS TEST
           else
 !>> Update average salinity value for links by timestep's contribution to daily average
-		    SlkAve(kk)=SlkAve(kk) + SL(kk,2)*dt/(3600.*24.)
+		    SlkAve(kk)=SlkAve(kk) + SL(kk,2)*dt/max(1,NTs2_ICM)/(3600.*24.)                       ! YW VTS TEST
 	    endif
       enddo
 
 
 
 !>> Write daily averages to output files
-	if (daystep == lastdaystep) then
+	if (daystep == lastdaystep*max(1,NTs2_ICM)) then                                ! YW VTS TEST                     
 !>-- Write daily average water stage elevation in open water to STG.out
           WRITE(111,2222)  (ESAV(j,1),j=1,N)
 !>-- Write daily average water stage elevation in marsh to STGm.out
@@ -1847,7 +1847,7 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
 !>-- Write time marsh is flooded to fflood.out
           WRITE(105,2222)	(floodf(j),j=1,N)								!!JAM Oct 24, 2010 should be Sed accumulation
-          ttday=t/(24*3600)
+          ttday=time/(24*3600)                     ! YW VTS TEST
 
           if(kday == int(ttday+1)) then
               floodf(:)=0.0

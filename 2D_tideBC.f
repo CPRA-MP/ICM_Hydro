@@ -58,10 +58,10 @@
 !>> !YW! Interpolate tide and surge between input data time step
                   BCnosurge(jj,2) = BCnosurge(jj,1)                          
      &            +(TideData(use_row+1,nnn)-TideData(use_row,nnn))
-     &            /lasttidestep
+     &            /lasttidestep*max(1,NTs2_ICM)                                 ! YW VTS TEST
                   BCsurge(jj,2) = BCsurge(jj,1)
      &            +(Surge(use_row+1,jjk)-Surge(use_row,jjk))
-     &            /lasttidestep  
+     &            /lasttidestep*max(1,NTs2_ICM)                                 ! YW VTS TEST  
 
                   ES(jj,2)=BCnosurge(jj,2)+BCsurge(jj,2)
 			endif

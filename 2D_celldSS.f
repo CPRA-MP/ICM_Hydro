@@ -72,14 +72,14 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> Calculate sediment flux from eroded marsh face - multiply by -1 to keep sign convention of negative sediment flux is INTO open water
 ! multiply by 1000 to convert from kg/sec to g/sec      
           MEEsedRate(k) = -1000.0*MEESedRatio(k)
-     &            *MEEvol*MEErho*(1-MEEom)/dt
+     &            *MEEvol*MEErho*(1-MEEom)/(dt/max(1,NTs2_ICM))
             
 !>> Calculate sediment flux from marsh-to-open water exchange flows
 !>> Negative flux is FROM marsh TO open water
           if(QMarsh(j,2) >= 0.0) then
 !>> if flow is into marsh and there are suspended solid in open water determine maximum possible sediment flux (g/sec) based on available sediment
               if (Css(j,1,k) > CSSmin) then
-                  QSmarsh_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
+                  QSmarsh_avail = CSS(j,1,k)*As(j,1)*ddy_1/(dt/max(1,NTs2_ICM))
                   QSmarsh(k) = min(Qmarsh(j,2)*Css(j,1,k),QSmarsh_avail)	!g/s !going into marsh
               else
                   QSmarsh(k) = 0.0
@@ -87,7 +87,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
           else
 !>> if flow is out of marsh and there are suspended solids in marsh determine maximum possible sediment flux (g/sec) based on available sediment
               if (Cssh(j,1,k) > CSSmin) then
-                  QSmarsh_avail = -CSSh(j,1,k)*Ahf(j)*ddh_1/dt
+                  QSmarsh_avail = -CSSh(j,1,k)*Ahf(j)*ddh_1/(dt/max(1,NTs2_ICM))
 	            QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
 
               else
@@ -107,7 +107,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               else
 !>> if tributary flow is leaving compartment and there are suspended solids in compartment, determine maximum possible sediment flux (g/sec) based on available sediment
                   if (Css(j,1,k) > CSSmin) then
-                      QStrib_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
+                      QStrib_avail = CSS(j,1,k)*As(j,1)*ddy_1/(dt/max(1,NTs2_ICM))
                       QStrib(k) = QStrib(k) 
      &                      + min(tribflow*CSS(j,1,k),QStrib_avail)  ! QStrib is positive here
                   else
@@ -127,7 +127,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               else
 !>> if tributary flow is leaving compartment and there are suspended solids in compartment, determine maximum possible sediment flux (g/sec) based on available sediment
                   if(CSS(j,1,k) > CSSmin) then
-                      QSdiv_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
+                      QSdiv_avail = CSS(j,1,k)*As(j,1)*ddy_1/(dt/max(1,NTs2_ICM))
                       QSdiv(k) = QSdiv(k)
      &                     + min(divflow*css(j,1,k),QSdiv_avail)
                   else
@@ -201,14 +201,14 @@ cJAM      Tributary and resuspension/deposition contributions to SS
           dSacc(k) = 0.0
 !>> loop over sediment classes to 
 !>> Calculate change in open water CSS concentration for each sediment class,  based on net accumulation rates
-          CSS(j,2,k) = ((CSS(j,1,k)*As(j,1)*ddy_1/dt)
+          CSS(j,2,k) = ((CSS(j,1,k)*As(j,1)*ddy_1/(dt/max(1,NTs2_ICM)))
      &                - SedAccumRate(k)   
      &                - MEESedRate(k)
      &                - QSmarsh(k)
      &                - QSsum(k)
      &                - QStrib(k)
      &                - QSdiv(k))
-     &                *dt/(As(j,1)*ddy_2)
+     &                *(dt/max(1,NTs2_ICM))/(As(j,1)*ddy_2)
 
           
 !>> Update CSS for each sediment class - filter based on available sediment
@@ -216,7 +216,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
                     
 !>> Calculate total mass accumulated on open water bed
 !>> If available sediment in erodible bed has already been lost, SedAccumRate was set to zero and only use positive SedAccumRate will be used (deposition)         
-          dSacc(k) = SedAccumRate(k)*dt/As(j,1)
+          dSacc(k) = SedAccumRate(k)*(dt/max(1,NTs2_ICM))/As(j,1)
                     
 !>> Calculate marsh settling and change to CSS in marsh
           if (Ahf(j) > 0.0) then
@@ -224,18 +224,18 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 ! Negative sediment flux via links (QSsumh) is entering marsh
               sed_avail_h = CSSh(j,1,k)*Ahf(j)*ddh_1
 !>> Calculate deposition rate if all sediment in marsh were to settle out (g/sec)
-              depo_avail_h = max(sed_avail_h,0.0)/dt
+              depo_avail_h = max(sed_avail_h,0.0)/(dt/max(1,NTs2_ICM))
 !>> Calculate deposition rate based on current settling velocity (g/sec)
               depo_settling_h = CSSh(j,1,k)*velset(j,k)*Ahf(j)
 !>> Determine actual amount of sediment accumulated on marsh based on available sediment              
               SedAccumRate_h(k) = min(depo_settling_h,depo_avail_h)
 
 !>> Calculate change in marsh CSS concentration in each sediment class
-              CSSh(j,2,k) = (CSSh(j,1,k)*Ahf(j)*ddh_1/dt
+              CSSh(j,2,k) = (CSSh(j,1,k)*Ahf(j)*ddh_1/(dt/max(1,NTs2_ICM))
      &            + QSmarsh(k)
      &            - QSsumh(k)
      &            - SedAccumRate_h(k))
-     &            *dt/(ddh_2*Ahf(j))
+     &            *(dt/max(1,NTs2_ICM))/(ddh_2*Ahf(j))
               
               CSSh(j,2,k) = min(max(CSSmin,CSSh(j,2,k)),CSSmax)
               
@@ -243,24 +243,24 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> Sand particles deposit in marsh edge zone (first 30 meters) 
               if (k == 1) then
                   if(ar_ed(j) /= 0.0) then
-                      !dSacch(k)=SedAccumRate_h(k)*(dt/ar_ed)
+                      !dSacch(k)=SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_ed)
                       dSacch_edge = dSacch_edge
-     &                        + SedAccumRate_h(k)*(dt/ar_ed(j))
+     &                        + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_ed(j))
                   endif
 !>> Silt particles will deposit on edge if marsh depth is less than some threshold depth
               elseif (k == 2) then
                   if(ar_ed(j) /= 0.0) then
                       if (ddh_2 < 0.3) then
                           dSacch_edge = dSacch_edge
-     &                        + SedAccumRate_h(k)*(dt/ar_ed(j))
+     &                        + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_ed(j))
 !>> if marsh depth is greater than threshold, deposit silt on interior (unless all marsh is edge)                      
                       else
                           if(ar_int(j) /= 0.0) then
                               dSachh_int = dSacch_int
-     &                             + SedAccumRate_h(k)*(dt/ar_int(j))
+     &                             + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_int(j))
                           else
                               dSacch_edge = dSacch_edge
-     &                        + SedAccumRate_h(k)*(dt/ar_ed(j))
+     &                        + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_ed(j))
                           endif
                       endif
                   endif
@@ -269,11 +269,11 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               else
                   if(ar_int(j) /= 0.0) then
                       dSacch_int = dSacch_int
-     &                            + SedAccumRate_h(k)*(dt/ar_int(j))
+     &                            + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_int(j))
 !>> If there all marsh area is edge, deposit fine material on edge instead of interior
                   elseif (ar_ed(j) /= 0.0) then
                       dSacch_edge = dSacch_edge
-     &                    + SedAccumRate_h(k)*(dt/ar_ed(j))
+     &                    + SedAccumRate_h(k)*((dt/max(1,NTs2_ICM))/ar_ed(j))
                   endif
               endif              
 !>> If compartment has no marsh area, do not calculate values          
@@ -313,8 +313,8 @@ cJAM      Tributary and resuspension/deposition contributions to SS
       Sacch(j,2) = Sacch_int(j,2) + Sacch_edge(j,2)
 
 ! Miscellaneous calculations
-!      ASandA(j)=ASandT(j,kday)*dt+ASandA(j)					!kg/s*s*1000 = kg*1000=g June 2011  JAM Dec 12, 2010
-!      ASandA(j)=ASandD(j,kday)*dt+ASandA(j)						!JAM Dec 12 2010 *** June 21, 2011
+!      ASandA(j)=ASandT(j,kday)*(dt/max(1,NTs2_ICM))+ASandA(j)					!kg/s*s*1000 = kg*1000=g June 2011  JAM Dec 12, 2010
+!      ASandA(j)=ASandD(j,kday)*(dt/max(1,NTs2_ICM))+ASandA(j)						!JAM Dec 12 2010 *** June 21, 2011
 !      sbm=-SourceBM(j)*Ahf(j)*1000./(365.25*24*3600)				!Biomass SS source in marsh !JAM Oct 2010
 
      

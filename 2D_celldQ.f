@@ -192,7 +192,7 @@ cccccccccc cjam collects flow from connecting links
 
 !>> Calculate change in open water stage
 !>> negative flows are into compartment and will result in positive deltaZ
-      Dz=((-Qsum)/As(j,1))*dt				                !Euler method,3.
+      Dz=((-Qsum)/As(j,1))*dt/max(1,NTs2_ICM)				                !Euler method,3.  ! YW VTS TEST
 
       sndz = 1.0
       if (Dz < 0) then
@@ -234,7 +234,7 @@ cccccccccc cjam collects flow from connecting links
 !>> Calculate change in marsh stage
 !>> Negative marsh flow is into marsh and will result in positive deltaZmarsh
       if (Ahf(j) > 0.0) then
-          Dzh=(-Qsumh)/Ahf(j)*dt
+          Dzh=(-Qsumh)/Ahf(j)*dt/max(1,NTs2_ICM)           ! YW VTS TEST
 
 !>> Update marsh water elevation
           Eh(j,2)= Max(Eh(j,1)+Dzh, BedM(j))		!JAM Oct 2010 Marsh stage (m) 
@@ -272,7 +272,7 @@ cccccccccc cjam collects flow from connecting links
 
 !>> Calculate cumulative time marsh is flooded
       if (ES(j,2) < (BedM(j)+0.01)) then
-	    floodf(j)=Floodf(j)+dt/(24.*3600.)	!accum days of flooding JAM Nov 13, 2010
+	    floodf(j)=Floodf(j)+dt/max(1,NTs2_ICM) /(24.*3600.)	!accum days of flooding JAM Nov 13, 2010  ! YW VTS TEST
 	endif 
 
 

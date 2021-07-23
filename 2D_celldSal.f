@@ -196,7 +196,7 @@
       vol2 = ddy2*As(j,1) + marsh_vol2
 
       if(ddy2 > dry_depth) then
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
+          S(j,2)= (S(j,1)*vol1 - QSalsum*(dt/max(1,NTs2_ICM))) / max(0.01,vol2)   
           ds = S(j,2) - S(j,1)
           
           !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 

@@ -210,6 +210,7 @@
       
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
       integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
+      integer :: dt2,NTs2_ICM,dt2_date_start,dt2_date_end            !YW TEST VTS. dt2 is the second time step for the compartment model. Need to be a divisor of dt.
       Character*100 header
       
      
@@ -377,6 +378,14 @@
       NTs =int(simdays*24*60*60/dt)
       NNN=NTs-int(24*60*60/dt)
       lastdaystep = 24*60*60/dt !dt is in seconds - number of timesteps in a day
+      dt2 = 10                  !YW TEST VTS
+      NTs2_ICM = dt/dt2         !YW TEST VTS
+      if (mod(NTs2_ICM,1) .NE. 0) .OR. (NTs2_ICM <= 1) then   !YW TEST VTS
+          write(*,*) 'Please check dt2 value'                 !YW TEST VTS
+          stop !pause                                         !YW TEST VTS
+      endif                                                   !YW TEST VTS
+      dt2_date_start = 33       !YW TEST VTS
+      dt2_date_end = 35         !YW TEST VTS
 !>> Determine number of simulation steps needed before updating tide and wind data
       lasttidestep = dttide*60*60/dt !dttide is in hours - number of timesteps before updating tide data
       lastwindstep = dtwind*60*60/dt !dtwind is in hours - number of timesteps before updating wind data
@@ -906,7 +915,7 @@
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
           if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-
+              
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
 
 !>> -- Calculate various versions of time to be used as flags throughout program
@@ -950,82 +959,133 @@
 !				ASANDD(j,kt)=ParSandD(kt)*Qdiv(it,kt)*cssTdiv(it,kt)
 !    &				   *Qmultdiv(j,it)
 !              enddo
-!		enddo
+!		enddo              
+              
+              if(day < dt2_date_start .OR. day >= dt2_date_end) then
+                  dt2 = 0
+                  NTs2_ICM = 0
+              endif
+              
+              do ntim_vts = 1,NTs2_ICM+1                                ! dt is divided into dt2
 
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
-              call hydrod(mm)
+                  call hydrod(mm)
 
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
-              if (n1d>0) then
-                  if (ntc>0) then
-!debug                      write(*,*) ' terminal connection flows:'
-                      do i = 1,ntc
-                          WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
-!debug                          write(*,*) '   link',i,'Q',WL_terminal_from_ICM_R(tcr1D(i))
-                          if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
-                              SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
-                          endif
-                          if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
-                              TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
-                          endif
-                          if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
-                              FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
-                          endif
-                          if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
-                              SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
-                          endif
-                      enddo
-                  endif
+                  if (n1d>0) then
+                      if (ntc>0) then
+!debug                          write(*,*) ' terminal connection flows:'
+                          do i = 1,ntc
+                              WL_terminal_from_ICM_R(tcr1D(i)) = Es(tcr2D(i),2)
+!debug                              write(*,*) '   link',i,'Q',WL_terminal_from_ICM_R(tcr1D(i))
+                              if (Nctr_SAL_R(tcr1D(i)) .eq. 1) then
+                                  SAL_terminal_from_ICM_R(tcr1D(i)) = S(tcr2D(i),2)                                                 ! check unit
+                              endif
+                              if (Nctr_TMP_R(tcr1D(i)) .eq. 1) then
+                                  TMP_terminal_from_ICM_R(tcr1D(i)) = Tempw(tcr2D(i),2)                                             ! check unit
+                              endif
+                              if (Nctr_FINE_R(tcr1D(i)) .eq. 1) then
+                                  FINE_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,2) + CSS(tcr2D(i),2,3) + CSS(tcr2D(i),2,4)    ! check unit
+                              endif
+                              if (Nctr_SAND_R(tcr1D(i)) .eq. 1) then
+                                  SAND_terminal_from_ICM_R(tcr1D(i)) = CSS(tcr2D(i),2,1)                                            ! check unit
+                              endif
+                          enddo
+                      endif
                   
                   !>> -- linking lateral connections    
-                  if (nlc>0) then
-!debug                      write(*,*) 'lateral connection flows:'
-                      k = 0
-                      do i = 1,n1D
-                          do j = 1,nlat_R(i)
-                              if (lcr1D(k+j)>0) then
-                                  Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
-!debug                                  write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
-                                  if (Nctr_SAL_R(i) .eq. 1) then
-                                      SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
-                                  endif
-                                  if (Nctr_TMP_R(i) .eq. 1) then
-                                      TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
-                                  endif
-                                  if (Nctr_FINE_R(i) .eq. 1) then
-                                      FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
-                                  endif
-                                  if (Nctr_SAND_R(i) .eq. 1) then
-                                      SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
-                                  endif
-                            endif	  
+                      if (nlc>0) then
+!debug                          write(*,*) 'lateral connection flows:'
+                          k = 0
+                          do i = 1,n1D
+                              do j = 1,nlat_R(i)
+                                  if (lcr1D(k+j)>0) then
+                                      Q_lat_from_ICM_R(i,j) = -1.0*Q(lcl2D(k+j),2)    ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment. Negative Q as source for 1D
+!debug                                      write(*,'(I,I,I,I,I,F10.2)') k,i,j,lcr1D(k+j),lcl2D(k+j),Q_lat_from_ICM_R(i,j)
+                                      if (Nctr_SAL_R(i) .eq. 1) then
+                                          SAL_lat_from_ICM_R(i,j) = S(lcr2D(k+j),2)                                                   ! check unit
+                                      endif
+                                      if (Nctr_TMP_R(i) .eq. 1) then
+                                          TMP_lat_from_ICM_R(i,j) = Tempw(lcr2D(k+j),2)                                               ! check unit
+                                      endif
+                                      if (Nctr_FINE_R(i) .eq. 1) then
+                                          FINE_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,2) + CSS(lcr2D(k+j),2,3) + CSS(lcr2D(k+j),2,4)      ! check unit
+                                      endif
+                                      if (Nctr_SAND_R(i) .eq. 1) then
+                                          SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
+                                      endif
+                                endif	  
+                              enddo
+                              k = k+nlat_R(i)
                           enddo
-                          k = k+nlat_R(i)
-                      enddo
-                  endif
+                      endif
                   
                   !>> -- linking upstream connections
-                  if (nuc>0) then
-                      do i = 1,nuc
-                          Q_upstream_from_ICM_R(ucr1D(i)) = Q(ucl2D(i),2)    ! Connecting link USnode is receiving compartment, DSnode is connecting_compartment
-                          if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
-                              SAL_upstream_from_ICM_R(ucr1D(i)) = S(ucr2D(i),2)                                                   ! check unit
-                          endif
-                          if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
-                              TMP_upstream_from_ICM_R(ucr1D(i)) = Tempw(ucr2D(i),2)                                               ! check unit
-                          endif
-                          if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
-                              FINE_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,2) + CSS(ucr2D(i),2,3) + CSS(ucr2D(i),2,4)      ! check unit
-                          endif
-                          if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
-                              SAND_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,1)                                              ! check unit
-                          endif                         
-                      enddo
+                      if (nuc>0) then
+                          do i = 1,nuc
+                              Q_upstream_from_ICM_R(ucr1D(i)) = Q(ucl2D(i),2)    ! Connecting link USnode is receiving compartment, DSnode is connecting_compartment
+                              if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
+                                  SAL_upstream_from_ICM_R(ucr1D(i)) = S(ucr2D(i),2)                                                   ! check unit
+                              endif
+                              if (Nctr_TMP_R(ucr1D(i)) .eq. 1) then
+                                  TMP_upstream_from_ICM_R(ucr1D(i)) = Tempw(ucr2D(i),2)                                               ! check unit
+                              endif
+                              if (Nctr_FINE_R(ucr1D(i)) .eq. 1) then
+                                  FINE_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,2) + CSS(ucr2D(i),2,3) + CSS(ucr2D(i),2,4)      ! check unit
+                              endif
+                              if (Nctr_SAND_R(ucr1D(i)) .eq. 1) then
+                                  SAND_upstream_from_ICM_R(ucr1D(i)) = CSS(ucr2D(i),2,1)                                              ! check unit
+                              endif                         
+                          enddo
+                      endif          
                   endif
-                  
-              endif
+!>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
+!>> -- Check if any link flowrate values are NaN - if so, pause model run
+                  do i=1,M
+                      Q(i,1)=Q(i,2)
+                      if(isNAN(Q(i,2))) then
+                          write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
+                          write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
+                          write(*,*) '  Linkt=',linkt(i)
+                          stop !pause
+                      endif
+                  enddo
+!>> -- Loop over compartments. Save numerous variables that were just calculated by 'hydrod' as the initial condition for the next simulation timestep.
+                  do j=1,N
+                      Es(j,1)=Es(j,2)
+                      S(j,1)=S(j,2)				! resetting ICs
+                      SL(j,1) = SL(j,2)
+                      BCnosurge(j,1) = BCnosurge(j,2)
+                      BCsurge(j,1) = BCsurge(j,2)                !YW!
+                      do sedclass=1,4
+                          CSS(j,1,sedclass) = CSS(j,2,sedclass)
+                          CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
+                      enddo
+                      Tempw(j,1)=Tempw(j,2)
+!              Age(j,1)=Age(j,2)
+                      Sacc(j,1)=Sacc(j,2)
+                      Sacch_int(j,1)=Sacch_int(j,2)
+                      Sacch_edge(j,1)=Sacch_edge(j,2)
+                      Sandacc(j,1) = Sandacc(j,2)
+                      Siltacc(j,1) = Siltacc(j,2)
+                      Clayacc(j,1) = Clayacc(j,2)
+
+                      do ichem = 1,14
+                          Chem(j,ichem,1)=Chem(j,ichem,2)
+                      enddo
+                      CSSvRs(j,1)= CSSvRs(j,2)
+                      Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
+                      Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
+!>> Check if any water surface elevation values are NaN - if so, pause model run
+                      if(isNAN(Es(j,2))) then  
+                          write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+                          write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+                          stop !pause
+                      endif          
+                  enddo            
+              enddo 
               
 !>> -- Reset tidestep counter because end of observed tidal timestep is met
               if (tidestep == lasttidestep) then
@@ -1164,7 +1224,7 @@
                   enddo
               endif
           endif
-              
+           
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
 !>> -- Check if any link flowrate values are NaN - if so, pause model run
           do i=1,M
