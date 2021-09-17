@@ -41,14 +41,14 @@ cc**********************Start Subroutine for TSS Solids*************************
 !>> sand flux out of compartment is set by equilibrium rate in vanRijn subroutine and this will only collect incoming sand fluxes
           if (sedclass == 1) then
               QSsum(sedclass) =  QSsum(sedclass) 
-     &            + sicc(j,k)*Q(abs(icc(j,k)),1)*Cssface
+     &            + sicc(j,k)*Q(abs(icc(j,k)),2)*Cssface
               
 !>> Overland marsh links do not transport sand - cancels out previous calculation for marsh links         
               QSsumh(sedclass) = 0.0 ! do not transport sand across marsh links
           else
 !>> add sediment flux from this link to the cumulative sediment flux for the compartment (QSsum)			    
               QSSum(sedclass) = QSSum(sedclass) 
-     &            + sicc(j,k)*(Q(abs(icc(j,k)),1))*Cssface				!face exchange
+     &            + sicc(j,k)*(Q(abs(icc(j,k)),2))*Cssface				!face exchange
      &            + fe*EAOL(iab)*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))			!Diffusion
               
           endif
