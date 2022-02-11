@@ -88,7 +88,26 @@ cJAM     c Salinity  computations ****************************
 
 c low high pass filter
       if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
-	if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
+      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
+
+      if(isNan(Tempw(j,2))) then      ! YW
+          write(*,*) 'j:',j
+          write(*,*) 'Tempw(j,2):',Tempw(j,2)
+          write(*,*) 'Tempw(j,1):',Tempw(j,1)
+          write(*,*) 'As(j,1):',As(j,1)
+          write(*,*) 'dddy:',dddy
+          write(*,*) 'QTMPsum:',QTMPsum
+          write(*,*) 'dt:',dt
+          write(*,*) 'Qsum_in(j):',Qsum_in(j)
+          write(*,*) 'Qsum_out(j):',Qsum_out(j)
+          write(*,*) 'QRain:',QRain
+          write(*,*) 'DTempw2:',DTempw2
+          write(*,*) 'aktmp:',aktmp
+          write(*,*) 'kday:',kday
+          write(*,*) 'Tempe(j,kday):',Tempe(j,kday)   
+          stop
+      endif
+
 !	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
 cc	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
 
