@@ -48,7 +48,7 @@
 !
 !! calculate various versions of time to be used as flags throughout program
 !      kday = ifix(time/3600./24.)   !convert time to integer days !BUG! Why is kday day+1?
-      kday = ceiling(time/3600./24.) !YW! Old range (1,366). New range (1,365)
+      kday = min(ceiling(time/3600./24.),simdays) !YW! Old range (1,366). New range (1,365)
       day = time/3600./24.
       dday=day-int(day)           ! decimal portion of day, dday=0.0 at 0:00 (midnight)
       hday=day-int(day+0.5)       ! decimal portion of day normalized to noon, hday=0.0 at 12:00 (noon)
