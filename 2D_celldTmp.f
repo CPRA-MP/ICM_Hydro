@@ -75,7 +75,10 @@ cJAM     c Salinity  computations ****************************
 !>> Calculate temperature source from equilbrium tempertaure at air-water interface
 
       DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt			!JAM Oct 2010
-
+      
+      if(isNan(QTMPsum)) then
+      	  QTMPsum = 0.0
+      endif
 
       Tempw(j,2) = ((Tempw(j,1)*As(j,1)*dddy - QTMPsum*dt)
      &   / (As(j,1)*dddy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt) ) + DTempw2
