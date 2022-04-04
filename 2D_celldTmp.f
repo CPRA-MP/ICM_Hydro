@@ -76,9 +76,10 @@ cJAM     c Salinity  computations ****************************
 
       DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt			!JAM Oct 2010
       
-      if(isNan(QTMPsum)) then
-      	  QTMPsum = 0.0
-      endif
+      ! debug for v23.4.2
+      !if(isNan(QTMPsum)) then
+      !	  QTMPsum = 0.0
+      !endif
 
       Tempw(j,2) = ((Tempw(j,1)*As(j,1)*dddy - QTMPsum*dt)
      &   / (As(j,1)*dddy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt) ) + DTempw2
