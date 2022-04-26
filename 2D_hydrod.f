@@ -1499,7 +1499,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 !              sn=-1.0							!negative leaving marsh
 !		endif
 !          QMarsh(j,2)=sqrt(abs(Deta))*hResist*sn*dkd
-          MarshEdge = max(hwidth(j),0.01)
+!          MarshEdge = max(hwidth(j),0.01)
+          MarshEdge = max(ar_ed(j)/10.0,0.01) !test 04/26/2022 
           MarshL = hLength(j)
 
 ! 2023test ! testing replacing Kadlec Knight marsh flow with Manning's equation
