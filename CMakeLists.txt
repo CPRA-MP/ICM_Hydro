@@ -56,7 +56,7 @@ INCLUDE(${CMAKE_SOURCE_DIR}/cmake/architecture.cmake)
 ###########################################################################
 # ICM_HYDRO
 ###########################################################################
-SET( HYDRO hydro_v${ICMHYDRO_VERSION_STRING} )
+SET( HYDRO hydro_v${ICMHYDRO_VERSION_STRING}.hwidth )
 ADD_EXECUTABLE( ${HYDRO} 1D_common_array_R.f90
                          1D_common_functions.f90
                          1D_common_init.f90
