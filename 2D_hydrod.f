@@ -550,13 +550,16 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 6, Latr2 = -9999
                       ! if Latr9 = 7, Latr2 = control link number
                       ! if Latr9 = 8, Latr2 = -9999
+                      ! if Latr9 = 9, Latr2 = -9999
+                      ! if Latr9 = 10, Latr2 = u/s salinty (ppt)
+                      ! if Latr9 = 11, Latr2 = u/s salinty (ppt)
               !! Latr3 = channel length
               !! Latr4 = channel width
               !! Latr5 = channel Roughness, n
               !! Latr6 = channel entrance loss, Ken
               !! Latr7 = channel exit loss, Kex
               !! Latr8 = Structure loss through lock (when open), Kstr
-              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,6=observed timeseries, 7=target discharge)
+              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,6=observed timeseries, 7=target discharge, 8=u/s WSEL, 9=(u/s-d/s) diff stage, 10=d/s WSEL or u/s Sal>Latr2, 11=d/s WSEL or u/s Sal<Latr2)
               !! Latr10 = control scheme threshold value that shuts lock
                       ! if Latr9 = 1, Latr10 = diff stage (m)
                       ! if Latr9 = 2, Latr10 = -9999
@@ -566,6 +569,9 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                       ! if Latr9 = 6, Latr10 = corresponding column in LockControlObservedData.csv.
                       ! if Latr9 = 7, Latr10 = discharge (cms)
                       ! if Latr9 = 8, Latr10 = u/s WSEL (m)
+                      ! if Latr9 = 9, Latr10 = diff stage (m)
+                      ! if Latr9 = 10, Latr10 = d/s WSEL (m)
+                      ! if Latr9 = 11, Latr10 = d/s WSEL (m)
           !>> Initialize link's on/off flag to on
               dkd=1.0	  
 
@@ -691,6 +697,31 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif    
+
+          !>> Set zero multiplier if lock should be closed due to high downstream water level OR high upstream salinity
+              elseif (Latr9(i) == 10) then
+                  if(S(jus(i),2) > Latr2(i)) then          ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
+                      !dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
+                      !dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep                      
+                  endif
+
+          !>> Set zero multiplier if lock should be closed due to high downstream water level OR low upstream salinity
+              elseif (Latr9(i) == 11) then
+                  if(S(jus(i),2) < Latr2(i)) then          ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
+                      !dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  elseif(Es(jds(i),2) > Latr10(i)) then      ! use jds(i) instead of downN since this should be a function of link attribute definition of up/down not by WL definition of up/down
+                      !dkd = 0.0
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep                      
+                  endif
+
               endif
                   
               if (Latr11(i) < 0) then
