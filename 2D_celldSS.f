@@ -158,7 +158,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> if link value in connectivity matrix is non-zero - call subroutine that will accumulate sediment flux from all links
           if (iab /= 0) then
 !>> calculate velocity magnitude of all flows into/out of compartment
-              if (links(iab) > 0) then
+              if (linkt(iab) > 0) then
                   if (linkt(iab) /= 8) then
                       if (linkt(iab) /= 9) then
                           ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
