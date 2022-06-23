@@ -158,14 +158,16 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> if link value in connectivity matrix is non-zero - call subroutine that will accumulate sediment flux from all links
           if (iab /= 0) then
 !>> calculate velocity magnitude of all flows into/out of compartment
-              if (linkt(iab) /= 8) then
-                  if (linkt(iab) /= 9) then
-                      ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
-                      ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
-                      max_vel(j) = max( max_vel(j),abs(link_vel(iab)) )
-                      min_vel(j) = min( min_vel(j),abs(link_vel(iab)) )
+              if (linkt(iab) > 0) then		
+                  if (linkt(iab) /= 8) then
+                      if (linkt(iab) /= 9) then
+                          ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
+                          ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
+                          max_vel(j) = max( max_vel(j),abs(link_vel(iab)) )
+                          min_vel(j) = min( min_vel(j),abs(link_vel(iab)) )
+                      endif
                   endif
-              endif
+	      endif
               
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
