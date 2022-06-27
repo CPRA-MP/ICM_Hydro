@@ -109,14 +109,14 @@
           BedM(j) = BedMOrig(j) + BedMAdj(j)
 
 
-!>> Calculate amount of sediment available in erodible bed (g/m2) for each sediment class
+!>> Calculate amount of sediment available in erodible bed (g/m2) for each sediment class (10^6 is unit conversion for bulk density from cm3 to m3)
 !>> - once compartment is eroded by this much, only newly deposited sediment can be resuspended
 !>> Assume that 10% of bed is sand, 45% is silt, 22.5% is unflocculated clay, and 22.5% is flocculated clay
 ! This assumes that the erodible bed depth and bulk density are representing all inorganic matter
-          erBedAvail(j,1)=erBedDepth(j)*erBedBD(j)*0.1
-          erBedAvail(j,2)=erBedDepth(j)*erBedBD(j)*0.45
-          erBedAvail(j,3)=erBedDepth(j)*erBedBD(j)*0.225
-          erBedAvail(j,4)=erBedDepth(j)*erBedBD(j)*0.225
+          erBedAvail(j,1)=erBedDepth(j)*erBedBD(j)*1000000.0*0.1
+          erBedAvail(j,2)=erBedDepth(j)*erBedBD(j)*1000000.0*0.45
+          erBedAvail(j,3)=erBedDepth(j)*erBedBD(j)*1000000.0*0.225
+          erBedAvail(j,4)=erBedDepth(j)*erBedBD(j)*1000000.0*0.225
 
       enddo
 
