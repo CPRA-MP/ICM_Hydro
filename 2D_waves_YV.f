@@ -66,9 +66,17 @@
       YV_m = -0.37
 	rhow = 1000.*(1+S(j,1)/1000.)	!adjust density for salinity
 
-!>> Calculate wind speed and direction.      
-      windx_value = max(0.01,windx(j))
-      windy_value = max(0.01,windy(j))
+!>> Calculate wind speed and direction (remove any zero values to avoid div-by-zero errors).      
+      if (windx(j) == 0) then
+      	  windx_value = 0.01
+      else
+      	  windx_value = windx(j)
+      
+      if (windy(j) == 0) then
+      	  windy_value = 0.01
+      else
+      	  windy_value = windy(j) 
+            
       wind_spd = sqrt(windx_value**2 + windy_value**2)
       wind_dir_rads = atan(windy_value/windx_value)
 
