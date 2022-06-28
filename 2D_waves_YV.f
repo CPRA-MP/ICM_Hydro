@@ -71,12 +71,13 @@
       	  windx_value = 0.01
       else
       	  windx_value = windx(j)
+      endif
       
       if (windy(j) == 0) then
       	  windy_value = 0.01
       else
       	  windy_value = windy(j) 
-            
+      endif      
       wind_spd = sqrt(windx_value**2 + windy_value**2)
       wind_dir_rads = atan(windy_value/windx_value)
 
