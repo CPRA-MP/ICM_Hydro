@@ -673,19 +673,19 @@
 
 
 !>> write header row for hourly stage output file (since not all compartments are printed)	
-      if (nstghr > 0) then
-          write(210,908) 'Compartment:',(stghrwrite(jjk),jjk=1,nstghr)
-      else
-          write(210,*) 'Hourly water level not saved to file.'
-      endif
+!skip_header      if (nstghr > 0) then
+!skip_header          write(210,908) 'Compartment:',(stghrwrite(jjk),jjk=1,nstghr)
+!skip_header      else
+!skip_header          write(210,*) 'Hourly water level not saved to file.'
+!skip_header      endif
 908	FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
 
 !>> write header row for flowrate output file (since not all links are printed)
-	  if (nlinksw > 0) then
-          write(211,909) 'Link:',(linkswrite(jjk),jjk=1,nlinksw)
-      else
-          write(211,*) 'No links chosen to have flowrate outputs saved.'
-      endif
+!skip_header	  if (nlinksw > 0) then
+!skip_header          write(211,909) 'Link:',(linkswrite(jjk),jjk=1,nlinksw)
+!skip_header      else
+!skip_header          write(211,*) 'No links chosen to have flowrate outputs saved.'
+!skip_header      endif
 909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
