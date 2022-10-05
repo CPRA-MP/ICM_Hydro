@@ -448,7 +448,7 @@
           if (linkt(i) == 3) then
               if (Latr9(i) == 6) then
                   nlockobs_links = nlockobs_links + 1
-                  nlockobs = max(nlockobs,Latr10(i))      ! read in the observation record that the link will be looking for set the max value to nlockobs to be used for array allocation
+                  nlockobs = max(nlockobs,int(Latr10(i)))      ! read in the observation record that the link will be looking for set the max value to nlockobs to be used for array allocation
               endif
           endif
       enddo
