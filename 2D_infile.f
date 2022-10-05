@@ -459,12 +459,12 @@
             write(1,4123) nlockobs_links,
      &       'links are classified as locks with observed control data.'
 
-      if (nlockobs > 0) then
-            write(*,4123) nlockobs,
-     &       'lock observation records were found.'
-            write(1,4123) nlockobs,
-     &       'lock observation records were found.'
-            
+          if (nlockobs > 0) then
+              write(*,4123) nlockobs,
+     &            'lock observation records were found.'
+              write(1,4123) nlockobs,
+     &            'lock observation records were found.'
+          endif
             
           allocate(lockhours(simdays*24/dtlock,nlockobs))
           lockhours(:,:)=0 !zw added 04/06/2020
