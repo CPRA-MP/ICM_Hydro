@@ -442,21 +442,30 @@
 !>> Read in link numbers for locks that have a  timeseries in the hourly timeseries control rule file
 !>> This hourly control timeseries will override any other lock control rules
 !>> count number of locks that have observed lock control data
+      nlockobs_links = 0
       nlockobs = 0
       do i = 1,M
           if (linkt(i) == 3) then
               if (Latr9(i) == 6) then
-                  nlockobs = nlockobs + 1
+                  nlockobs_links = nlockobs_links + 1
+                  nlockobs = max(nlockobs,Latr10(i))      ! read in the observation record that the link will be looking for set the max value to nlockobs to be used for array allocation
               endif
           endif
       enddo
 
-      if (nlockobs > 0) then
-            write(*,4123) nlockobs,
+      if (nlockobs_links > 0) then
+            write(*,4123) nlockobs_links,
      &       'links are classified as locks with observed control data.'
-            write(1,4123) nlockobs,
+            write(1,4123) nlockobs_links,
      &       'links are classified as locks with observed control data.'
 
+      if (nlockobs > 0) then
+            write(*,4123) nlockobs,
+     &       'lock observation records were found.'
+            write(1,4123) nlockobs,
+     &       'lock observation records were found.'
+            
+            
           allocate(lockhours(simdays*24/dtlock,nlockobs))
           lockhours(:,:)=0 !zw added 04/06/2020
 

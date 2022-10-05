@@ -91,6 +91,7 @@
       
 
       integer :: nlockobs
+      integer :: nlockobs_links
       integer :: dtlock
       real(sp),dimension(:,:),allocatable:: lockhours
       
