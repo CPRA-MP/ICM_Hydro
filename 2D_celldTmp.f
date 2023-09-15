@@ -109,9 +109,9 @@ c low high pass filter
           write(*,*) 'aktmp:',aktmp
           write(*,*) 'kday:',kday
           write(*,*) 'Tempe(j,kday):',Tempe(j,kday)   
-          stop
-	  !write(*,*) 'setting water temp to equil temp due to NaN'
-	  !Tempw(j,2) = Tempe(j,kday)
+          !stop
+	  write(*,*) 'setting water temp to equil temp due to NaN'
+	  Tempw(j,2) = Tempe(j,kday)
       endif
 
 !	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
