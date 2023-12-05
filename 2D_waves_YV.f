@@ -101,7 +101,7 @@
       fetch_nondim = fetch_value*dim_factor
       depth_nondim = depth_value*dim_factor
 
-!>> Calculate friction-adjusted wind speed
+!>> Calculate friction-adjusted wind speed based on Coastal Engineering Manual Eq.II-2-36
       drag_coeff = 0.001*(1.1+0.035*wind_spd)
       wind_fric_spd = wind_spd*sqrt(drag_coeff)
       
@@ -125,13 +125,17 @@
 
 !>> Check if duration of wind speed will meet fetch-limited conditions (duration_needed is in seconds, dtwind is in hours)
       if( (duration_needed/60.) > (dtwind*60.) ) then
-!>> If duration-limited, calculate wave period for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-41)
-          wave_period(j,1) = (wind_fric_spd/g)
-     &                   *(g*dtwind*3600./(537.*wind_fric_spd))**(3./7.)
+!>> If duration-limited, calculate wave period for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-40)
+!!!          wave_period(j,1) = (wind_fric_spd/g)
+!!!     &                   *(g*dtwind*3600./(537.*wind_fric_spd))**(3./7.)
+          t1 = 0.833*(g*depth_value/wind_fric_spd**2.)**(3.0/8.0) !ZW edit 12/05/2023
+          t2 = 0.0379*(g*fetch_value/wind_fric_spd**2.)**(1.0/3.0) !ZW edit 12/05/2023
+          wave_period(j,1) = 7.54*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023
 !>> If duration-limited, calculate significant wave height for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-39)
           t1 = 0.530*(g*depth_value/wind_fric_spd**2.)**0.75
           t2 = 0.00565*(g*fetch_value/wind_fric_spd**2.)**0.5
-          Hs(j,1) = 0.283*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))
+!!!          Hs(j,1) = 0.283*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))
+          Hs(j,1) = 0.283*(wind_fric_spd**2./g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023 
 
 !>> If fetch-limited, calculate Young & Verhagen energy and frequency          
       else
@@ -152,7 +156,8 @@
      &                         tanh(YV_B2/tanh(YV_A2)))**YV_m
 
 !>> If fetch-limited, calculate wave energy, frequency, significant wave height, and wave period from Young & Verhagen non-dimensional frequency & dimensionaless factor     
-          wave_energy(j,1) = rhow*g*energy_nondim/dim_factor**2
+!!!          wave_energy(j,1) = rhow*g*energy_nondim/dim_factor**2
+          wave_energy(j,1) = energy_nondim/dim_factor**2  !ZW edit 12/4/2023
           wave_frequency(j,1) = frequency_nondim*dim_factor*wind_spd
 	    Hs(j,1)=4.*sqrt(wave_energy(j,1))
           wave_period(j,1) = 1/wave_frequency(j,1)
