@@ -550,6 +550,7 @@
       open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
       open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
       open(unit=212,file='STGm.out',form='formatted',position='append')
+      open (unit=93,file='O2Sat.out',form='formatted',position='append')
 
 !     If WQ modeling is excluded (iWQ=0), WQ outputs are disabled	  
 	  if (iWQ>0) then
@@ -559,7 +560,6 @@
           open (unit=73,file='TOC.out',form='formatted',position='append')
           open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
           open (unit=92,file='NH4.out',form = 'formatted',position='append')		
-          open (unit=93,file='O2Sat.out',form='formatted',position='append')
           open (unit=94,file='ALG.out',form='formatted',position='append')
           open (unit=95,file='DO.out',form='formatted',position='append')
           open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
@@ -697,7 +697,7 @@
 909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
-!   These files better to be closed within infile subroutine after importing the data
+!   These files are closed within infile subroutine after importing the data
 !      close(32)
 !      close(33)
 !      close(34)
