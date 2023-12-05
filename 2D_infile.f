@@ -119,7 +119,9 @@
           erBedAvail(j,4)=erBedDepth(j)*erBedBD(j)*1000000.0*0.225
 
       enddo
-
+      close(32)
+	  close(323)
+	  
 !>> Add minimal area of water portion - each cell must have at least some water
       write(1,*)
       write(1,*) '----------------------------------------------------'
@@ -386,7 +388,9 @@
               Latr1(i) = maxmarel
           endif
           Latr11(i) = 0.0            
-      enddo    
+      enddo
+	  close(33)
+	  
 924   Format(7x,a,x,I0,x,a,x,I0,x,a)
 925   Format(7x,a,x,I0,x,a)
       write(1,*)
@@ -438,6 +442,7 @@
      &        hourclosed(i,23),        ! flag value 1 if link is closed during hour
      &        hourclosed(i,24)        ! flag value 1 if link is closed during hour
       enddo
+	  close(34)
 
 !>> Read in link numbers for locks that have a  timeseries in the hourly timeseries control rule file
 !>> This hourly control timeseries will override any other lock control rules
@@ -487,6 +492,7 @@
               READ(35,*) dump_int,dump_text,lockhours(jt,1:nlockobs)
           enddo
       endif
+	  close(35)
 
       !>> Read in links that will have flowrates printed to FLO.out file
 	read(126,*)
@@ -494,7 +500,8 @@
 	do kk = 1,nlinksw
 		read(126,*) linkswrite(kk)
 	enddo
-
+    close(126)
+	
       write(*,4123) nlinksw,
      &    'links will have average daily flow output written to FLO.out'
       write(1,4123) nlinksw,
@@ -507,6 +514,7 @@
 	do kk = 1,nstghr
 		read(127,*) stghrwrite(kk)
 	enddo
+	close(127)
 
       write(*,4123) nstghr,'compartments will
      &     have average hourly flow output written to STGhr.out'
@@ -553,6 +561,7 @@
 	do kt=1,simdays
           READ(39,*)(Qtrib(jtrib(jt),kt),jt=1,Ntrib)
 	enddo
+	close(39)
 
 
 !>> Read multiplier for diversion flows as function of Mississippi River flow
@@ -572,6 +581,7 @@
               Qdiv(it,kt) = Qtrib(11,kt)*DivMult(it)
           enddo
       enddo
+	  close(86)
 
 
  3377 Format(I6,x,26(F7.1,x))
@@ -588,6 +598,8 @@
 
 	    READ(77,*) dump_int,(Qmult(j,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
       enddo
+	  close(88)
+	  close(77)
 
 !>> Read in decay constants for water quality constituents
 !---------------------------------
@@ -609,15 +621,18 @@
 !        14= POP !-EDW used to say 14=TKN !-EDW
 !---------------------------------
       decay(:,:)=0  !zw added 04/06/2020
-      do ichem = 1,14
-		READ(85,*) (decay(ichem,ne),ne=1,14)		  !zw 4/28/2015 decay unit=1/day
-	enddo
+      if (iWQ >0) then
+          do ichem = 1,14
+		     READ(85,*) (decay(ichem,ne),ne=1,14)		  !zw 4/28/2015 decay unit=1/day
+	      enddo
+		  close(85)
 
-	do ichem = 1,14
-		do ichem2=1,14
-			decay(ichem,ichem2) = decay(ichem,ichem2)/consd	   !zw 4/28/2015 decay unit convert to 1/s
-		enddo
-	enddo
+	      do ichem = 1,14
+		     do ichem2=1,14
+			    decay(ichem,ichem2) = decay(ichem,ichem2)/consd	   !zw 4/28/2015 decay unit convert to 1/s
+		     enddo
+	      enddo
+      endif
 
  1212 Format(13(F9.4,2x))
 
@@ -637,90 +652,92 @@
 
 !>> Read and advance past the Tributary and Diversion Numbers from header row of input Water Quality files
       cChem(:,:,:)=0  !zw added 04/06/2020
-	READ(80,*) (jtrib(jt), jt=1,Ntrib)
-      READ(81,*)
-	READ(82,*)
-      READ(83,*)
+      QChem(:,:,:)=0  !zw added 12/05/2023
+      if (iWQ>0) then
+	      READ(80,*) (jtrib(jt), jt=1,Ntrib)
+          READ(81,*)
+	      READ(82,*)
+          READ(83,*)
 
 !>> Skip Water Quality data that occurs in years prior to current model year
-      do kt=1,startrun
-          read(80,*)
-          read(81,*)
-          read(82,*)
-          read(83,*)
-          if (kt == startrun) then
-              write(1,*)'Nutrient loading input data starts at:'
-              write(1,66) '      line ',int(startrun+2)
-              write(*,*)'Nutrient loading input data starts at:'
-              write(*,66) '      line ',int(startrun+2)
-          endif
-      enddo
+          do kt=1,startrun
+              read(80,*)
+              read(81,*)
+              read(82,*)
+              read(83,*)
+              if (kt == startrun) then
+                  write(1,*)'Nutrient loading input data starts at:'
+                  write(1,66) '      line ',int(startrun+2)
+                  write(*,*)'Nutrient loading input data starts at:'
+                  write(*,66) '      line ',int(startrun+2)
+              endif
+          enddo
 
 !>> Read Water Quality input data for current model year
-	faN=0.1
-      do kt=1,simdays
-		FSEASON=1+0.5*cos(2*PI*(Float(kt)/365.25+0.8))
-          FSEASON2=1.0+faN*cos(2*PI*(Float(kt)/365.25+0.25))		! JAM Jan 09, 2011
+	      faN=0.1
+          do kt=1,simdays
+		     FSEASON=1+0.5*cos(2*PI*(Float(kt)/365.25+0.8))
+             FSEASON2=1.0+faN*cos(2*PI*(Float(kt)/365.25+0.25))		! JAM Jan 09, 2011
 !	Set loads to zero
-          do ichem = 1,14
-			do itrb =1,Ntrib
-				QChem(itrb,ichem,kt)=0.0
-			enddo
-		enddo
+!             do ichem = 1,14
+!			 do itrb =1,Ntrib
+!			     QChem(itrb,ichem,kt)=0.0
+!			 enddo
+!		     enddo
 
-          READ(80,*) (cChem(jtrib(jt),1,kt),jt=1,Ntrib)			!NO3 (mg/L) daily values	!JAM June 2008
-		READ(81,*) (cChem(jtrib(jt),2,kt),jt=1,Ntrib)			!NH4	! JAM June 2008
-		READ(82,*) (cChem(jtrib(jt),4,kt),jt=1,Ntrib)			!ON		! JAM June 2008
-		READ(83,*) (cChem(jtrib(jt),5,kt),jt=1,Ntrib)			!TP		! JAM June 2008
+             READ(80,*) (cChem(jtrib(jt),1,kt),jt=1,Ntrib)			!NO3 (mg/L) daily values	!JAM June 2008
+		     READ(81,*) (cChem(jtrib(jt),2,kt),jt=1,Ntrib)			!NH4	! JAM June 2008
+		     READ(82,*) (cChem(jtrib(jt),4,kt),jt=1,Ntrib)			!ON		! JAM June 2008
+		     READ(83,*) (cChem(jtrib(jt),5,kt),jt=1,Ntrib)			!TP		! JAM June 2008
 
-          CtoN=5.7
+             CtoN=5.7
 
-          do jt=1,Ntrib
-              fctrib=0.0
+             do jt=1,Ntrib
+                fctrib=0.0
 !>> Add adjustment to Pearl River tributary flow !HARDCODED ADJUSTMENT
-!			if(jt == 5) then
-              if(jt == 19) then
-                  fctrib=0.5
-              endif
+!			     if(jt == 5) then
+                if(jt == 19) then
+                   fctrib=0.5
+                endif
 !>> Convert Water Quality input data from concentration to loading rate (input data in mg/L, converted to g/sec here)
-              QChem(jtrib(jt),1,kt)=cChem(jtrib(jt),1,kt)
+                QChem(jtrib(jt),1,kt)=cChem(jtrib(jt),1,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON                                      !NO3     ! JAM June 2008 & Jan 09, 2011
-              QChem(jtrib(jt),2,kt)=cChem(jtrib(jt),2,kt)
+                QChem(jtrib(jt),2,kt)=cChem(jtrib(jt),2,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON                                      !NH4      ! JAM June 2008
-              QChem(jtrib(jt),3,kt)=QChem(jtrib(jt),1,kt)
+                QChem(jtrib(jt),3,kt)=QChem(jtrib(jt),1,kt)
      &            +QChem(jtrib(jt),2,kt)
-              QChem(jtrib(jt),4,kt)=cChem(jtrib(jt),4,kt)
+                QChem(jtrib(jt),4,kt)=cChem(jtrib(jt),4,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON2 !*1.5 zw 4/28/2015 remove *1.5, adjust input file instead                 !ON                        ! JAM June 2008  *****increased to get TOC and ON to calibrate
-              QChem(jtrib(jt),6,kt)=QChem(jtrib(jt),4,kt)*5.7                        !*****increased to get TOC and ON to calibrate    JAM May 2011
-              QChem(jtrib(jt),5,kt)=cChem(jtrib(jt),5,kt)
+                QChem(jtrib(jt),6,kt)=QChem(jtrib(jt),4,kt)*5.7                        !*****increased to get TOC and ON to calibrate    JAM May 2011
+                QChem(jtrib(jt),5,kt)=cChem(jtrib(jt),5,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON2*0.4                                           !TP                         ! JAM June 2008 !YW 0.4=1-PARDOP-PARPOP
-              QChem(jtrib(jt),12,kt)=cChem(jtrib(jt),5,kt)
+                QChem(jtrib(jt),12,kt)=cChem(jtrib(jt),5,kt)
      &            *Qtrib(jtrib(jt),kt)*ParP                                                                !TP                         ! JAM Dec 12, 2010
-!             QChem(jtrib(jt),10,kt)=0.0                                                                                                                           ! JAM March 5, 2011
-              QChem(jtrib(jt),11,kt)=cChem(jtrib(jt),5,kt)
+!                QChem(jtrib(jt),10,kt)=0.0                                                                                                                           ! JAM March 5, 2011
+                QChem(jtrib(jt),11,kt)=cChem(jtrib(jt),5,kt)
      &            *Qtrib(jtrib(jt),kt)*ParDOP                                         !TP                         ! JAM Dec 12, 2010 !0.0      !JAM March 5 2011
-!             QChem(jtrib(jt),8,kt)=cChem(jtrib(jt),4,kt)
+!                QChem(jtrib(jt),8,kt)=cChem(jtrib(jt),4,kt)
 !     &           *Qtrib(jtrib(jt),kt)*FSEASON2
 !     &           *CtoN*(1-fctrib)/2                                                                                                                                          ! JAM March 5, 2011
-!             QChem(jtrib(jt),9,kt)=cChem(jtrib(jt),4,kt)
+!                QChem(jtrib(jt),9,kt)=cChem(jtrib(jt),4,kt)
 !     &           *Qtrib(jtrib(jt),kt)*FSEASON2*CtoN
 !     &           *(1+fctrib)/2.                                                                                                                                                     ! JAM March 5, 2011 /// April 8, 2011
-              QChem(jtrib(jt),8,kt)=cChem(jtrib(jt),4,kt)        !YW
+                QChem(jtrib(jt),8,kt)=cChem(jtrib(jt),4,kt)        !YW
      &            *Qtrib(jtrib(jt),kt)*FSEASON2/0.176/75.0/10.0  !YW rna*rca*calibration factor
 
-              QChem(jtrib(jt),9,kt)=cChem(jtrib(jt),4,kt)        !YW
+                QChem(jtrib(jt),9,kt)=cChem(jtrib(jt),4,kt)        !YW
      &            *Qtrib(jtrib(jt),kt)*FSEASON2/0.072/0.9        !YW        rnd*calibration factor
 
-              QChem(jtrib(jt),10,kt)=0.4*Qtrib(jtrib(jt),kt)*FSEASON2                              !YW average DON calculated from TOC = POC + DOC, POC = rca*ALG+rcd*DET, DOC = 5.69*DON, ALG and DET from table 77 in the 2012 report.
-              QChem(jtrib(jt),14,kt)=cChem(jtrib(jt),5,kt)
+                QChem(jtrib(jt),10,kt)=0.4*Qtrib(jtrib(jt),kt)*FSEASON2                              !YW average DON calculated from TOC = POC + DOC, POC = rca*ALG+rcd*DET, DOC = 5.69*DON, ALG and DET from table 77 in the 2012 report.
+                QChem(jtrib(jt),14,kt)=cChem(jtrib(jt),5,kt)
      &            *Qtrib(jtrib(jt),kt)*ParPOP                                          !TP                         ! JAM Dec 12, 2010      !JAM March 5 2011
 
-		enddo
+		     enddo
 	    !-EDW 6/4/2015 - Qchem units now in g/sec !!!changed in celldChem.f too!!!
           ! zw 4/28/2015 QChem unit=kg/day in here
 
 	!zw 4/28/2015 remove the following QChem adjustments for high flows, should adjust the tributary WQ inputs instead during calibration
-c**** seem to be underestimating nitrogen load for high flows, therefore mult by 2 if greater than average LB increased JAM April 4 08
+!**** seem to be underestimating nitrogen load for high flows, therefore mult by 2 if greater than average LB increased JAM April 4 08
 
 !		If(QChem(1,1,kt).ge.995.6982)QChem(1,1,kt)=QChem(1,1,kt)
 !     &			*2.02502													! increased to match observations
@@ -736,52 +753,60 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !		QChem(8,4,kt) = QChem(8,4,kt)*1.82			!2.05
 !		QChem(8,1,kt) = QChem(8,1,kt)*1.82			!reduced 2-->1.8		! JAM Feb 27, 2011
 !		QChem(8,2,kt) = QChem(8,2,kt)*1.82
-	enddo
-
+	      enddo
+          close(80)
+          close(81)
+          close(82)
+          close(83)
+      endif
 !>> Read in anthropogenic N-NO3 loads to compartments (in kg/d) - loads from farms and MWWTPs
       AnthL(:)=0  !zw added 04/06/2020
-	do j=1,N
-		READ(44,*)AnthL(j)
-	enddo
+      if (iWQ>0) then
+	      do j=1,N
+		      READ(44,*)AnthL(j)
+	      enddo
+          close(44)
+      endif
 
 !>> Initialize Atmospheric Load arrays to zero
-      do kt=1,simdays
-
-		do ichem=1,14
-			Qatm(1,ichem,kt)=0.0
-		enddo
-	enddo
-
+!      do kt=1,simdays
+!
+!		do ichem=1,14
+!			Qatm(1,ichem,kt)=0.0
+!		enddo
+!	  enddo
+      QAtm(:,:,:)=0
+      if (iWQ>0) then
 !>> Skip header row of Atmospheric Load file
-      READ(84,*)
+          READ(84,*)
 
 !>> Skip Atmospheric Load data that occurs in years prior to current model year
-      do kt=1,startrun
-          read(84,*)
-          if (kt == startrun) then
-              write(1,*)'Atmospheric loading input data starts at:'
-              write(1,66) '      line ',int(startrun+2)
-              write(*,*)'Atmospheric loading input data starts at:'
-              write(*,66) '      line ',int(startrun+2)
-          endif
-      enddo
+          do kt=1,startrun
+              read(84,*)
+              if (kt == startrun) then
+                  write(1,*)'Atmospheric loading input data starts at:'
+                  write(1,66) '      line ',int(startrun+2)
+                  write(*,*)'Atmospheric loading input data starts at:'
+                  write(*,66) '      line ',int(startrun+2)
+              endif
+          enddo
 
 !>> Read Atmospheric Load data that occurs in current model year
-      do kt=1,simdays
-		READ(84,*)QAtm(1,5,kt),QAtm(1,1,kt),QAtm(1,2,kt),QAtm(1,4,kt)	!TP, NO3  NH4  ON (kg/km2/day)		!JAM April 17, 2011
-		QAtm(1,3,kt) = QAtm(1,1,kt)+QAtm(1,2,kt)
-		!QAtm(1,4,kt) = QAtm(1,4,kt)*1.5	!zw 4/28/2015 remove, adjust the input file instead	! JAM TKN & TOC too low May 2011
-		QAtm(1,6,kt)=QAtm(1,4,kt)/3.							! JAM April 17, 2011
-		QAtm(1,7,kt)=0.1
-		QAtm(1,8,kt) = 0.
-		QAtm(1,9,kt)=QAtm(1,4,kt)*2/3.							! JAM April 17, 2011
-		QAtm(1,10,kt) =0.1*QAtm(1,4,kt)							! JAM April 17, 2011
-		QAtm(1,11,kt)=0.0
-		QAtm(1,12,kt) = 0.5*QAtm(1,5,kt)						! JAM April 17, 2011
-		QAtm(1,13,kt)=0.
-		QAtm(1,14,kt)=0.5*QAtm(1,5,kt)							! JAM April 17, 2011
-	enddo
-
+          do kt=1,simdays
+		      READ(84,*)QAtm(1,5,kt),QAtm(1,1,kt),QAtm(1,2,kt),QAtm(1,4,kt)	!TP, NO3  NH4  ON (kg/km2/day)		!JAM April 17, 2011
+		      QAtm(1,3,kt) = QAtm(1,1,kt)+QAtm(1,2,kt)
+		      !QAtm(1,4,kt) = QAtm(1,4,kt)*1.5	!zw 4/28/2015 remove, adjust the input file instead	! JAM TKN & TOC too low May 2011
+		      QAtm(1,6,kt)=QAtm(1,4,kt)/3.							! JAM April 17, 2011
+		      QAtm(1,7,kt)=0.1
+		      QAtm(1,8,kt) = 0.
+		      QAtm(1,9,kt)=QAtm(1,4,kt)*2/3.							! JAM April 17, 2011
+		      QAtm(1,10,kt) =0.1*QAtm(1,4,kt)							! JAM April 17, 2011
+		      QAtm(1,11,kt)=0.0
+		      QAtm(1,12,kt) = 0.5*QAtm(1,5,kt)						! JAM April 17, 2011
+		      QAtm(1,13,kt)=0.
+		      QAtm(1,14,kt)=0.5*QAtm(1,5,kt)							! JAM April 17, 2011
+	      enddo
+ 
 !>>  Calculate DIN values from other WQ input data
       !zw 4/28/2015 remove QAtm ajustments by Faatm, should adjust the input file instead
       !Faatm=0.91
@@ -799,7 +824,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !     &				+QChem(jtrib(jt),2,kt))
 !		enddo
 	!enddo
-
+          close(84)
+        endif
 
 !zw 4/28/2015 UplandNP never used during WQ calculations.
 !Read in Upland nutrient loads (constants for each compartment, not timeseries)
@@ -816,45 +842,48 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !		UplandNP(j,14)=UplandNP(j,5)*0.5				! JAM April 17, 2011
 !	enddo
 
+      cChemdiv(:,:,:) = 0.0
+      QChemdiv(:,:,:) = 0.0
+      if (iWQ>0) then
 !>> Skip header row of Diversion Nutrient Load file
-      read(87,*)
+          read(87,*)
 
 !>> Skip Diversion Nutrient Load data that occurs in years prior to current model year
-      do kt=1,startrun
-          read(87,*)
-          if (kt == startrun) then
-              write(1,*)'Diversion nutrient input data starts at:'
-              write(1,66) '      line ',int(startrun+2)
-              write(*,*)'Diversion nutrient input data starts at:'
-              write(*,66) '      line ',int(startrun+2)
-          endif
-      enddo
-
-!>> Read Diversion Nutrient Load data for current model year
-      do kt=1,simdays
-!>> initialize CchemDiv values to 0.0 before reading in input data
-          do ktk = 1,14
-              cChemdiv(1,ktk,kt) = 0.0
+          do kt=1,startrun
+              read(87,*)
+              if (kt == startrun) then
+                  write(1,*)'Diversion nutrient input data starts at:'
+                  write(1,66) '      line ',int(startrun+2)
+                  write(*,*)'Diversion nutrient input data starts at:'
+                  write(*,66) '      line ',int(startrun+2)
+              endif
           enddo
 
-          READ(87,*) cChemdiv(1,5,kt),cChemdiv(1,1,kt),
+!>> Read Diversion Nutrient Load data for current model year
+          do kt=1,simdays
+!>> initialize CchemDiv values to 0.0 before reading in input data
+!             do ktk = 1,14
+!                 cChemdiv(1,ktk,kt) = 0.0
+!             enddo
+
+              READ(87,*) cChemdiv(1,5,kt),cChemdiv(1,1,kt),
      &			cChemdiv(1,2,kt), cChemdiv(1,4,kt) 		!zw 4/28/2015 unit=mg/L
 
-          cChemdiv(1,8,kt)=cChemdiv(1,4,kt)*5.7/2.        ! JAM March 2011
-		cChemdiv(1,9,kt)=cChemdiv(1,4,kt)*5.7/2.
+              cChemdiv(1,8,kt)=cChemdiv(1,4,kt)*5.7/2.        ! JAM March 2011
+		      cChemdiv(1,9,kt)=cChemdiv(1,4,kt)*5.7/2.
 
 !>> Calculate DIN values for Diversions from other WQ input data
-		cChemdiv(1,3,kt) = cChemdiv(1,1,kt)+cChemdiv(1,2,kt)
+		      cChemdiv(1,3,kt) = cChemdiv(1,1,kt)+cChemdiv(1,2,kt)
 !>> Convert loads to kg/day
-		do it=1,Ndiv
-			do mk=1,14									! check limit on mk JAM Aug 10, 2009 increased 7-->9?--11-->13
+		      do it=1,Ndiv
+			      do mk=1,14									! check limit on mk JAM Aug 10, 2009 increased 7-->9?--11-->13
 ! add in reductions for low flow from Lane et. al
-				QChemdiv(it,mk,kt)=(cChemdiv(1,mk,kt))*
+				      QChemdiv(it,mk,kt)=(cChemdiv(1,mk,kt))*
      &					(Qdiv(it,kt))	   				!JAM Jan 2, 2011
-			enddo
-			QChemdiv(it,12,kt)=QChemdiv(1,4,kt)*ParPMR	 !zw 4/28/2015 move it out of the above do loop
-		enddo
-	enddo
+			      enddo
+			      QChemdiv(it,12,kt)=QChemdiv(1,4,kt)*ParPMR	 !zw 4/28/2015 move it out of the above do loop
+		      enddo
+	      enddo
       !-EDW 6/4/2015 - Qchemdiv units now in g/sec !!!changed in celldChem.f too!!!
 	!zw 4/28/2015 QChemdiv unit is kg/day in here
 
@@ -871,9 +900,10 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       !&				*(Qtrib(jtrib(jt),kt)*conv)
 	!	enddo
 	!enddo
-
+          close(87)
+       endif
 !>> Change units of WQ chemicals from kg/day to kg/s  ===/consd=24*3600
-	do mk = 1,14
+	   do mk = 1,14
           do kt=1,simdays
 !         do kt=1,365.25*Nyear                            !-EDW replaced with loop over simdays
 			QAtm(1,mk,kt) = QAtm(1,mk,kt)/consd
@@ -883,8 +913,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !			do it=1,Ndiv
 !				QChemdiv(it,mk,kt)=QChemdiv(it,mk,kt)/consd		! JAM Feb 2010
 !			enddo
-		enddo
-	enddo
+          enddo
+	   enddo
 
 !>> Calculate Carbon loads in tributaries and diversions
 	!zw 4/28/2015 remove the following DO loop,these are all hardcoded ajustments for WQ inputs, should adjust the input files instead
@@ -929,11 +959,11 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !>> Initialize Sediment arrays to zero
 !	Qss(:,:)=0.0
       QssT(:,:)=0.0
-	cssTdiv(:,:,:)=0.0
-	QssTdiv(:,:)=0.0
+	  cssTdiv(:,:,:)=0.0
+	  QssTdiv(:,:)=0.0
       ASandT(:,:)=0.0
-	ASandD(:,:)=0.0
-	ACCSEDj(:)=0.0
+	  ASandD(:,:)=0.0
+	  ACCSEDj(:)=0.0
 
   !MP2023 added zw 04/06/2020
       cssT(:,:,:)=0
@@ -953,8 +983,10 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       enddo
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
-		READ(55,*) (cssT(jt,kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
-	enddo
+		  READ(55,*) (cssT(jt,kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+	  enddo
+      close(55)
+
       read(555,*)
       do kt=1,startrun
           read(555,*)
@@ -968,18 +1000,18 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
       !>> Read each row of tributary fines data, then divide by three to partition into silt, clay, and floc
-		READ(555,*) (cssFines(jt), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+		  READ(555,*) (cssFines(jt), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
           do jtt = 1, Ntrib
               cssT(jtt,kt,2) = cssFines(jtt)/3.0
               cssT(jtt,kt,3) = cssFines(jtt)/3.0
               cssT(jtt,kt,4) = cssFines(jtt)/3.0
           enddo
-	enddo
-
+	  enddo
+      close(555)
 
 
 !>> Create tributary sediment concentrations and convert loads to kg/d
-	Parsand=0.05
+	  Parsand=0.05
 
 !      do kt=1,simdays
 !		do jt=1,Ntrib
@@ -1007,11 +1039,13 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       SWRsand(:)=0  !zw added 04/06/2020
       SWRfines(:)=0
       ParSandD(:)=0
+      CSSTdiv(:,:,:)=0
 
       read(89,*) !skip header row
       do it = 1,Ndiv
           read(89,*) dump_int,SWRsand(it),SWRfines(it)
       enddo
+      close(89)
 
       write(1,*) 'Calculating sediment concentration in diversions
      & based on Mississippi River sediment downstream of Bonnet Carre.'
@@ -1025,12 +1059,12 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !>> Sand partition is function of Mississippi River flow d/s Bonnet Carre --->Sand Partition factor varies with Q^2
           	ParSandD(kt)=SWRsand(it)*6.*(Qtrib(11,kt)/Qmax)
      &				*(Qtrib(11,kt)/Qmax)
-              CSSTdiv(it,kt,1) = ParSandD(kt)*CSST(11,kt,1) !tributary 11 is Mississippi River CSS
+            CSSTdiv(it,kt,1) = ParSandD(kt)*CSST(11,kt,1) !tributary 11 is Mississippi River CSS
 
 !>> Split Miss Riv fines evenly between silt, clay and floc
-              CSSTdiv(it,kt,2) = SWRfines(it)*CSST(11,kt,2)
-              CSSTdiv(it,kt,3) = SWRfines(it)*CSST(11,kt,3)
-              CSSTdiv(it,kt,4) = SWRfines(it)*CSST(11,kt,4)
+            CSSTdiv(it,kt,2) = SWRfines(it)*CSST(11,kt,2)
+            CSSTdiv(it,kt,3) = SWRfines(it)*CSST(11,kt,3)
+            CSSTdiv(it,kt,4) = SWRfines(it)*CSST(11,kt,4)
           enddo
       enddo
 !>> Calculate Diversion sediment load (kg/day)
@@ -1097,8 +1131,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !>> Read Precip data for current model year
       do kt=1,simdays
           READ(42,*) dump_int,Rain(kt,1:raingages)
-	enddo
-
+	  enddo
+      close(42)
 
 !>> Skip header row of ET input file
       PET(:,:)=0  !zw added 04/06/2020
@@ -1118,7 +1152,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 !>> Read ET data for current model year
       do kt=1,simdays
 		READ(40,*) dump_int,PET(kt,1:etgages)
-	enddo
+	  enddo
+      close(40)
 
 !>> Filter for negative precip and ET input data and set to zero
 
@@ -1157,23 +1192,23 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       do kk=1,etgages
           ETA(kk) = 0.0
           do kt=1,simdays
-		    ETA(kk)=ETA(kk)+PET(kt,kk)
-	    enddo
-	    ETA(kk)=ETA(kk)/simdays
+		     ETA(kk)=ETA(kk)+PET(kt,kk)
+	      enddo
+	      ETA(kk)=ETA(kk)/simdays
       enddo
 
 !>> Skip header row of wind vector input files (both X & Y vectors)
       windx_data(:,:)=0.0  !zw added 04/06/2020
       windy_data(:,:)=0.0
       read(43,*)
-	read(46,*)                                          !dump header
+	  read(46,*)                                          !dump header
 
 !>> Skip wind data for years prior to current model year
       windstartrun=startrun*24/dtwind
 
-	do kt=1,windstartrun
+	  do kt=1,windstartrun
           read(43,*)
-		read(46,*)
+		  read(46,*)
           if (kt == windstartrun) then
               write(1,*)'Wind input data starts at:'
               write(1,66) '      line ',int(windstartrun+2) !added zw 2/9/2015
@@ -1184,9 +1219,11 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
 
 !>> Read wind data for current model year
       do kt=1,simdays*24/dtwind
-		READ(43,*) dump_int,dump_text,windx_data(kt,1:windgages)
-		READ(46,*) dump_int,dump_text,windy_data(kt,1:windgages)
-	enddo
+		  READ(43,*) dump_int,dump_text,windx_data(kt,1:windgages)
+		  READ(46,*) dump_int,dump_text,windy_data(kt,1:windgages)
+	  enddo
+      close(43)
+      close(46)
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
@@ -1194,6 +1231,7 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
       do kn = 1,tidegages
           read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
       enddo
+      close(48)
 
 !>> Skip header row of Tide Gage and Surge data input files
       TideData(:,:)=0.0  !zw added 04/06/2020
@@ -1220,6 +1258,8 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
           read(47,*)dump_int,dump_text,TideData(kt,1:tidegages)
           read(110,*)dump_int,dump_text,Surge(kt,1:mds)
       enddo
+      close(47)
+      close(110)
 
 !>> Read in data to weight (by distance) the nearest observed water level timeseries to off-shore boundary compartments that do not have an observed WSEL timeseries
       weighted_tide(:,:)=0  !zw added 04/06/2020
@@ -1231,8 +1271,9 @@ c**** seem to be underestimating nitrogen load for high flows, therefore mult by
      &            weighted_tide(kn,4),    ! distance weighting factor for nearest BC comparment WITH observed water level timeseries to the West
      &            weighted_tide(kn,5)     ! nearest BC comparment WITH observed water level timeseries to the West
       enddo
+      close(49)
 
-c
+!
 
 !>> Skip header row of Meteorology and Mississippi River Temperature input files
       ta(:)=0 !zw added 04/06/2020
@@ -1258,12 +1299,14 @@ c
 
 !>> Read Meteorology (temp) and Mississippi River Temperature data for current model year
       do kt=1,simdays
-		read(45,*) ta(kt),tw(kt)
+		  read(45,*) ta(kt),tw(kt)
           read(74,*) TempMR(kt)
       enddo
+      close(45)
+      close(74)
 
       do kt=1,simdays
-		FSEASON3=0.1-2.0*cos(2*PI*(Float(kt)/365.25-0.05))			! JAM April 2011 Jan 09 11 **March 2011**April 2011
+		  FSEASON3=0.1-2.0*cos(2*PI*(Float(kt)/365.25-0.05))			! JAM April 2011 Jan 09 11 **March 2011**April 2011
 
           do j=1,N
 			tadd=0.0												! *3.0*(ta(kt)-20.)/10.
@@ -1271,37 +1314,37 @@ c
 			TMtrib(j,kt)=tw(kt)
 			dlow=0.25
 			if(Tempair(j,kt).lt.4.)dlow=(1.-Tempair(j,kt)/4.)		! April 2011 JAM
-				T7(kt)=(Tempair(j,kt)+Tempair(j,max(1,kt-1))+
-     &					Tempair(j,max(1,kt-2))+Tempair(j,max(1,kt-3))
-     &						+Tempair(j,max(1,kt-4))
-     &						+Tempair(j,max(1,kt-5))
-     &						+Tempair(j,max(1,kt-6)))/7.
-					Tempe(j,kt)=0.98*(T7(kt)-20.)+21.5+0.5*2.+dlow
-     &						+FSEASON3+Tadd								! April 2011 JAM Oct 2010/March 2011/April 2, 2011   0.99*T7(kt)+1.48+dlow+FSEASON3
-		enddo
+			T7(kt)=(Tempair(j,kt)+Tempair(j,max(1,kt-1))+
+     &			Tempair(j,max(1,kt-2))+Tempair(j,max(1,kt-3))
+     &			+Tempair(j,max(1,kt-4))
+     &			+Tempair(j,max(1,kt-5))
+     &			+Tempair(j,max(1,kt-6)))/7.
+			Tempe(j,kt)=0.98*(T7(kt)-20.)+21.5+0.5*2.+dlow
+     &			+FSEASON3+Tadd								! April 2011 JAM Oct 2010/March 2011/April 2, 2011   0.99*T7(kt)+1.48+dlow+FSEASON3
+		  enddo
 
           ta_k(kt) = tw(kt) + 273.15
 
 !***********Calculate Oxygen Saturation from QUAL2K eq. 140 - ALPHA 1992
-		lnO2Sat(kt) = 0.0
-		lnO2Sat(kt) = -139.34411+157570.1/ta_k(kt)-66423080./
+		  lnO2Sat(kt) = 0.0
+		  lnO2Sat(kt) = -139.34411+157570.1/ta_k(kt)-66423080./
      &			(ta_k(kt)**2)+12438000000./(ta_k(kt)**3)-862194900000.
      &			/(ta_k(kt)**4)
-		a = lnO2Sat(kt)
-		O2Sat(kt) = exp(a)
-		WRITE(93,*) O2Sat(kt)
+		  a = lnO2Sat(kt)
+		  O2Sat(kt) = exp(a)
+		  WRITE(93,*) O2Sat(kt)
 
       enddo
 
 !!******************* Initial Conditions
       FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
-	do j=1,N
-		Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
+	  do j=1,N
+		  Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
      &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38
-		Sacc(j,1)=0.0
-		Sacch_edge(j,1)=0.0
-		Sacch_int(j,1)=0.0
-	enddo
+		  Sacc(j,1)=0.0
+		  Sacch_edge(j,1)=0.0
+		  Sacch_int(j,1)=0.0
+	  enddo
 
   !>>boundary conditions data for salinity and WQ
       SBC(:)=0  !zw added 04/06/2020
@@ -1317,14 +1360,14 @@ c
       BCage(:)=0
 
 
-	do jjk=1,mds   !AMc Oct 8 2013
-	    jj=kbc(jjk)   !AMc Oct 8 2013
-		READ(56,*) jmds,SBC(jj),BCTSS(jj),BCNO3(jj),BCNH4(jj),
+	  do jjk=1,mds   !AMc Oct 8 2013
+	      jj=kbc(jjk)   !AMc Oct 8 2013
+		  READ(56,*) jmds,SBC(jj),BCTSS(jj),BCNO3(jj),BCNH4(jj),
      &			BCON(jj),BCTP(jj),BCDO(jj),BCTOC(jj),BCLA(jj),
      &			BCDA(jj),BCage(jj)									!added age
 
-	enddo
-
+	  enddo
+      close(56)
 
 
 
@@ -1342,15 +1385,16 @@ c
 
 !>> Read Bounday Condition Temperature data for current model year
       do kt=1,simdays
-            READ(101,*)(TempwBC(jj,kt), jj=1,mds)
+          READ(101,*)(TempwBC(jj,kt), jj=1,mds)
 
 !>> If compartment has a boundary condition, replace temperature values with downstream boundary conditions that were just read in for BC locations
-	    do jjk=1,mds   !AMc Oct 8 2013
+	      do jjk=1,mds   !AMc Oct 8 2013
               jj=kbc(jjk)   !AMc Oct 8 2013
               Tempe(jj,kt)=TempwBC(jjk,kt)
 
-	    enddo
+	      enddo
       enddo
+      close(101)
 
 !>> Generate Compartment/Link Connectivity Table
       write(1,*)
@@ -1438,6 +1482,7 @@ c
      &                    grid_lookup_500m(jk,21),    ! hydro link #19 associated with 500 m grid cell
      &                    grid_lookup_500m(jk,22)     ! hydro link #20 associated with 500 m grid cell
       enddo
+      close(200)
 
 !>> Lookup distances to centroids for each corresponding hydro compartment and link for interpolating data to each 500 m grid cell
 !>> Input grid lookup tables MUST have 22 columns - Col1= gridID, Col2=compartmentID,Col3-Col22=links with -9999 for no connections
@@ -1467,6 +1512,7 @@ c
      &                    grid_interp_dist_500m(jk,21),    ! distance to centroid of hydro link #19 associated with 500 m grid cell
      &                    grid_interp_dist_500m(jk,22)     ! distance to centroid of hydro link #20 associated with 500 m grid cell
       enddo
+      close(201)
 
 !>> Lookup elevation from topo/bathy data for each 500 m grid cell (updated in the Wetland Morph ICM routine)
       read(202,*) dump_text !dump header row
@@ -1495,7 +1541,7 @@ c
               endif
           endif
       enddo
-
+      close(202)
 
 !>> Report out how many compartments and grid cells had missing elevation data and were assigned default values.
       write(1,*)
