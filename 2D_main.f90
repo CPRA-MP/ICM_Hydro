@@ -45,7 +45,7 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) ' HYDRO MODEL RUN IS COMPLETE.'
       write(*,*) '----------------------------------------------------'
-
+      close(1)
 
 !      pause
       stop
@@ -504,7 +504,6 @@
       open (unit=40, file= 'PET.csv', status = 'unknown')
       open (unit=42, file= 'Precip.csv', status='unknown')
       open (unit=45, file= 'Meteorology.csv', status = 'unknown')
-      open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
       open (unit=43, file= 'WindVectorsX.csv',status= 'unknown')
       open (unit=46, file= 'WindVectorsY.csv',status= 'unknown')
       open (unit=47, file= 'TideData.csv',status='unknown')
@@ -514,37 +513,32 @@
       open (unit=55, file= 'TribS.csv', status = 'unknown')	! Tributary sand concentration (mg/L)
       open (unit=555,file= 'TribF.csv',status='unknown')      ! Tributary fines concentration (mg/L)
       open (unit=56, file= 'SBC.dat', status = 'unknown')
-      open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
-      open (unit=81, file= 'NH4Data.csv', status = 'unknown')
-      open (unit=82, file= 'OrgNData.csv', status = 'unknown')
-      open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
-      open (unit=84, file= 'AtmChemData.csv', status ='unknown')
-      open (unit=85, file= 'Decay.csv', status ='unknown')
-      open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
-      open (unit=87, file= 'DivWQ.csv', status ='unknown')
-      open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
-      open (unit=89, file= 'DivSW.csv', status = 'unknown')
-      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
       open (unit=110, file= 'surge.csv', form = 'formatted')
-!      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
-!      open (unit=118, file= 'UplandNP.dat', form ='formatted')
       open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
       open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
       open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
+      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
+      open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
+      open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
+      open (unit=89, file= 'DivSW.csv', status = 'unknown')
+!      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
+
+!     If WQ modeling is excluded (iWQ=0), WQ inputs are disabled	  
+	  if (iWQ>0) then
+          open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
+          open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
+          open (unit=81, file= 'NH4Data.csv', status = 'unknown')
+          open (unit=82, file= 'OrgNData.csv', status = 'unknown')
+          open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
+          open (unit=84, file= 'AtmChemData.csv', status ='unknown')
+          open (unit=85, file= 'Decay.csv', status ='unknown')
+          open (unit=87, file= 'DivWQ.csv', status ='unknown')
+!          open (unit=118, file= 'UplandNP.dat', form ='formatted')
+      endif
 
 !>> Open output text files (in append mode, if needed).
-      open (unit=70,file='DIN.out',form ='formatted',position='append')
-      open (unit=71,file='OrgN.out',form='formatted',position='append')
-      open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
-      open (unit=73,file='TOC.out',form='formatted',position='append')
       open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
-      open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
-      open (unit=92,file='NH4.out',form = 'formatted',position='append')		
-      open (unit=93,file='O2Sat.out',form='formatted',position='append')
-      open (unit=94,file='ALG.out',form='formatted',position='append')
-      open (unit=95,file='DO.out',form='formatted',position='append')
       open (unit=96,file='TSS.out',form='formatted',position='append')
-      open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
       open (unit=100,file='TMP.out',form='formatted',position='append')		   
 	  open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute open water Acc. 
 	  open (unit=104,file='SedAcc_MarshInt.out',form='formatted',position='append')		! Last row will be used to compute interior marsh Acc. 
@@ -552,12 +546,28 @@
       open (unit=105,file='fflood.out',form='formatted',position='append')
       open (unit=111,file='STG.out',form='formatted',position='append')			! ESAVE.OUT
       open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
-      open (unit=113,file='DON.out',form='formatted',position='append')
-      open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
-      open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
-      open (unit=123,file='TKN.out',form='formatted',position='append')
       open (unit=124,file='FLOm.out',form='formatted',position='append')
+      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
+      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
+      open(unit=212,file='STGm.out',form='formatted',position='append')
 
+!     If WQ modeling is excluded (iWQ=0), WQ outputs are disabled	  
+	  if (iWQ>0) then
+          open (unit=70,file='DIN.out',form ='formatted',position='append')
+          open (unit=71,file='OrgN.out',form='formatted',position='append')
+          open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
+          open (unit=73,file='TOC.out',form='formatted',position='append')
+          open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
+          open (unit=92,file='NH4.out',form = 'formatted',position='append')		
+          open (unit=93,file='O2Sat.out',form='formatted',position='append')
+          open (unit=94,file='ALG.out',form='formatted',position='append')
+          open (unit=95,file='DO.out',form='formatted',position='append')
+          open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
+          open (unit=113,file='DON.out',form='formatted',position='append')
+          open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
+          open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
+          open (unit=123,file='TKN.out',form='formatted',position='append')
+      endif
 ! read in information for grid cells used to pass data to other ICM routines !-EDW
       open (unit=200, file='grid_lookup_500m.csv', form='formatted')              ! compartment and link lookup table for 500-m grid cells
       open (unit=201, file='grid_interp_dist_500m.csv',form='formatted')          ! distance from each 500-m grid cell centroid to the compartment and link centroids
@@ -572,9 +582,6 @@
       open(unit=208,file='tkn_monthly_ave_500m.out',form='formatted')
       open(unit=209,file='TSS_monthly_ave_500m.out',form='formatted')
 
-      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
-      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
-      open(unit=212,file='STGm.out',form='formatted',position='append')
 ! output files for use in the Vegetation ICM routine !-EDW
 ! these are written in append mode. ICM checks when first run as to whethere these files exist.
 ! If Ecohydro is run outside of the ICM these files may be erroneously appended to if they contain data and the model is re-run.
@@ -600,7 +607,8 @@
       do kk = 1,nlinklimiter
           read(500,*) linkslimiter(kk)
       enddo
-
+      close(500)
+	  
 !>> 1D-ICM coupling input files
       if (n1D > 0) then
           write(*,*) 'Reading input files to couple 1D and 2D models'
@@ -689,40 +697,41 @@
 909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
-      close(32)
-      close(33)
-      close(34)
-      close(39)
-      close(40)
-      close(42)
-      close(44)
-      close(45)
-      close(43)
-      close(46)
-      close(47)
-      close(48)
-      close(49)
-      close(55)
-      close(56)
-      close(74)
-      close(77)
-      close(80)
-      close(81)
-      close(82)
-      close(83)
-      close(84)
-      close(85)
-      close(86)
-      close(87)
-      close(88)
-      close(89)
-      close(90)
-      close(101)
-      close(110)
+!   These files better to be closed within infile subroutine after importing the data
+!      close(32)
+!      close(33)
+!      close(34)
+!      close(39)
+!      close(40)
+!      close(42)
+!      close(44)
+!      close(45)
+!      close(43)
+!      close(46)
+!      close(47)
+!      close(48)
+!      close(49)
+!      close(55)
+!      close(56)
+!      close(74)
+!      close(77)
+!      close(80)
+!      close(81)
+!      close(82)
+!      close(83)
+!      close(84)
+!      close(85)
+!      close(86)
+!      close(87)
+!      close(88)
+!      close(89)
+!      close(90)
+!      close(101)
+!      close(110)
 !      close(118)
-      close(200)
-      close(201)
-      close(202)
+!      close(200)
+!      close(201)
+!      close(202)
 
 !>> Take first timestep of imported wind data and save into windx and windy arrays.
 !>> These arrays will be overwritten at a delta t that matches the wind data timestep (this update occurs immediately prior to calling hydrod)
@@ -1451,7 +1460,7 @@
              tss_var_annual(kj)**0.5, 		&  !stdev = sqrt(variance)
              max(0.0,(Atotal(kj)-As(kj,1)))
       enddo
-
+      close(205)
 !>> Write gridded output to file in list form - one row for each grid cell.
 !>> Write header rows in grid output files
 !>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM
@@ -1601,7 +1610,12 @@
      	   min(tssmax,TSS_500m_month(11,k)),		&
      	   min(tssmax,TSS_500m_month(12,k))
 	enddo
-
+    close(204)
+	close(206)
+	close(207)
+	close(208)
+	close(209)
+	
 !>> determine end time for calculating runtimes
       call SYSTEM_CLOCK(runtime_end,count_rate2,count_max2)
       runtime_s = dble(runtime_start)
