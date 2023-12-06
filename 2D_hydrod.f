@@ -60,7 +60,7 @@
 
 ! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
-c Temporary values
+! Temporary values
       Cp = 0.5
       fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
       Tres = 3600.
@@ -71,10 +71,10 @@ c Temporary values
       Saltribj=0.205
 
 
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccc OPEN WATER BOUNDARY CONDITIONS
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-cc		do jj=101,mds+101-1
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!cccc OPEN WATER BOUNDARY CONDITIONS
+!CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!c		do jj=101,mds+101-1
       do jjk=1,mds  !AMc 8 oct 2013
 	    jj=KBC(jjk) !AMc 8 oct 2013
 		tday= t/24/3600
@@ -142,10 +142,10 @@ cc _________________ JAM Nov 2010 revised
 
 !MP2023 zw moved tide bc and css bc update to here 04/07/2020
 
-c*********************TIDE BC*******************************************************************
+!*********************TIDE BC*******************************************************************
 
-c     These parameters should be moved to input to start at any time of year ** later
-********tide information, surges, periods and phase angles
+!     These parameters should be moved to input to start at any time of year ** later
+!********tide information, surges, periods and phase angles
 
       shour=0.0
       sday=0.0
@@ -159,8 +159,8 @@ c     These parameters should be moved to input to start at any time of year ** 
       tlag=0.								!Tide lag time along the eastern boundary in the Gulf
       aset=0.01
 
-c***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
-c***********************************************************************************************
+!***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
+!***********************************************************************************************
 
 !      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
 !	    jj=KBC(jjk)
@@ -170,22 +170,22 @@ c*******************************************************************************
 !      enddo
 !>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
       Call TideBC
-c***********************END TIDE****************************************************************
+!***********************END TIDE****************************************************************
 
-c Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
-CCCCCCCCCCCCCCCCCCCC AMc
-cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
-cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
-cc		if(mds.gt.2) then
-cc			do ii=103,110
-cc				Css(ii,2)=75.+ fcbc*(1-float(ii-103)/float(110-103))
-cc     &				*150.*sin(pi*wd(kday)/180.)
-cc			enddo
-cc		endif
-cccccc  AMc 8 oct 2013  change TSS BC
-cc		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
-cc		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
-cc		if(mds.gt.2) then
+! Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
+!CCCCCCCCCCCCCCCCCCC AMc
+!c		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
+!c		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
+!c		if(mds.gt.2) then
+!c			do ii=103,110
+!c				Css(ii,2)=75.+ fcbc*(1-float(ii-103)/float(110-103))
+!c     &				*150.*sin(pi*wd(kday)/180.)
+!c			enddo
+!c		endif
+!ccccc  AMc 8 oct 2013  change TSS BC
+!c		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
+!c		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
+!c		if(mds.gt.2) then
 
 
 !>> seasonal adjustment of boundary condition sediment data
@@ -213,12 +213,12 @@ cc		if(mds.gt.2) then
               Tempw(jj,2)=Tempw(jj,1)
 	    enddo
 	 enddo    !AMc 8 oct 2013
-cc		endif
+!c		endif
 
 
-c****************************Central Difference -Hybrid Upwind for scalars**********************
-c        fa=0.750  !1.0 upwind !0.5 central
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+!****************************Central Difference -Hybrid Upwind for scalars**********************
+!        fa=0.750  !1.0 upwind !0.5 central
+!cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !>> update upwind & downwind factors for dispersion based on previous timestep's upwind factor
       do i = 1,M
           fb(i)=(1.0-fa(i))				!weighting
@@ -227,7 +227,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       fbc=0.705				!ch JAM July 13, 2009  was 0.75
 	akL = 0.01				!wind induce currents
 	akns=0.01
-c      beginning of cell loop (flow, SS, Salinity, chem)
+!      beginning of cell loop (flow, SS, Salinity, chem)
 
 	do ichem = 1,14
 		QChemSUM(ichem) = 0.0
@@ -1831,38 +1831,42 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
           WRITE(112,2222)  (EsRange(j,1),j=1,N)
 !>-- Write daily average suspended solids to TSS.out
           WRITE(96,2222) (TSSave(j),j=1,N)
+		  
+		  if (iWQ>0) then
 !>-- Write daily average nitrate-N to NO3.out
-          WRITE(91,1324)  (ChemAve(j,1),j=1,N)		 !zw 4/28/2015 why multiple the ChemAve by 1000.0? What's the output unit then?
+              WRITE(91,1324)  (ChemAve(j,1),j=1,N)		 !zw 4/28/2015 why multiple the ChemAve by 1000.0? What's the output unit then?
 !>-- Write daily average ammonium-N to NH4.out
-          WRITE(92,1324)  (ChemAve(j,2),j=1,N)
+              WRITE(92,1324)  (ChemAve(j,2),j=1,N)
 !>-- Write daily average dissolved organic N to DON.out
-          WRITE(113,1324)  (ChemAve(j,10),j=1,N)
+              WRITE(113,1324)  (ChemAve(j,10),j=1,N)
 !>-- Write daily average dissolved inorganic N to DIN.out
-          WRITE(70,1324)  (ChemAve(j,3),j=1,N)
+              WRITE(70,1324)  (ChemAve(j,3),j=1,N)
 !>-- Write daily average total organic N to OrgN.out
-          WRITE(71,1324)  (ChemAve(j,4),j=1,N)
+              WRITE(71,1324)  (ChemAve(j,4),j=1,N)
 !>-- Write daily total Kjedahl N to TKN.out (TKN = NH4 + OrgN)
-          WRITE(123,1324) ((ChemAve(j,2)+ChemAve(j,4)),j=1,N)
+              WRITE(123,1324) ((ChemAve(j,2)+ChemAve(j,4)),j=1,N)
 !>-- Write daily average total P to TPH.out (TP = TIP + DOP + POP)
-          WRITE(72,1324)  ((ChemAve(j,5)+ChemAve(j,11)+ChemAve(j,14))
+              WRITE(72,1324)  ((ChemAve(j,5)+ChemAve(j,11)+ChemAve(j,14))
      &                                ,j=1,N)
 !>-- Write daily average total organic C to TOC.out
           !WRITE(73,2222)  (ChemAve(j,10)*1000.*2.,j=1,N) !BUG!? why is Carbon.out calculated as 2*DON?
-          WRITE(73,1324)  (ChemAve(j,6),j=1,N) !zw 4/28/2015 TOC as Chem(j,6)
+              WRITE(73,1324)  (ChemAve(j,6),j=1,N) !zw 4/28/2015 TOC as Chem(j,6)
 !>-- Write daily average dissolved oxygen to DO.out
-          WRITE(95,1324)  (ChemAve(j,7),j=1,N)
+              WRITE(95,1324)  (ChemAve(j,7),j=1,N)
 !>-- Write daily average live algae to ALG.out
-	    WRITE(94,1324)  (ChemAve(j,8),j=1,N)
+	          WRITE(94,1324)  (ChemAve(j,8),j=1,N)
 !>-- Write daily average detritus (dead algae) to DET.out
-          WRITE(97,1324)  (ChemAve(j,9),j=1,N)
+              WRITE(97,1324)  (ChemAve(j,9),j=1,N)
 !	    WRITE(116,2222)  (min(Chem(j,13,2)*1000000.,60.),j=1,N)		!JAM May 21, 2011
 !>-- Write daily average to SPH.out
-          WRITE(119,1324)  (min(ChemAve(j,1)/3.,max(ChemAve(j,12),0.2
+              WRITE(119,1324)  (min(ChemAve(j,1)/3.,max(ChemAve(j,12),0.2
      &                            *ChemAve(j,5))),j=1,N)
 
-          cden=86400000.*365.25
+              cden=86400000.*365.25
 !>-- Write to NRM.out
-          WRITE(121,2222)(max(cden*denit(j,2),-39.9),j=1,N)
+              WRITE(121,2222)(max(cden*denit(j,2),-39.9),j=1,N)
+		  endif
+
 	    !WRITE(75,2222)(max(min((S(j,2)+STEMP(j,2))/2.,35.),0.2),j=1,N)         !Nov 2010 JAM Aug 1, 2009 time averaging
 !>-- Write daily average salinity to SAL.out
           WRITE(75,2222)(SALAV(j),j=1,N)         !zw 3/22/2015 daily average salinity from each time step
@@ -1954,4 +1958,4 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
       return
 	end
 
-c***********************End Subroutine hydrodynamic*********************************************
+!***********************End Subroutine hydrodynamic*********************************************
