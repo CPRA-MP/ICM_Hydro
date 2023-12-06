@@ -739,8 +739,10 @@
 !>> 'windrow' is a counter that is incrementally updated each time a wind data timestep is reached
       windrow = 1
       do jjj = 1,N
-          windx(jjj) = max(0.01,windx_data(windrow,jwind(jjj)))
-          windy(jjj) = max(0.01,windy_data(windrow,jwind(jjj)))
+!          windx(jjj) = max(0.01,windx_data(windrow,jwind(jjj)))
+!          windy(jjj) = max(0.01,windy_data(windrow,jwind(jjj)))
+          windx(jjj) = windx_data(windrow,jwind(jjj))
+          windy(jjj) = windy_data(windrow,jwind(jjj))
       enddo
 
 !>> 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a tide or lock control data timestep is reached
