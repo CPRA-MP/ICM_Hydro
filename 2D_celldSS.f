@@ -26,7 +26,8 @@ cJAM      Tributary and resuspension/deposition contributions to SS
     
       !>> Define depth, in meters, for dry cells that will turn off TSS change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
-      dry_depth = 0.05
+!      dry_depth = 0.05
+      dry_depth = dry_threshold
       
 !>> Initialize local sediment flux variables to zero          
       do k=1,4

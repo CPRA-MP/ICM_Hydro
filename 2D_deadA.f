@@ -43,7 +43,8 @@
 
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
-	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+!	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
 
 !>> previous time step WQ concentrations
 	alg = chem(j,8,1)

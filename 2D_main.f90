@@ -368,6 +368,7 @@
       READ(30,*) nlc             ! 102      number of lateral connection
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
+      READ(30,*) dry_threshold   ! 105      dry water depth threshold
       close(30)
 
 

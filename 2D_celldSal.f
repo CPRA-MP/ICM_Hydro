@@ -29,7 +29,8 @@
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
-      dry_depth = 0.05
+!      dry_depth = 0.05
+      dry_depth = dry_threshold
 !      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
       dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
       
@@ -40,14 +41,18 @@
       ddym2 = Eh(j,2)-BedM(j)
       
 !>> Set minimum depth value to avoid div-by-zero errors
-      if(ddy1 <= 0.01) then
-          dddy = 0.01
+!      if(ddy1 <= 0.01) then
+!          dddy = 0.01
+      if(ddy1 <= dry_threshold) then
+          dddy = dry_threshold
       else
           dddy = ddy1
       endif
 
-      if(ddym1 <= 0.01) then
-          dddym = 0.01
+!      if(ddym1 <= 0.01) then
+!          dddym = 0.01
+      if(ddym1 <= dry_threshold) then
+          dddym = dry_threshold
       else
           dddym = ddym1
       endif
@@ -285,4 +290,4 @@
 
       return 
       end
-c***********************End Subroutine for Change in Cell Salinity*******JAM Oct 2010***********
+!***********************End Subroutine for Change in Cell Salinity*******JAM Oct 2010***********

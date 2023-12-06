@@ -1,7 +1,7 @@
 !	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
 	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-cJAM     c Salinity  computations ****************************
+!JAM     c Salinity  computations ****************************
 	
       use params
 
@@ -14,8 +14,10 @@ cJAM     c Salinity  computations ****************************
 !>> Set minimum depth value (avoids div-by-zero errors)
       ddy= Es(j,1)-Bed(j)
 	
-      if(ddy <= 0.1) then
-          dddy = 0.1
+!      if(ddy <= 0.1) then
+!          dddy = 0.1
+      if(ddy <= dry_threshold) then
+          dddy = dry_threshold
       else
           dddy = ddy
       endif
@@ -90,7 +92,7 @@ cJAM     c Salinity  computations ****************************
       
 !		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
 
-c low high pass filter
+! low high pass filter
       if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
       if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
 
@@ -115,8 +117,8 @@ c low high pass filter
       endif
 
 !	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
-cc	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
+!	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
 
       return 
 	end
-c***********************End Subroutine for Change in Cell Temperature*******JAM Oct 2010********
+!***********************End Subroutine for Change in Cell Temperature*******JAM Oct 2010********

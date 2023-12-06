@@ -59,7 +59,8 @@
 	alg = chem(j,8,1)		
 
 !>> current depth in compartment
-	dd = max(Es(j,2) - Bed(j),0.01)
+!	dd = max(Es(j,2) - Bed(j),0.01)
+	dd = max(Es(j,2) - Bed(j),dry_threshold)
             
 !>> temperature-dependent nitrification rate coefficient 
 	knit20 = max(min(knit20num/dd,knitmax),knitmin)

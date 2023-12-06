@@ -66,6 +66,7 @@
 	real(sp) :: dtwind
       real(sp) :: dttide
       real(sp) :: dz
+      real(sp) :: dry_threshold  !dry water depth threshold >0
 
 ! global water quality parameters
       real(sp) :: saltox

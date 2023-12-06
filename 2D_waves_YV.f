@@ -95,7 +95,8 @@
       dim_factor  = g/(wind_spd**2)
  
 !>> Calculate water depth for timestep      
-      depth_value = max(Es(j,2) - Bed(j),0.001)
+!      depth_value = max(Es(j,2) - Bed(j),0.001)
+      depth_value = max(Es(j,2) - Bed(j),dry_threshold)
       
 !>> Calculate dimensionless fetch and depth values      
       fetch_nondim = fetch_value*dim_factor

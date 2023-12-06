@@ -315,7 +315,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
           !>> If upstream water stage is lower than bed elevation, flow is zero (downstream water stage is lower than upstream, so it is also lower than bed)
-              elseif( (Es(upN,2)-Bed(upN)) <=0.01)then	!zw 3/16/2015
+!              elseif( (Es(upN,2)-Bed(upN)) <=0.01)then	!zw 3/16/2015
+              elseif( (Es(upN,2)-Bed(upN)) <=dry_threshold)then	!zw 3/16/2015
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
           !>> If only downstream water stage is lower than channel invert, calculate average depth in channel with a zero depth at downstream end of channel
@@ -451,7 +452,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               htup = ES(upN,2) - Latr1(i)
           !>> check if upstream water elevation is above weir crest - if not, set flow to 0
               !if (htup <= 0.0) then
-              if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	   !zw 3/16/2015
+!              if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	   !zw 3/16/2015
+              if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then	   !zw 3/16/2015
                   Q(i,2) = 0.0
           !>> otherwise, if water is above weir crest calculate flow
               else
@@ -734,7 +736,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               if (Es(upN,2) <= latr1(i) ) then
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
-              elseif ( ( Es(upN,2)-Bed(upN) ) <=0.01) then
+!              elseif ( ( Es(upN,2)-Bed(upN) ) <=0.01) then
+              elseif ( ( Es(upN,2)-Bed(upN) ) <=dry_threshold) then
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
           !>> If only downstream water stage is lower than channel invert, calculate average depth in channel with a zero depth at downstream end of channel
@@ -837,7 +840,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 
 	!>> if water level is below orifice invert, there is no flow
 			!if (htup <= 0.0) then
-			if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	  !zw 3/16/2015
+!			if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	  !zw 3/16/2015
+			if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then	  !zw 3/16/2015
 				Q(i,2) = 0.0
                   ! set flow area for no-flow orifice
                   Ach = 0.0
@@ -1007,7 +1011,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
               if (EH(upN,2) <= Latr1(i))then
                   Q(i,2) = 0.0
                   Ach = 0.0
-              elseif ((EH(upN,2)-BedM(upN))<=0.1) then	!zw 3/16/2015
+!              elseif ((EH(upN,2)-BedM(upN))<=0.1) then	!zw 3/16/2015
+              elseif ((EH(upN,2)-BedM(upN))<=dry_threshold) then	!zw 3/16/2015
                   Q(i,2) = 0.0
                   Ach = 0.0
           !>> calculate flow if water elevation is above marsh invert
@@ -1508,7 +1513,8 @@ c      beginning of cell loop (flow, SS, Salinity, chem)
 		
           !added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
           if(sDetah<0) then
-              if((Eh(j,2)-BedM(j))<=0.01) then
+!              if((Eh(j,2)-BedM(j))<=0.01) then
+              if((Eh(j,2)-BedM(j))<=dry_threshold) then
                   Detah = 0.0;
               endif
           endif

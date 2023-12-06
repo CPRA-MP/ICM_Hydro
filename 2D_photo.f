@@ -77,7 +77,8 @@
 	perOW = Apctwater(j)
 
 !>> current depth in compartment
-	dd = max(Es(j,2) - Bed(j),0.01)
+!	dd = max(Es(j,2) - Bed(j),0.01)
+	dd = max(Es(j,2) - Bed(j),dry_threshold)
 
 !>> fraction of daylight hours
 	daylight = 0.5

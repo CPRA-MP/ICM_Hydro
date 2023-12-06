@@ -13,18 +13,21 @@
       QChemSUMatm(ichem) = 0.0
       
 !>> water depth in compartment      
-      dyy=max((Es(j,1)-Bed(j)),0.01)
+!      dyy=max((Es(j,1)-Bed(j)),0.01)
+      dyy=max((Es(j,1)-Bed(j)),dry_threshold)
 
 !>> Anthropogenic loads 
       if(ichem == 1) then
-          if(dyy > 0.01) then
+!          if(dyy > 0.01) then
+          if(dyy > dry_threshold) then
 !          QChemSUM(ichem)=QChemSUM(ichem)-AnthL(j)								! kg/d N-NO3  JAM April 3, 2011
               QChemSUManth(ichem) = -AnthL(j)*1000.0/(24.0*3600.0)			!zw 4/28/2015 AnthL kg/d to g/s
           endif
       endif
       
       if(ichem == 5) then
-          if (dyy > 0.01) then
+!          if (dyy > 0.01) then
+          if (dyy > dry_threshold) then
 !          QChemSUM(ichem)=QChemSUM(ichem)-AnthL(j)/7.1                          
               QChemSUManth(ichem) = -AnthL(j)*1000.0/(24.0*3600.0)/7.1     !zw 4/28/2015 AnthL kg/d to g/s                     
           endif
@@ -65,7 +68,8 @@
 	    call chemical(mm,iab,jnb,j,k,ichem)
       enddo															! k do loop neighbouring cell contributions
       
-      if (dyy > 0.01) then
+!      if (dyy > 0.01) then
+      if (dyy > dry_threshold) then
           QChemSUMatm(ichem) = -QAtm(1,ichem,kday)
      &                     *As(j,1)/(1000000.)*1000.0	  ! zw 4/28/2015 QAtm kg/s/km2 to g/s/km2 (QAtm is converted from kg/d/km2 to kg/s/km2 in infile.f)
       endif
@@ -80,13 +84,14 @@
 
      
      
-c  chemical change computations  *********************************
+!  chemical change computations  *********************************
       mex=9
       DChemSUM = 0.
 
 ! WQ subroutines that start with 'd' (e.g. dNO3) were updated to match the 2012 equations used in AA and CP
 ! these subroutine names do not necessarily match their .f filename (e.g. dTP is located in TP.f)
-      if (dyy > 0.01) then
+!      if (dyy > 0.01) then
+      if (dyy > dry_threshold) then
           if(ichem == 1) then
               call dNO3(DChemSum,ichem,j)
           elseif(ichem == 2) then
@@ -109,7 +114,8 @@ c  chemical change computations  *********************************
 !>> Calculate contribution to flow from precip and evapotranspiration      
       QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
      &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden      
-      if (dyy <= 0.01) then  
+!      if (dyy <= 0.01) then  
+      if (dyy <= dry_threshold) then  
           QRain = max(QRain,0.0)
       endif
 
@@ -143,4 +149,4 @@ c  chemical change computations  *********************************
 	return 
 	end
 
-c***********************End Subroutine for Change in Cell Chemistry*******JAM Oct 2010**********
+!***********************End Subroutine for Change in Cell Chemistry*******JAM Oct 2010**********
