@@ -53,7 +53,7 @@
       real :: energy_limit,frequency_limit,energy_nondim,fetch_nondim
       real :: depth_nondim,frequency_nondim,waven
       real :: YV_A1,YV_A2,YV_B1,YV_B2,YV_m,YV_n,Lo,d_L,t1,t2
-
+      real :: Hs_fully,Tp_fully,Hs_dlimit,Tp_dlimit,gamma_b
 
 
 
@@ -65,6 +65,7 @@
       YV_n = 1.74
       YV_m = -0.37
 	rhow = 1000.*(1+S(j,1)/1000.)	!adjust density for salinity
+      gamma_b=0.6  !wave breaking index gamma
 
 !>> Calculate wind speed and direction (remove any zero values to avoid div-by-zero errors).      
       if (windx(j) == 0) then
@@ -79,13 +80,24 @@
       	  windy_value = windy(j) 
       endif      
       wind_spd = sqrt(windx_value**2 + windy_value**2)
-      wind_dir_rads = atan(windy_value/windx_value)
+!!!      wind_dir_rads = atan(windy_value/windx_value)
+      wind_dir_rads = atan(windx_value/windy_value)
 
 !>> Convert wind direction to degrees and lookup fetch from 16 different directions (each separated by 22.5 degrees)      
-      wind_dir_degs = wind_dir_rads*180./pi
-      if (wind_dir_degs <= 0.) then
-          wind_dir_degs = wind_dir_degs + 360.
+!!!      wind_dir_degs = wind_dir_rads*180./pi
+!!!      if (wind_dir_degs <= 0.) then
+!!!          wind_dir_degs = wind_dir_degs + 360.
+!!!      endif
+!   Wind  direction convention: wind blowing from relaive to North (Y) measured Clock-wise
+      if(windy_value>=0) then
+          wind_dir_degs = wind_dir_rads*180./pi+180
+      else
+          wind_dir_degs = wind_dir_rads*180./pi
+          if (wind_dir_rads < 0) then
+             wind_dir_degs = wind_dir_rads*180./pi+360
+          endif
       endif
+
       fetch_lookup = max(1, int(floor(wind_dir_degs/22.5)+1) )
 
 !>> Pull appropriate fetch for compartment and wind direction from lookup array      
@@ -95,7 +107,7 @@
       dim_factor  = g/(wind_spd**2)
  
 !>> Calculate water depth for timestep      
-!      depth_value = max(Es(j,2) - Bed(j),0.001)
+!!!      depth_value = max(Es(j,2) - Bed(j),0.001)
       depth_value = max(Es(j,2) - Bed(j),dry_threshold)
       
 !>> Calculate dimensionless fetch and depth values      
@@ -106,7 +118,15 @@
       drag_coeff = 0.001*(1.1+0.035*wind_spd)
       wind_fric_spd = wind_spd*sqrt(drag_coeff)
       
-!>> Calculate wind duration needed (in seconds) for waves to become fetch-limited over current fetch
+!>> fully developed wave conditions (the upper limit of wave growth for any wind speed) CEM II-2-37
+      Hs_fully = 211.5*(wind_fric_spd**2./g)
+      Tp_fully = 239.8*(wind_fric_spd/g)
+
+!>> shallow water limiting wave height and wave period
+      Hs_dlimit = gamma_b*depth_value
+      Tp_dlimit = 9.78*sqrt(depth_value/g)
+
+!>> Calculate wind duration needed (in seconds) for waves to become fetch-limited over current fetch CEM II-2-35
       duration_needed = (77.23*fetch_value**0.67/
      &                     ((wind_spd**0.34)*(g**0.33)))
 
@@ -126,17 +146,26 @@
 
 !>> Check if duration of wind speed will meet fetch-limited conditions (duration_needed is in seconds, dtwind is in hours)
       if( (duration_needed/60.) > (dtwind*60.) ) then
-!>> If duration-limited, calculate wave period for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-40)
-!!!          wave_period(j,1) = (wind_fric_spd/g)
-!!!     &                   *(g*dtwind*3600./(537.*wind_fric_spd))**(3./7.)
-          t1 = 0.833*(g*depth_value/wind_fric_spd**2.)**(3.0/8.0) !ZW edit 12/05/2023
-          t2 = 0.0379*(g*fetch_value/wind_fric_spd**2.)**(1.0/3.0) !ZW edit 12/05/2023
-          wave_period(j,1) = 7.54*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023
-!>> If duration-limited, calculate significant wave height for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-39)
-          t1 = 0.530*(g*depth_value/wind_fric_spd**2.)**0.75
-          t2 = 0.00565*(g*fetch_value/wind_fric_spd**2.)**0.5
-!!!          Hs(j,1) = 0.283*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))
-          Hs(j,1) = 0.283*(wind_fric_spd**2./g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023 
+!!!!>> If duration-limited, calculate wave period for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-40)
+!!! Actually these are for fetch-limited waves in SPM84!!!
+!!!!          wave_period(j,1) = (wind_fric_spd/g)
+!!!!     &                   *(g*dtwind*3600./(537.*wind_fric_spd))**(3./7.)
+!!!          wind_fric_spd = 0.71*wind_spd**1.23 !SPM84 eq. 3-28a
+!!!          t1 = 0.833*(g*depth_value/wind_fric_spd**2.)**(3.0/8.0) !ZW edit 12/05/2023
+!!!          t2 = 0.0379*(g*fetch_value/wind_fric_spd**2.)**(1.0/3.0) !ZW edit 12/05/2023
+!!!          wave_period(j,1) = 7.54*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023
+!!!!>> If duration-limited, calculate significant wave height for duration-limited, shallow water conditions (from Shore Protection Manual (1984) eq. 3-39)
+!!!          t1 = 0.530*(g*depth_value/wind_fric_spd**2.)**0.75
+!!!          t2 = 0.00565*(g*fetch_value/wind_fric_spd**2.)**0.5
+!!!!          Hs(j,1) = 0.283*(wind_fric_spd/g)*tanh(t1)*tanh(t2/tanh(t1))
+!!!          Hs(j,1) = 0.283*(wind_fric_spd**2./g)*tanh(t1)*tanh(t2/tanh(t1))  !ZW edit 12/05/2023 
+
+!>> If duration-limited, calculate wave height & period based on CEM equivalent fetch
+!         convert  duration into Equivalent fetch CEM II-2-38
+          fetch_equiv = 0.00523*sqrt(g*wind_fric_spd*(dtwind*3600)**3.0)
+          fetch_nondim = fetch_equiv*g/(wind_fric_spd**2)
+          Hs(j,1) = 0.0413*(wind_fric_spd**2./g)*fetch_nondim**(1.0/2.0)
+          wave_period(j,1) = 0.651*(wind_fric_spd/g)*fetch_nondim**(1.0/3.0) 
 
 !>> If fetch-limited, calculate Young & Verhagen energy and frequency          
       else
@@ -163,19 +192,25 @@
 	    Hs(j,1)=4.*sqrt(wave_energy(j,1))
           wave_period(j,1) = 1/wave_frequency(j,1)
       endif
-      
+
+!>> check the calcualted waves not exceeding the fully developed waves & depth-limited waves
+      Hs(j,1) = min(Hs(j,1), Hs_fully, Hs_dlimit)
+      wave_period(j,1) = min(wave_period(j,1), Tp_fully, Tp_dlimit)
       
 !>> Calculate wavelength and group velocity approximations from linear wave theory (USACE CEM Part 2.1)
       Lo = g*(wave_period(j,1)**2)/(2*pi)
       wavelength(j,1) = Lo*sqrt(tanh(2*pi*depth_value/Lo))
       d_L = depth_value/wavelength(j,1)
-      Waven = (1+(4*pi*d_L)/sinh(4*pi*d_L))/2
-      group_vel(j,1) = Waven*wavelength(j,1)/wave_period(j,1)      
-      
+      if(d_L > 0.5)then !deepwater
+          group_vel(j,1) = 0.5*wavelength(j,1)/wave_period(j,1)    
+          Uorb(j,1) = 0
+      else 
+          Waven = (1+(4*pi*d_L)/sinh(4*pi*d_L))/2
+          group_vel(j,1) = Waven*wavelength(j,1)/wave_period(j,1)      
 !>> Calculate orbital velocity at bottom of water column
-	Uorb(j,1) = g*Hs(j,1)*wave_period(j,1)/(2*wavelength(j,1)*
+	      Uorb(j,1) = g*Hs(j,1)*wave_period(j,1)/(2*wavelength(j,1)*
      &			cosh(2*pi*depth_value/wavelength(j,1)))
-      
+      endif
 
       return
       end
