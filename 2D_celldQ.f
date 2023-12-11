@@ -271,7 +271,7 @@ cccccccccc cjam collects flow from connecting links
 
 
 !>> Calculate cumulative time marsh is flooded
-      if (ES(j,2) < (BedM(j)+0.01)) then
+      if (ES(j,2) > (BedM(j)+dry_threshold)) then
 	    floodf(j)=Floodf(j)+dt/(24.*3600.)	!accum days of flooding JAM Nov 13, 2010
 	endif 
 
