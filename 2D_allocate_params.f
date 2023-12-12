@@ -8,7 +8,7 @@
       links=M
       windsteps = simdays*24/dtwind
       tidesteps = simdays*24/dttide+1    !YW! Tide transpose is assumed been handled in the input files. +1 is to include the final row
-      maxconnectuse = max(maxconnect,25) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
+      maxconnectuse = max(maxconnect,100) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
       numChem=14  !zw added 04/07/2020 to replace fixed variable dimensions related to chemicals
 
       WRITE(1,*) '----------------------------------------------------'
@@ -283,7 +283,7 @@
       allocate(Jrain(cells))
       allocate(Jwind(cells))
       allocate(Jet(cells))
-      allocate(jtrib(cells))
+      allocate(jtrib(Ntrib))  !ZW 12/12/2023 jtrib is the tributary IDs
       allocate(Percent(cells))
       allocate(phz(cells))
       allocate(por(cells))
