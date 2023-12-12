@@ -16,7 +16,7 @@
       integer :: windstartrun,tidestartrun
       integer :: ETzero,Rzero
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel
-
+      integer :: node,lnkid
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
       write(1,*) '----------------------------------------------------'
@@ -35,91 +35,95 @@
       gridmarcount = 0
       gridplcount = 0
 
-!>> Loop over compartments and save input data in appropriate arrays.
+!>> Loop over compartments and save attributes in appropriate arrays.
+! change array(j,*)=array(node,*) to ensure the compartment atributes are assigned correctly if the records in cells.csv are not in ascending order - zw 12/11/2023 
 !      do 91 j=1,N                                    !change structure of DO loop
       read(32,*)                  ! dump header row of compartment input file
       do j=1,N
           READ(32,*) node,        !	node number - not saved - just a placeholder so input file can have ID as first column
-!     &	    As(j,1),			!	open water surface area of cells			(km2)
-     &        Atotal(j),          !   total area of cells (m2)
-     &        Apctwater(j),       !   portion of cell that is water (0-1)
-     &        Apctupland(j),      !   portion of cell that is upland (0-1)
-     &        Apctmarsh(j),       !   portion of cell that is marsh (0-1)
-!     &	    Ahf(j),			    !	marsh area of cells (m2)
-     &        ar_ed(j),           !   marsh edge area of cell (m2)
-     &        Eso(j),				!	initial stage of storage cells	(m)     !BUG! Eso(j) is not used !BUG!
-     &	    Bed(j),				!	bed elevation of storage cells	(m)
-     &	    erBedDepth(j),      !	depth of erodible bed in open water area (m)
-     &	    erBedBD(j),			!	bulk density of erodible bed in open water area	(g/cm3)
-!     &	    Ahydro(j),			!	area of hydrologically connected area for water balance (marsh+upland) (m2)
-     &	    Percent(j),			!	percentage open water in Ahydro for PET-to-AET conversion(0-100%)
-!     &	    dAdz(j),			!	change in As with depth	(m)
-     &	    CSS(j,1,1),			!	sediment concentration	- sand only (mg/L)
-     &	    S(j,1),				!	salinity (TDS)			(ppt)
-!     &	    acss(j),			!	resuspension parameters
-!     &	    bcss(j),			!	resuspension parameters
-!     &	    Vss(j),				!	deposition velocity     (m/d)
-!     &	    tau(j,1),			!	bed shear stress        (Pa)
-!     &	    tauc(j),			!   critical shear stress   (Pa)
-!     &	    Fetch(j,1),			!	Fetch E-W				(km)
-!     &	    Fetch(j,2),			!	Fetch N-S				(km)
-!     &	    SSource(j),			!	Avg annual source due to coastal erosion (m3/yr/m)
-     &	    Jrain(j),			!	rain gage number
-     &        Jwind(j),           !   wind gage number
-     &        Jet(j),             !   ET gage number
-     &        ka(j),              !   Wind-current surface coefficient
-     &        cf(j),              !   Wind-current bed coefficient
-     &        sedn(j),            !   sediment resuspension exponent (non-sand particles)
-     &        sedcalib(j),        !   sediment resuspension coefficient (non-sand particles)
-     &        alphased(j),        !   sediment vanRijn resuspension coefficient (sand particles)
-     &        KKa(j),             !   Kadlec-Knight marsh flow calibration coefficient, A
-     &        KKdepth(j),         !   Minimum marsh water depth allowed in Kadlec-Knight marsh flow (m)
-     &        MEE(j),              !   Annual marsh edge erosion retreat rate for compartment (m/yr)
-!          READ(90,*) nodem,	!	Marsh node number										!JAM Oct 2010
-!     &	    Flood(j),           !	portion of cells that is  (-)
-     &	    CSSos(j),           !	TSS concentration to be applied to offshore cells - set to -9999 if not used		(mg/L)
-     &	    BedMOrig(j),        !	bed elevation of marsh storage cells		(m)
-     &        BedMSD(j),          !   marsh elevation standard deviation          (m)         ! yw Nov 2020     
-     &	    Esho(j),			!	soil moisture depth in marsh storage cells	(m)			!JAM Oct 2010
-     &	    depo_on_off(j),     !	sediment deposition on/off flag - 1=deposition allowed in compartment, 0=no deposition in cell (e.g. main channels) (0,1)
-     &        BedMAdj(j)          !   vertical adjustment to marsh elevation (m)
-!     &	    acssh(j),           !	resuspension parameters									!JAM Oct 2010
-!     &	    Vsh(j),				!	deposition velocity							(m/d)		!JAM Oct 2010
-!     &	    SourceBM(j)			!	Avg annual source due to biomass detritus.  (g/yr/m2)	!JAM Oct 2010
+!     &	      As(node,1),			  !	open water surface area of cells			(km2)
+     &        Atotal(node),           ! total area of cells (m2)
+     &        Apctwater(node),        ! portion of cell that is water (0-1)
+     &        Apctupland(node),       ! portion of cell that is upland (0-1)
+     &        Apctmarsh(node),        ! portion of cell that is marsh (0-1)
+!     &	      Ahf(node),			  !	marsh area of cells (m2)
+     &        ar_ed(node),            ! marsh edge area of cell (m2)
+     &        Eso(node),			  !	initial stage of storage cells	(m)     !BUG! Eso(node) is not used !BUG! using values from hotstar_in.dat
+     &	      Bed(node),			  !	bed elevation of storage cells	(m)
+     &	      erBedDepth(node),       !	depth of erodible bed in open water area (m)
+     &	      erBedBD(node),		  !	bulk density of erodible bed in open water area	(g/cm3)
+!     &	      Ahydro(node),		      !	area of hydrologically connected area for water balance (marsh+upland) (m2)
+     &	      Percent(node),		  !	percentage open water in Ahydro for PET-to-AET conversion(0-100%)
+!     &	      dAdz(node),			  !	change in As with depth	(m)
+     &	      CSS(node,1,1),		  !	sediment concentration	- sand only (mg/L)  !BUG! CSS(node,1,1) is not used, using values from hotstar_in.dat
+     &	      S(node,1),			  !	initial salinity (TDS) (ppt)       !BUG! S(node,1) is not used, using values from hotstar_in.dat
+!     &	      acss(node),			  !	resuspension parameters
+!     &	      bcss(node),			  !	resuspension parameters
+!     &	      Vss(node),			  !	deposition velocity     (m/d)
+!     &	      tau(node,1),			  !	bed shear stress        (Pa)
+!     &	      tauc(node),			  ! critical shear stress   (Pa)
+!     &	      Fetch(node,1),		  !	Fetch E-W				(km)
+!     &	      Fetch(node,2),		  !	Fetch N-S				(km)
+!     &	      SSource(node),		  !	Avg annual source due to coastal erosion (m3/yr/m)
+     &	      Jrain(node),			  !	rain gage number
+     &        Jwind(node),            ! wind gage number
+     &        Jet(node),              ! ET gage number
+     &        ka(node),               ! Wind-current surface coefficient
+     &        cf(node),               ! Wind-current bed coefficient
+     &        sedn(node),             ! sediment resuspension exponent (non-sand particles)
+     &        sedcalib(node),         ! sediment resuspension coefficient (non-sand particles)
+     &        alphased(node),         ! sediment vanRijn resuspension coefficient (sand particles)
+     &        KKa(node),              ! Kadlec-Knight marsh flow calibration coefficient, A
+     &        KKdepth(node),          ! Minimum marsh water depth allowed in Kadlec-Knight marsh flow (m)
+     &        MEE(node),              ! Annual marsh edge erosion retreat rate for compartment (m/yr)
+!          READ(90,*) nodem,	      !	Marsh node number										!JAM Oct 2010
+!     &	      Flood(node),            !	portion of cells that is  (-)
+     &	      CSSos(node),            !	TSS concentration to be applied to offshore cells - set to -9999 if not used		(mg/L)
+     &	      BedMOrig(node),         !	bed elevation of marsh storage cells		(m)
+     &        BedMSD(node),           ! marsh elevation standard deviation          (m)         ! yw Nov 2020     
+     &	      Esho(node),			  !	soil moisture depth in marsh storage cells	(m)			!JAM Oct 2010
+     &	      depo_on_off(node),      !	sediment deposition on/off flag - 1=deposition allowed in compartment, 0=no deposition in cell (e.g. main channels) (0,1)
+     &        BedMAdj(node)           ! vertical adjustment to marsh elevation (m)
+!     &	      acssh(node),            !	resuspension parameters									!JAM Oct 2010
+!     &	      Vsh(node),			  !	deposition velocity							(m/d)		!JAM Oct 2010
+!     &	      SourceBM(node)		  !	Avg annual source due to biomass detritus.  (g/yr/m2)	!JAM Oct 2010
 
-          READ(323,*) nodef,      !   node number
-     &        Fetch(j,1),          !   Fetch length (m) in 0-deg sector
-     &        Fetch(j,2),          !   Fetch length (m) in 22.5-deg sector
-     &        Fetch(j,3),          !   Fetch length (m) in 45-deg sector
-     &        Fetch(j,4),          !   Fetch length (m) in 67.5-deg sector
-     &        Fetch(j,5),          !   Fetch length (m) in 90-deg sector
-     &        Fetch(j,6),          !   Fetch length (m) in 112.5-deg sector
-     &        Fetch(j,7),          !   Fetch length (m) in 135-deg sector
-     &        Fetch(j,8),          !   Fetch length (m) in 157.5-deg sector
-     &        Fetch(j,9),          !   Fetch length (m) in 180-deg sector
-     &        Fetch(j,10),         !   Fetch length (m) in 202.5-deg sector
-     &        Fetch(j,11),         !   Fetch length (m) in 225-deg sector
-     &        Fetch(j,12),         !   Fetch length (m) in 247.5-deg sector
-     &        Fetch(j,13),         !   Fetch length (m) in 270-deg sector
-     &        Fetch(j,14),         !   Fetch length (m) in 292.5-deg sector
-     &        Fetch(j,15),         !   Fetch length (m) in 315-deg sector
-     &        Fetch(j,16)         !   Fetch length (m) in 337.5-deg sector
-
-          ! Eh(j,1)=Eho(j)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
-          BedM(j) = BedMOrig(j) + BedMAdj(j)
+          ! Eh(node,1)=Eho(node)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
+          BedM(node) = BedMOrig(node) + BedMAdj(node)
 
 
 !>> Calculate amount of sediment available in erodible bed (g/m2) for each sediment class (10^6 is unit conversion for bulk density from cm3 to m3)
 !>> - once compartment is eroded by this much, only newly deposited sediment can be resuspended
 !>> Assume that 10% of bed is sand, 45% is silt, 22.5% is unflocculated clay, and 22.5% is flocculated clay
 ! This assumes that the erodible bed depth and bulk density are representing all inorganic matter
-          erBedAvail(j,1)=erBedDepth(j)*erBedBD(j)*1000000.0*0.1
-          erBedAvail(j,2)=erBedDepth(j)*erBedBD(j)*1000000.0*0.45
-          erBedAvail(j,3)=erBedDepth(j)*erBedBD(j)*1000000.0*0.225
-          erBedAvail(j,4)=erBedDepth(j)*erBedBD(j)*1000000.0*0.225
-
+          erBedAvail(node,1)=erBedDepth(node)*erBedBD(node)*1000000.0*0.1
+          erBedAvail(node,2)=erBedDepth(node)*erBedBD(node)*1000000.0*0.45
+          erBedAvail(node,3)=erBedDepth(node)*erBedBD(node)*1000000.0*0.225
+          erBedAvail(node,4)=erBedDepth(node)*erBedBD(node)*1000000.0*0.225
       enddo
       close(32)
+		  
+!>>Loop over compartments and save fetch data in appropriate arrays. 		  
+! change array(j,*)=array(node,*) to ensure the compartment atributes are assigned correctly if the records in fetch.csv are not in ascending order - zw 12/11/2023 
+      do j=1,N
+          READ(323,*) node,      ! node number
+     &        Fetch(node,1),         ! Fetch length (m) in 0-deg sector
+     &        Fetch(node,2),         ! Fetch length (m) in 22.5-deg sector
+     &        Fetch(node,3),         ! Fetch length (m) in 45-deg sector
+     &        Fetch(node,4),         ! Fetch length (m) in 67.5-deg sector
+     &        Fetch(node,5),         ! Fetch length (m) in 90-deg sector
+     &        Fetch(node,6),         ! Fetch length (m) in 112.5-deg sector
+     &        Fetch(node,7),         ! Fetch length (m) in 135-deg sector
+     &        Fetch(node,8),         ! Fetch length (m) in 157.5-deg sector
+     &        Fetch(node,9),         ! Fetch length (m) in 180-deg sector
+     &        Fetch(node,10),        ! Fetch length (m) in 202.5-deg sector
+     &        Fetch(node,11),        ! Fetch length (m) in 225-deg sector
+     &        Fetch(node,12),        ! Fetch length (m) in 247.5-deg sector
+     &        Fetch(node,13),        ! Fetch length (m) in 270-deg sector
+     &        Fetch(node,14),        ! Fetch length (m) in 292.5-deg sector
+     &        Fetch(node,15),        ! Fetch length (m) in 315-deg sector
+     &        Fetch(node,16)         ! Fetch length (m) in 337.5-deg sector
+      enddo
 	  close(323)
 	  
 !>> Add minimal area of water portion - each cell must have at least some water
@@ -262,8 +266,8 @@
           Ahydro(j) = (Apctupland(j)+Apctmarsh(j))*Atotal(j)
 !          Ahydro(j)=Ahydro(j)*1000000.
 !          Ahf(j)=flood(j)*Ahydro(j)		! JAM Oct 2010
-!	    Vss(j)=Vss(j)/consd				! JAM Oct 2010
-!	    Vsh(j)=Vsh(j)/consd				! JAM Oct 2010
+!	       Vss(j)=Vss(j)/consd				! JAM Oct 2010
+!	       Vsh(j)=Vsh(j)/consd				! JAM Oct 2010
 !          ES(j,1)=ES(j,1)+RSSSo  !BUG RSSSo is undefined - zw 04/06/2020
 
 
@@ -280,8 +284,8 @@
           hLength(j) = max(30.0,(sqrt(Ahf(j)+ As(j,1))-Hwidth(j))/4.0)
           ar_int(j) = max(0.0,Ahf(j) - ar_ed(j))
 !          rmo=sqrt(As(j,1)/pi)				! JAM Oct 2010
-!	    rmm=sqrt((As(j,1)+Ahf(j))/pi)	! JAM Oct 2010
-!	    hLength(j)=(rmm-rmo)*0.5			! JAM Oct 2010
+!	       rmm=sqrt((As(j,1)+Ahf(j))/pi)	! JAM Oct 2010
+!	       hLength(j)=(rmm-rmo)*0.5			! JAM Oct 2010
 !          hwidth(j)=2.*pi*rmo				! JAM Oct 2010
       enddo
 
@@ -290,7 +294,7 @@
 
 !   91    continue    !replaced with enddo
 
-      clams=40.			!	clam grow rate			(g/m2/yr)
+!      clams=40.			!	clam grow rate			(g/m2/yr) !it is not used anywhere
 
 ! percent marsh now part of cells input file
 !	read(124,*) (Pmsh(j),j=1,N)
@@ -307,87 +311,89 @@
       write(*,*) 'Reading link attributes:'
       write(*,*) '----------------------------------------------------'
       read(33,*)          ! dump header row of links input file
+! change array(i,*)=array(lnkid,*) to ensure the compartment atributes are assigned correctly if the records in fetch.csv are not in ascending order - zw 12/11/2023 
       do i=1,M
-          READ(33,*) dump_int,         ! link number - not saved - just a placeholder so input file can have ID as first column
-     &        jus(i),                  ! upstream compartment number
-     &        jds(i),                  ! downstream compartment number
-!     &		itype(i),		         ! "-1" is u/s BC, "+1" is d/s BC, "2" is two cell link.
-     &        USx(i),                  ! x coordinate (UTM meters) of upstream end of link
-     &        USy(i),                  ! x coordinate (UTM meters) of upstream end of link
-     &        DSx(i),                  ! x coordinate (UTM meters) of downstream end of link
-     &        DSy(i),                  ! x coordinate (UTM meters) of downstream end of link
-     &        linkt(i),                ! link type (1=channel,2=weir,3=lock,4=lock,5=orifice,6=culvert/bridge,7=pump,8=marsh overland flow,9=ridge/levee,10=regime channel for sediment)
-     &        Latr1(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr2(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr3(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr4(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr5(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr6(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr7(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr8(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &		Exy(i),					 ! diffusion coefficient thru link between cells (m2/s)
-     &        Latr9(i),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        Latr10(i),              ! link attribute (varies by link type - see Hydrod.f for descriptions)
-     &        fa_mult(i)              ! link multiplier to apply to default upwind factor for diffusivity calculations
+          READ(33,*) lnkid,         ! link number - not saved - just a placeholder so input file can have ID as first column
+     &        jus(lnkid),                  ! upstream compartment number
+     &        jds(lnkid),                  ! downstream compartment number
+!     &		  itype(lnkid),		           ! "-1" is u/s BC, "+1" is d/s BC, "2" is two cell link.
+     &        USx(lnkid),                  ! x coordinate (UTM meters) of upstream end of link
+     &        USy(lnkid),                  ! x coordinate (UTM meters) of upstream end of link
+     &        DSx(lnkid),                  ! x coordinate (UTM meters) of downstream end of link
+     &        DSy(lnkid),                  ! x coordinate (UTM meters) of downstream end of link
+     &        linkt(lnkid),                ! link type (1=channel,2=weir,3=lock,4=lock,5=orifice,6=culvert/bridge,7=pump,8=marsh overland flow,9=ridge/levee,10=regime channel for sediment)
+     &        Latr1(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr2(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr3(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr4(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr5(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr6(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr7(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr8(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &		  Exy(lnkid),				   ! diffusion coefficient thru link between cells (m2/s)
+     &        Latr9(lnkid),                ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        Latr10(lnkid),               ! link attribute (varies by link type - see Hydrod.f for descriptions)
+     &        fa_mult(lnkid)               ! link multiplier to apply to default upwind factor for diffusivity calculations
 
 !>> flag overland marsh and overland ridge links to turn off if model overland flow flag is 0
           if (modeloverland == 0) then
-              if (linkt(i) == 8) then
-                  linkt(i) = -8
-              elseif (linkt(i) == 9) then
-                  linkt(i) = -9
+              if (linkt(lnkid) == 8) then
+                  linkt(lnkid) = -8
+              elseif (linkt(lnkid) == 9) then
+                  linkt(lnkid) = -9
               endif
           endif
 
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
-          if (linkt(i) == 8) then
+          if (linkt(lnkid) == 8) then
 ! check if upstream is now water
-              if (Ahf(jus(i)) == 0.0) then
-                  Latr2(i) = Bed(jus(i))
+              if (Ahf(jus(lnkid)) == 0.0) then
+                  Latr2(lnkid) = Bed(jus(lnkid))
 
-                  write(1,924) 'Overland link',i,'no longer connects
-     & to marsh upstream. Compartment',jus(i),'is now all water.'
-                  write(*,924) 'Overland link',i,'no longer connects
-     & to marsh in upstream. Compartment',jus(i),'is now all water.'
+                  write(1,924) 'Overland link',lnkid,'no longer connects
+     & to marsh upstream. Compartment',jus(lnkid),'is now all water.'
+                  write(*,924) 'Overland link',lnkid,'no longer connects
+     & to marsh in upstream. Compartment',jus(lnkid),'is now all water.'
 
 ! check if downstream is now water
 ! this condition is met if BOTH us/ds are now water
-                  if (Ahf(jds(i)) == 0.0) then
-                      Latr10(i) = Bed(jds(i))
+                  if (Ahf(jds(lnkid)) == 0.0) then
+                      Latr10(lnkid) = Bed(jds(lnkid))
 ! since both us/ds are now water, link elevation from input data must be over-written
-                      Latr1(i) = max(Latr2(i),Latr10(i))
+                      Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))
 
-                      write(1,924) 'Overland link',i,'no longer connects
-     & to marsh downstream. Compartment',jds(i),'is now all water.'
-                      write(*,924) 'Overland link',i,'no longer connects
-     & to marsh in downstream. Compartment',jds(i),'is now all water.'
+                      write(1,924) 'Overland link',lnkid,'no longer connects
+     & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
+                      write(*,924) 'Overland link',lnkid,'no longer connects
+     & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
 
 ! both ends are water, update roughness value to low (water) value of 0.03
-                      Latr5(i) = 0.03
+                      Latr5(lnkid) = 0.03
 
-                      write(1,925) 'Overland link',i,'no longer connects
+                      write(1,925) 'Overland link',lnkid,'no longer connects
      & to marsh at either end. Roughness is set to 0.03.'
-                      write(*,925) 'Overland link',i,'no longer connects
+                      write(*,925) 'Overland link',lnkid,'no longer connects
      & to marsh at either end. Roughness is set to 0.03.'
                   endif
 ! if upstream is still marsh, now check for downstream
               else
-                  if (Ahf(jds(i)) == 0.0) then
-                      Latr10(i) = Bed(jds(i))
+                  if (Ahf(jds(lnkid)) == 0.0) then
+                      Latr10(lnkid) = Bed(jds(lnkid))
 
-                      write(1,924) 'Overland link',i,'no longer connects
-     & to marsh downstream. Compartment',jds(i),'is now all water.'
-                      write(*,924) 'Overland link',i,'no longer connects
-     & to marsh in downstream. Compartment',jds(i),'is now all water.'
+                      write(1,924) 'Overland link',lnkid,'no longer connects
+     & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
+                      write(*,924) 'Overland link',lnkid,'no longer connects
+     & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
 
                   endif
               endif
 !>> Set the elevation of the marsh overland link to be the maximum of the input link elevation, and the us and downstream marsh elevations (that may or may not have been updated for non-marsh areas)
 ! if both us/ds are now water, Latr1 was reset, otherwise the input value for latr1 will still be used in comparison of marsh elev
-              maxmarel = max(Latr1(i),Latr2(i),Latr10(i))
-              Latr1(i) = maxmarel
+!              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
+!              Latr1(lnkid) = maxmarel
+              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
           endif
-          Latr11(i) = 0.0            
+          Latr11(lnkid) = 0.0            
       enddo
 	  close(33)
 	  
@@ -416,31 +422,32 @@
       read(34,*)
 !>> Read LinksClosedHours file to create array of hours where links are closed (only used for lock-type links)
 !>> This hourly control pattern is repeated for every day of the simulation
+! change array(i,*)=array(lnkid,*) to ensure the compartment atributes are assigned correctly if the records in fetch.csv are not in ascending order - zw 12/11/2023 
       do i=1,M
-          READ(34,*) dump_int,        ! read link number - don't save
-     &        hourclosed(i,1),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,2),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,3),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,4),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,5),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,6),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,7),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,8),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,9),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,10),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,11),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,12),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,13),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,14),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,15),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,16),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,17),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,18),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,19),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,21),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,22),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,23),        ! flag value 1 if link is closed during hour
-     &        hourclosed(i,24)        ! flag value 1 if link is closed during hour
+          READ(34,*) lnkid,        ! read link number - don't save
+     &        hourclosed(lnkid,1),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,2),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,3),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,4),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,5),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,6),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,7),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,8),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,9),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,10),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,11),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,12),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,13),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,14),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,15),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,16),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,17),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,18),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,19),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,21),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,22),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,23),        ! flag value 1 if link is closed during hour
+     &        hourclosed(lnkid,24)        ! flag value 1 if link is closed during hour
       enddo
 	  close(34)
 
@@ -495,12 +502,12 @@
 	  close(35)
 
       !>> Read in links that will have flowrates printed to FLO.out file
-	read(126,*)
+	  read(126,*)
       linkswrite(:)=0	 !zw added 04/06/2020
-	do kk = 1,nlinksw
-		read(126,*) linkswrite(kk)
-	enddo
-    close(126)
+	  do kk = 1,nlinksw
+	      read(126,*) linkswrite(kk)
+	  enddo
+      close(126)
 	
       write(*,4123) nlinksw,
      &    'links will have average daily flow output written to FLO.out'
@@ -510,11 +517,11 @@
 
 !>> Read in compartments that will have hourly stage printed to STGhr.out file
       stghrwrite(:)=0	!zw added 04/06/2020
-	read(127,*)
-	do kk = 1,nstghr
-		read(127,*) stghrwrite(kk)
-	enddo
-	close(127)
+	  read(127,*)
+	  do kk = 1,nstghr
+	      read(127,*) stghrwrite(kk)
+	  enddo
+	  close(127)
 
       write(*,4123) nstghr,'compartments will
      &     have average hourly flow output written to STGhr.out'
@@ -540,8 +547,8 @@
       write(*,*)
 
 
-	Qtrib(:,:)=0.0
-	Qdiv(:,:)=0.0
+	  Qtrib(:,:)=0.0
+	  Qdiv(:,:)=0.0
 
 !>> Read Tributary and Diversion Numbers from header row of input file
       READ(39,*) (jtrib(jt), jt=1,Ntrib)
@@ -558,10 +565,10 @@
       enddo
 
 !>> Read Tributary and Diversion Flows for current model year
-	do kt=1,simdays
+	  do kt=1,simdays
           READ(39,*)(Qtrib(jtrib(jt),kt),jt=1,Ntrib)
-	enddo
-	close(39)
+	  enddo
+	  close(39)
 
 
 !>> Read multiplier for diversion flows as function of Mississippi River flow
@@ -594,9 +601,9 @@
       read(77,*)
 
       do j=1,N
-		READ(88,*) dump_int,(Qmultdiv(j,jjn), jjn=1,Ndiv)   !dumps first column (which is compartment number)
+	      READ(88,*) node,(Qmultdiv(node,jjn), jjn=1,Ndiv)   !dumps first column (which is compartment number)
 
-	    READ(77,*) dump_int,(Qmult(j,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
+	      READ(77,*) node,(Qmult(node,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
       enddo
 	  close(88)
 	  close(77)
@@ -959,7 +966,6 @@
 !>> Initialize Sediment arrays to zero
 !	Qss(:,:)=0.0
       QssT(:,:)=0.0
-	  cssTdiv(:,:,:)=0.0
 	  QssTdiv(:,:)=0.0
       ASandT(:,:)=0.0
 	  ASandD(:,:)=0.0
@@ -983,11 +989,11 @@
       enddo
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
-		  READ(55,*) (cssT(jt,kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+		  READ(55,*) (cssT(jtrib(jt),kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
 	  enddo
       close(55)
 
-      read(555,*)
+      read(555,*)(jtrib(jt), jt=1,Ntrib)
       do kt=1,startrun
           read(555,*)
           if (kt == startrun) then
@@ -1000,7 +1006,7 @@
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
       !>> Read each row of tributary fines data, then divide by three to partition into silt, clay, and floc
-		  READ(555,*) (cssFines(jt), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+		  READ(555,*) (cssFines(jtrib(jt)), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
           do jtt = 1, Ntrib
               cssT(jtt,kt,2) = cssFines(jtt)/3.0
               cssT(jtt,kt,3) = cssFines(jtt)/3.0
@@ -1229,7 +1235,7 @@
       transposed_tide(:,:)=0  !zw added 04/06/2020
       read(48,*)
       do kn = 1,tidegages
-          read(48,*)dump_int,transposed_tide(kn,1),transposed_tide(kn,2)
+          read(48,*)dump_int,transposed_tide(dump_int,1),transposed_tide(dump_int,2)
       enddo
       close(48)
 
@@ -1361,10 +1367,10 @@
 
 
 	  do jjk=1,mds   !AMc Oct 8 2013
-	      jj=kbc(jjk)   !AMc Oct 8 2013
-		  READ(56,*) jmds,SBC(jj),BCTSS(jj),BCNO3(jj),BCNH4(jj),
-     &			BCON(jj),BCTP(jj),BCDO(jj),BCTOC(jj),BCLA(jj),
-     &			BCDA(jj),BCage(jj)									!added age
+!	      jj=kbc(jjk)   !AMc Oct 8 2013
+		  READ(56,*) jmds,SBC(jmds),BCTSS(jmds),BCNO3(jmds),BCNH4(jmds),
+     &			BCON(jmds),BCTP(jmds),BCDO(jmds),BCTOC(jmds),BCLA(jmds),
+     &			BCDA(jmds),BCage(jmds)									!added age
 
 	  enddo
       close(56)
@@ -1433,9 +1439,12 @@
           if (k > maxconnect) then
               write(1,1121)'Number of links in compartment',j,
      &        ' exceeds maxconnect value in RunControlR.dat.'
+              write(1,*)'***** Please increase maxconnect in RunControlR.dat!!!****'
 
               write(*,1121)' ****** Number of links in compartment ',j,
      &        ' exceeds maxconnect value in RunControlR.dat.'
+              write(*,*)'***** Please increase maxconnect in RunControlR.dat!!!****'
+              stop
           endif
 
 1121  format(7x,A,x,I0,x,A,x,I0,x,A)
@@ -1446,11 +1455,13 @@
 !          do k=1,13
           do k=1,maxconnect
 			if(icc(j,k).ne.0) then
-				sic=float(icc(j,k))/float(abs(icc(j,k)))
-			if(sic.lt.0.0)sicc(j,k)=-1.00000000000000000000000
-			if(sic.gt.0.0)sicc(j,k)=1.00000000000000000000000
-				else
-					sicc(j,k)=0.0
+!				sic=float(icc(j,k))/float(abs(icc(j,k)))
+!			    if(sic.lt.0.0)sicc(j,k)=-1.0
+!			    if(sic.gt.0.0)sicc(j,k)=1.0
+			    if(icc(j,k).lt.0.0)sicc(j,k)=-1.0
+			    if(icc(j,k).gt.0.0)sicc(j,k)=1.0
+			else
+				sicc(j,k)=0.0
 			endif
 		enddo
 	enddo
@@ -1489,7 +1500,7 @@
 
       read(201,*) dump_text !dump header row
       do jk=1,n_500m_cells    !j = number of grid cells in lookup table + 1 (for header row)
-              read(201,*) grid_interp_dist_500m(jk,1),     ! 500 m grid ID
+          read(201,*) grid_interp_dist_500m(jk,1),     ! 500 m grid ID
      &                    grid_interp_dist_500m(jk,2),     ! distance to centroid of hydro compartment associated with 500 m grid cell
      &                    grid_interp_dist_500m(jk,3),     ! distance to centroid of hydro link #1 associated with 500 m grid cell
      &                    grid_interp_dist_500m(jk,4),     ! distance to centroid of hydro link #2 associated with 500 m grid cell
