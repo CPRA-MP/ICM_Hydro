@@ -105,6 +105,7 @@
 		  
 !>>Loop over compartments and save fetch data in appropriate arrays. 		  
 ! change array(j,*)=array(node,*) to ensure the compartment atributes are assigned correctly if the records in fetch.csv are not in ascending order - zw 12/11/2023 
+      Fetch(:,:)=0
       do j=1,N
           READ(323,*) node,      ! node number
      &        Fetch(node,1),         ! Fetch length (m) in 0-deg sector
@@ -299,6 +300,50 @@
 ! percent marsh now part of cells input file
 !	read(124,*) (Pmsh(j),j=1,N)
 
+!>> Read in hotstart file and set initial conditions (will overwrite some ICs set previously from input files)
+      Es(:,:)=0
+	  S(:,:)=0
+	  Css(:,:,:)=0
+	  Tempw(:,:)=0
+	  Chem(:,:,:)=0
+	  Eh(:,:)=0
+      write(1,*)
+      write(1,*)'-----------------------------------------------'
+      write(1,*)'Reading in hotstart file and setting values as initial conditons.'
+      write(1,*)'-----------------------------------------------'
+      write(*,*)
+      write(*,*)'-----------------------------------------------'
+      write(*,*)'Reading in hotstart file and setting values as initial conditons.'
+      write(*,*)'-----------------------------------------------'
+      read(400,*)                       ! ignore header row
+      do j=1,N
+          read(400,*) node,		&   ! no need to save compartment number - read in to a dummy integer variable
+                      Es(node,1),       &
+                      S(node,1),		&
+                      Css(node,1,1),		&
+                      Css(node,1,2),		&
+                      Css(node,1,3),		&
+                      Css(node,1,4),		&
+                      Tempw(node,1),		&
+                      Chem(node,1,1),		&
+                      Chem(node,2,1),		&
+                      Chem(node,3,1),		&
+                      Chem(node,4,1),		&
+                      Chem(node,5,1),		&
+                      Chem(node,6,1),		&
+                      Chem(node,7,1),		&
+                      Chem(node,8,1),		&
+                      Chem(node,9,1),		&
+                      Chem(node,10,1),		&
+                      Chem(node,11,1),		&
+                      Chem(node,12,1),		&
+                      Chem(node,13,1),		&
+                      Chem(node,14,1),		& !Chem unit = mg/L
+                      Eh(node,1)
+
+      enddo
+      close(400)
+
 ! input link geometry	and properties of OPEN WATER
 
 !>> Loop over links and save input data in appropriate arrays.
@@ -419,6 +464,7 @@
 
 
 !>> Dump header row of LinksClosedHours file
+      hourclosed(:,:)=0
       read(34,*)
 !>> Read LinksClosedHours file to create array of hours where links are closed (only used for lock-type links)
 !>> This hourly control pattern is repeated for every day of the simulation
@@ -502,32 +548,35 @@
 	  close(35)
 
       !>> Read in links that will have flowrates printed to FLO.out file
-	  read(126,*)
       linkswrite(:)=0	 !zw added 04/06/2020
-	  do kk = 1,nlinksw
-	      read(126,*) linkswrite(kk)
-	  enddo
-      close(126)
+	  if (nlinksw>0) then
+	      read(126,*)
+	      do kk = 1,nlinksw
+	          read(126,*) linkswrite(kk)
+	      enddo
+          close(126)
 	
-      write(*,4123) nlinksw,
+          write(*,4123) nlinksw,
      &    'links will have average daily flow output written to FLO.out'
-      write(1,4123) nlinksw,
+          write(1,4123) nlinksw,
      &    'links will have average daily flow output written to FLO.out'
-
+      endif
 
 !>> Read in compartments that will have hourly stage printed to STGhr.out file
       stghrwrite(:)=0	!zw added 04/06/2020
-	  read(127,*)
-	  do kk = 1,nstghr
-	      read(127,*) stghrwrite(kk)
-	  enddo
-	  close(127)
+	  if (nstghr>0) then
+	      read(127,*)
+	      do kk = 1,nstghr
+	          read(127,*) stghrwrite(kk)
+	      enddo
+	      close(127)
 
-      write(*,4123) nstghr,'compartments will
+          write(*,4123) nstghr,'compartments will
      &     have average hourly flow output written to STGhr.out'
-      write(1,4123) nstghr,'compartments will
+          write(1,4123) nstghr,'compartments will
      &     have average hourly flow output written to STGhr.out'
-
+      endif
+	  
 4123  Format(7X,I0,X,A)
 
       write(1,*)
@@ -548,8 +597,8 @@
 
 
 	  Qtrib(:,:)=0.0
-	  Qdiv(:,:)=0.0
-
+      Qmult(:,:)=0
+      jtrib(:)=0
 !>> Read Tributary and Diversion Numbers from header row of input file
       READ(39,*) (jtrib(jt), jt=1,Ntrib)
 
@@ -569,44 +618,47 @@
           READ(39,*)(Qtrib(jtrib(jt),kt),jt=1,Ntrib)
 	  enddo
 	  close(39)
+!>> Read Tributary Matrix
+	! dump header row of tributary and diversion multiplier matrix files (Qmult, Qmult_div)
+      read(77,*)
+
+      do j=1,N
+	      READ(77,*) node,(Qmult(node,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
+      enddo
+	  close(77)
 
 
 !>> Read multiplier for diversion flows as function of Mississippi River flow
       DivMult(:)=0  !zw added 04/06/2020
-      read(86,*) !skip header row
-      write(1,*) 'Reading multiplier on flow
-     & for each diversion.'
-      write(*,*) 'Reading multipliers on flow
-     & for each diversion.'
-      do it = 1,Ndiv
-          READ(86,*) dump_int,DivMult(it)
-      enddo
+	  Qdiv(:,:)=0
+      Qmultdiv(:,:)=0  !zw added 04/06/2020
+	  if (Ndiv>0) then
+          read(86,*) !skip header row
+          write(1,*) 'Reading multiplier on flow for each diversion.'
+          write(*,*) 'Reading multipliers on flow for each diversion.'
+          do it = 1,Ndiv
+              READ(86,*) dump_int,DivMult(it)
+          enddo
 
 !>> Develop timeseries of diversion flows
-      do kt = 1,simdays
+          do kt = 1,simdays
           do it = 1,Ndiv
               Qdiv(it,kt) = Qtrib(11,kt)*DivMult(it)
           enddo
-      enddo
-	  close(86)
+          enddo
+	      close(86)
+		  
+          ! dump header row of tributary and diversion multiplier matrix files (Qmult, Qmult_div)
+          read(88,*)
+          do j=1,N
+	          READ(88,*) node,(Qmultdiv(node,jjn), jjn=1,Ndiv)   !dumps first column (which is compartment number)
+          enddo
+	      close(88)
+	  endif
 
 
  3377 Format(I6,x,26(F7.1,x))
 
-!>> Read Tributary Matrix
-      Qmultdiv(:,:)=0  !zw added 04/06/2020
-      Qmult(:,:)=0
-	! dump header row of tributary and diversion multiplier matrix files (Qmult, Qmult_div)
-      read(88,*)
-      read(77,*)
-
-      do j=1,N
-	      READ(88,*) node,(Qmultdiv(node,jjn), jjn=1,Ndiv)   !dumps first column (which is compartment number)
-
-	      READ(77,*) node,(Qmult(node,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
-      enddo
-	  close(88)
-	  close(77)
 
 !>> Read in decay constants for water quality constituents
 !---------------------------------
@@ -1046,33 +1098,34 @@
       SWRfines(:)=0
       ParSandD(:)=0
       CSSTdiv(:,:,:)=0
+      if (Ndiv>0) then
+          read(89,*) !skip header row
+          do it = 1,Ndiv
+              read(89,*) dump_int,SWRsand(it),SWRfines(it)
+          enddo
+          close(89)
 
-      read(89,*) !skip header row
-      do it = 1,Ndiv
-          read(89,*) dump_int,SWRsand(it),SWRfines(it)
-      enddo
-      close(89)
-
-      write(1,*) 'Calculating sediment concentration in diversions
+          write(1,*) 'Calculating sediment concentration in diversions
      & based on Mississippi River sediment downstream of Bonnet Carre.'
 
-      write(*,*) 'Calculating sediment concentration in diversions
+          write(*,*) 'Calculating sediment concentration in diversions
      & based on Mississippi River sediment downstream of Bonnet Carre.'
 
-      Qmax=35400.   !flowrate allowed past Bonnet Carre (m3/s)
-      do kt=1,simdays
+          Qmax=35400.   !flowrate allowed past Bonnet Carre (m3/s)
+          do kt=1,simdays
           do it = 1,Ndiv
 !>> Sand partition is function of Mississippi River flow d/s Bonnet Carre --->Sand Partition factor varies with Q^2
-          	ParSandD(kt)=SWRsand(it)*6.*(Qtrib(11,kt)/Qmax)
+              ParSandD(kt)=SWRsand(it)*6.*(Qtrib(11,kt)/Qmax)
      &				*(Qtrib(11,kt)/Qmax)
-            CSSTdiv(it,kt,1) = ParSandD(kt)*CSST(11,kt,1) !tributary 11 is Mississippi River CSS
+              CSSTdiv(it,kt,1) = ParSandD(kt)*CSST(11,kt,1) !tributary 11 is Mississippi River CSS
 
 !>> Split Miss Riv fines evenly between silt, clay and floc
-            CSSTdiv(it,kt,2) = SWRfines(it)*CSST(11,kt,2)
-            CSSTdiv(it,kt,3) = SWRfines(it)*CSST(11,kt,3)
-            CSSTdiv(it,kt,4) = SWRfines(it)*CSST(11,kt,4)
+              CSSTdiv(it,kt,2) = SWRfines(it)*CSST(11,kt,2)
+              CSSTdiv(it,kt,3) = SWRfines(it)*CSST(11,kt,3)
+              CSSTdiv(it,kt,4) = SWRfines(it)*CSST(11,kt,4)
           enddo
-      enddo
+          enddo
+	  endif
 !>> Calculate Diversion sediment load (kg/day)
 
 
@@ -1231,6 +1284,11 @@
       close(43)
       close(46)
 
+!>> Read Boundary Conditions file
+      KBC(:)=0
+      Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
+      close(125)
+
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
       read(48,*)
@@ -1345,8 +1403,8 @@
 !!******************* Initial Conditions
       FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
 	  do j=1,N
-		  Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
-     &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38
+!		  Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
+!     &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38; Previously this was replaced by initial condition file
 		  Sacc(j,1)=0.0
 		  Sacch_edge(j,1)=0.0
 		  Sacch_int(j,1)=0.0
@@ -1402,6 +1460,16 @@
       enddo
       close(101)
 
+!>> Read input link file to apply flow limiter  !YW
+      linkslimiter(:)=0
+      if (nlinklimiter>0) then
+          read(500,*)
+          do kk = 1,nlinklimiter
+              read(500,*) linkslimiter(kk)
+          enddo
+          close(500)
+	  endif
+	  
 !>> Generate Compartment/Link Connectivity Table
       write(1,*)
       write(1,*)'-----------------------------------------'
@@ -1629,6 +1697,56 @@
   913 Format(12(I4,2x))
   914 Format(I3,2x,11(F4.1,2x))
 
+!>> 1D-ICM coupling input files
+      if (n1D > 0) then
+          write(*,*) 'Reading input files to couple 1D and 2D models'
+          write(1,*) 'Reading input files to couple 1D and 2D models'
+          
+          write(*,*) '  - the number of terminal connections is ',ntc
+          write(1,*) '  - the number of terminal connections is ',ntc          
+          if (ntc>0) then
+              read(402,*)                                                           ! dump header row of compartment input file
+              read(402,*)                                                           ! dump header row of compartment input file
+              do i = 1,ntc
+                  read(402,*) tcr1D(i), &                                           ! 1D region
+                      tcn1D(i), &                                                   ! 1D node            
+                      tcr2D(i), &                                                   ! ICM receiving compartment
+                      tcf2D(i), &                                                   ! ICM connecting compartment
+                      tcl2D(i)                                                      ! ICM connecting link
+              enddo
+              close(402)
+          endif
+
+          write(*,*) '  - the number of lateral connections is ',nlc
+          write(1,*) '  - the number of lateral connections is ',nlc
+          if (nlc>0) then
+              read(403,*)                                                          ! dump header row of compartment input file
+              read(403,*)
+              do i = 1,nlc
+                  read(403,*) lcr1D(i), &
+                      lcn1D(i), &                
+                      lcr2D(i), &
+                      lcf2D(i), &
+                      lcl2D(i)
+              enddo        
+              close(403)
+          endif
+
+          write(*,*) '  - the number of upstream connections is ',nuc
+          write(1,*) '  - the number of upstream connections is ',nuc
+          if (nuc>0) then
+              read(404,*)                                                          ! dump header row of compartment input file
+              read(404,*)
+              do i = 1,nuc
+                  read(404,*) ucr1D(i), &
+                      ucn1D(i), &              
+                      ucr2D(i), &
+                      ucf2D(i), &
+                      ucl2D(i)
+              enddo        
+              close(404)
+          endif
+      endif
 
 
   	return

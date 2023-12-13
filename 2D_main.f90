@@ -218,6 +218,7 @@
 ! determine start time for calculating runtimes
       call SYSTEM_CLOCK(runtime_start,count_rate1,count_max1)
 !>> Open file with model information regarding file formatting in ICM (written only before first model year - NOT updated yearly).
+!   This file is created in ICM.py      
       open (unit=300,  file= 'ICM_info_into_EH.txt', status ='unknown')
 !>> Read in names of Veg files to write output to.
       read(300,*) VegWaveAmpFile
@@ -433,13 +434,13 @@
       
 !>> Set initial conditions for constants and model parameters that are not included in input text files
 !   Initial Conditions
-     g=9.81					! Gravity (m/s2)
+     g=9.81					 ! Gravity (m/s2)
      pi=4.0*atan(1.0)
-     TemI = 15.				! Initial Water Temperature
-     KnN= 20.				! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-     KnP= 3.					! (ug/L) P Michaelis Constant
-     KnSS= 50.				! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-     KnSal=4.				! (ppt) Salinity  Michaelis Constant
+     TemI = 15.				 ! Initial Water Temperature
+     KnN= 20.				 ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
+     KnP= 3.				 ! (ug/L) P Michaelis Constant
+     KnSS= 50.				 ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
+     KnSal=4.				 ! (ppt) Salinity  Michaelis Constant
     
      ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
      ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
@@ -447,13 +448,13 @@
      ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
      Pardpmr= 0.05
      PPMR=1.-ParPMR-Pardpmr
-     ParSand=0.05			! sand/TSS in Tribs and MR typical
-     ParCLa=0.03				! Partition LivA --> ChlA
+     ParSand=0.05			 ! sand/TSS in Tribs and MR typical
+     ParCLa=0.03			 ! Partition LivA --> ChlA
     
-     consd=24*3600			! sec to days
-     conv=0.001*consd		! (mg/L)*(m3/s) --> kg/d
+     consd=24*3600			 ! sec to days
+     conv=0.001*consd		 ! (mg/L)*(m3/s) --> kg/d
      floodf(:)=0.0
-     nuo=0.000001			! DEFAULT Viscosity
+     nuo=0.000001			 ! DEFAULT Viscosity
 
 !>> Generate array for Day of Year value for the first day of each month
       month_DOY(1) = 1
@@ -516,13 +517,24 @@
       open (unit=56, file= 'SBC.dat', status = 'unknown')
       open (unit=110, file= 'surge.csv', form = 'formatted')
       open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
-      open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
-      open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
       open (unit=101, file= 'BCToC2.dat', form = 'formatted')
-      open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
-      open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
-      open (unit=89, file= 'DivSW.csv', status = 'unknown')
+
+!==== conditional input files
+	  if (Ndiv>0) then
+          open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
+          open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
+          open (unit=89, file= 'DivSW.csv', status = 'unknown')
+	  endif
 !      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
+	  if (nlinksw>0) then
+          open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
+	  endif
+	  if (nstghr>0) then
+          open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
+      endif
+      if (nlinklimiter>0) then
+	      open (unit=500, file= 'links_to_apply.csv',status='unknown')
+	  endif
 
 !     If WQ modeling is excluded (iWQ=0), WQ inputs are disabled	  
 	  if (iWQ>0) then
@@ -536,6 +548,19 @@
           open (unit=87, file= 'DivWQ.csv', status ='unknown')
 !          open (unit=118, file= 'UplandNP.dat', form ='formatted')
       endif
+	  
+!     If 1D2D coupling enabled, 1D2Dcoupling input files
+      if (n1D>0) then
+          if (ntc>0) then
+     	      open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
+		  endif
+          if (nlc>0) then
+              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
+		  endif
+          if (nuc>0) then
+              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
+ 		  endif
+      endif	  
 
 !>> Open output text files (in append mode, if needed).
       open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
@@ -598,72 +623,6 @@
       open(unit=400,file='hotstart_in.dat',form='formatted')
       open(unit=401,file='hotstart_out.dat',form='formatted')
 
-!>> Read Boundary Conditions file
-      Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
-      close(125)
-
-!>> Read input link file to apply flow limiter  !YW
-      open (unit=500, file= 'links_to_apply.csv',status='unknown')
-      read(500,*)
-      do kk = 1,nlinklimiter
-          read(500,*) linkslimiter(kk)
-      enddo
-      close(500)
-	  
-!>> 1D-ICM coupling input files
-      if (n1D > 0) then
-          write(*,*) 'Reading input files to couple 1D and 2D models'
-          write(1,*) 'Reading input files to couple 1D and 2D models'
-          
-          write(*,*) '  - the number of terminal connections is ',ntc
-          write(1,*) '  - the number of terminal connections is ',ntc          
-          if (ntc>0) then
-              open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
-              read(402,*)                                                           ! dump header row of compartment input file
-              read(402,*)                                                           ! dump header row of compartment input file
-              do i = 1,ntc
-                  read(402,*) tcr1D(i), &                                           ! 1D region
-                      tcn1D(i), &                                                   ! 1D node            
-                      tcr2D(i), &                                                   ! ICM receiving compartment
-                      tcf2D(i), &                                                   ! ICM connecting compartment
-                      tcl2D(i)                                                      ! ICM connecting link
-              enddo
-              close(402)
-          endif
-
-          write(*,*) '  - the number of lateral connections is ',nlc
-          write(1,*) '  - the number of lateral connections is ',nlc
-          if (nlc>0) then
-              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
-              read(403,*)                                                          ! dump header row of compartment input file
-              read(403,*)
-              do i = 1,nlc
-                  read(403,*) lcr1D(i), &
-                      lcn1D(i), &                
-                      lcr2D(i), &
-                      lcf2D(i), &
-                      lcl2D(i)
-              enddo        
-              close(403)
-          endif
-
-          write(*,*) '  - the number of upstream connections is ',nuc
-          write(1,*) '  - the number of upstream connections is ',nuc
-          if (nuc>0) then
-              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
-              read(404,*)                                                          ! dump header row of compartment input file
-              read(404,*)
-              do i = 1,nuc
-                  read(404,*) ucr1D(i), &
-                      ucn1D(i), &              
-                      ucr2D(i), &
-                      ucf2D(i), &
-                      ucl2D(i)
-              enddo        
-              close(404)
-          endif
-      endif
-
 ! Initialize some variables and arrays
 !      NR(:)=0.0
       stds=0.
@@ -699,40 +658,6 @@
 
 !>> Close input files that were imported in infile subroutine
 !   These files are closed within infile subroutine after importing the data
-!      close(32)
-!      close(33)
-!      close(34)
-!      close(39)
-!      close(40)
-!      close(42)
-!      close(44)
-!      close(45)
-!      close(43)
-!      close(46)
-!      close(47)
-!      close(48)
-!      close(49)
-!      close(55)
-!      close(56)
-!      close(74)
-!      close(77)
-!      close(80)
-!      close(81)
-!      close(82)
-!      close(83)
-!      close(84)
-!      close(85)
-!      close(86)
-!      close(87)
-!      close(88)
-!      close(89)
-!      close(90)
-!      close(101)
-!      close(110)
-!      close(118)
-!      close(200)
-!      close(201)
-!      close(202)
 
 !>> Take first timestep of imported wind data and save into windx and windy arrays.
 !>> These arrays will be overwritten at a delta t that matches the wind data timestep (this update occurs immediately prior to calling hydrod)
@@ -775,42 +700,8 @@
       !Atch_div_onoff = 1
 
 
-!>> Read in hotstart file and set initial conditions (will overwrite some ICs set previously from input files)
-      write(1,*)
-      write(1,*)'-----------------------------------------------'
-      write(1,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(1,*)'-----------------------------------------------'
-      write(*,*)
-      write(*,*)'-----------------------------------------------'
-      write(*,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(*,*)'-----------------------------------------------'
-      read(400,*)                       ! ignore header row
-      do j=1,N
-          read(400,*) dump_int,		&   ! no need to save compartment number - read in to a dummy integer variable
-                         Es(j,1),       &
-                         S(j,1),		&
-                         Css(j,1,1),		&
-                         Css(j,1,2),		&
-                         Css(j,1,3),		&
-                         Css(j,1,4),		&
-                         Tempw(j,1),		&
-                         Chem(j,1,1),		&
-                         Chem(j,2,1),		&
-                         Chem(j,3,1),		&
-                         Chem(j,4,1),		&
-                         Chem(j,5,1),		&
-                         Chem(j,6,1),		&
-                         Chem(j,7,1),		&
-                         Chem(j,8,1),		&
-                         Chem(j,9,1),		&
-                         Chem(j,10,1),		&
-                         Chem(j,11,1),		&
-                         Chem(j,12,1),		&
-                         Chem(j,13,1),		&
-                         Chem(j,14,1),		& !Chem unit = mg/L
-                         Eh(j,1)
-
 !>> Initialize some variables and arrays
+      do j=1,N
           Sandacc(j,1) = 0.0
           Siltacc(j,1) = 0.0
           Clayacc(j,1) = 0.0
