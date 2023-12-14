@@ -35,6 +35,13 @@
       gridmarcount = 0
       gridplcount = 0
 
+      Es(:,:)=0
+	  S(:,:)=0
+	  Css(:,:,:)=0
+	  Tempw(:,:)=0
+	  Chem(:,:,:)=0
+	  Eh(:,:)=0
+
 !>> Loop over compartments and save attributes in appropriate arrays.
 ! change array(j,*)=array(node,*) to ensure the compartment atributes are assigned correctly if the records in cells.csv are not in ascending order - zw 12/11/2023 
 !      do 91 j=1,N                                    !change structure of DO loop
@@ -299,50 +306,6 @@
 
 ! percent marsh now part of cells input file
 !	read(124,*) (Pmsh(j),j=1,N)
-
-!>> Read in hotstart file and set initial conditions (will overwrite some ICs set previously from input files)
-      Es(:,:)=0
-	  S(:,:)=0
-	  Css(:,:,:)=0
-	  Tempw(:,:)=0
-	  Chem(:,:,:)=0
-	  Eh(:,:)=0
-      write(1,*)
-      write(1,*)'-----------------------------------------------'
-      write(1,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(1,*)'-----------------------------------------------'
-      write(*,*)
-      write(*,*)'-----------------------------------------------'
-      write(*,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(*,*)'-----------------------------------------------'
-      read(400,*)                       ! ignore header row
-      do j=1,N
-          read(400,*) node,		&   ! no need to save compartment number - read in to a dummy integer variable
-                      Es(node,1),       &
-                      S(node,1),		&
-                      Css(node,1,1),		&
-                      Css(node,1,2),		&
-                      Css(node,1,3),		&
-                      Css(node,1,4),		&
-                      Tempw(node,1),		&
-                      Chem(node,1,1),		&
-                      Chem(node,2,1),		&
-                      Chem(node,3,1),		&
-                      Chem(node,4,1),		&
-                      Chem(node,5,1),		&
-                      Chem(node,6,1),		&
-                      Chem(node,7,1),		&
-                      Chem(node,8,1),		&
-                      Chem(node,9,1),		&
-                      Chem(node,10,1),		&
-                      Chem(node,11,1),		&
-                      Chem(node,12,1),		&
-                      Chem(node,13,1),		&
-                      Chem(node,14,1),		& !Chem unit = mg/L
-                      Eh(node,1)
-
-      enddo
-      close(400)
 
 ! input link geometry	and properties of OPEN WATER
 
@@ -1401,14 +1364,14 @@
       enddo
 
 !!******************* Initial Conditions
-      FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
-	  do j=1,N
+!      FSEASON3=0.1-2.0*cos(2*PI*(1.0/365.25-0.05))  !added zw 04/06/2020
+!	  do j=1,N
 !		  Tempw(j,1)=0.98*(Tempair(j,1)-20.)+21.5+0.01
-!     &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38; Previously this was replaced by initial condition file
-		  Sacc(j,1)=0.0
-		  Sacch_edge(j,1)=0.0
-		  Sacch_int(j,1)=0.0
-	  enddo
+!     &				*2.+dlow/2.+FSEASON3			! JAM Oct 2010/March 2011 0.9855*Tempair(j,1)+1.38; this is replaced by initial condition file
+!		  Sacc(j,1)=0.0                             !in main.f
+!		  Sacch_edge(j,1)=0.0                       !in main.f
+!		  Sacch_int(j,1)=0.0                        !in main.f
+!	  enddo
 
   !>>boundary conditions data for salinity and WQ
       SBC(:)=0  !zw added 04/06/2020
@@ -1748,6 +1711,75 @@
           endif
       endif
 
+
+!>> Read in hotstart file and set initial conditions (will overwrite some ICs set previously from input files)
+      write(1,*)
+      write(1,*)'-----------------------------------------------'
+      write(1,*)'Reading in hotstart file and setting values as initial conditons.'
+      write(1,*)'-----------------------------------------------'
+      write(*,*)
+      write(*,*)'-----------------------------------------------'
+      write(*,*)'Reading in hotstart file and setting values as initial conditons.'
+      write(*,*)'-----------------------------------------------'
+      read(400,*)                       ! ignore header row
+      do j=1,N
+          read(400,*) node,		&   ! no need to save compartment number - read in to a dummy integer variable
+                      Es(node,1),       &
+                      S(node,1),		&
+                      Css(node,1,1),		&
+                      Css(node,1,2),		&
+                      Css(node,1,3),		&
+                      Css(node,1,4),		&
+                      Tempw(node,1),		&
+                      Chem(node,1,1),		&
+                      Chem(node,2,1),		&
+                      Chem(node,3,1),		&
+                      Chem(node,4,1),		&
+                      Chem(node,5,1),		&
+                      Chem(node,6,1),		&
+                      Chem(node,7,1),		&
+                      Chem(node,8,1),		&
+                      Chem(node,9,1),		&
+                      Chem(node,10,1),		&
+                      Chem(node,11,1),		&
+                      Chem(node,12,1),		&
+                      Chem(node,13,1),		&
+                      Chem(node,14,1),		& !Chem unit = mg/L
+                      Eh(node,1)
+
+      enddo
+      close(400)
+
+!>> Update the offshore boundary compartments' initial conditions 
+!   - overwrite values from hotstart_in.dat to make sure they match the BC inputs from SBC.dat
+!>> Assume Boundary condition sediment is evenly distributed amongst clay and silt size classes and half of the clay is flocced.
+      BCSedRatio(1) = 0.0
+      BCSedRatio(2) = 1./2.
+      BCSedRatio(3) = 1./4.
+      BCSedRatio(4) = 1./4.
+      do jjk=1,mds
+	      jj=KBC(jjk)
+		  S(jj,1) = SBC(jj)
+		  Tempw(jj,1)=TempwBC(jjk,kday)
+          do kk=1,4
+              !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
+              Css(jj,1,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
+	      enddo
+          Chem(jj,1,1) = BCNO3(jj) !YW removing dividing by 1000. assuming input in mg/l
+          Chem(jj,2,1) = BCNH4(jj)
+          Chem(jj,3,1) = Chem(jj,1,1) + Chem(jj,2,1)  !zw 4/28/2015 add DIN=NO3+NH4 at offshore BCs
+          Chem(jj,4,1) = BCON(jj)
+          Chem(jj,5,1) = BCTP(jj)
+          Chem(jj,6,1) = BCTOC(jj)
+          Chem(jj,7,1) = BCDO(jj)
+          Chem(jj,8,1) = BCLA(jj)
+          Chem(jj,9,1) = BCDA(jj)
+          Chem(jj,12,1) = Chem(jj,5,1)*0.9
+          Chem(jj,10,1) = 0.2               !YW originally 0.0, average calculation see infile New 0.4
+          Chem(jj,11,1) = 0.012             !YW  TP*ParDOP originally 0.0 New 0.012 0.05
+          Chem(jj,13,1) = BCTOC(jj)*0.04
+          Chem(jj,14,1) = BCTOC(jj)*0.025   !!marsh POP JAM April 16, 2011
+	  enddo
 
   	return
  	end
