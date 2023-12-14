@@ -1,4 +1,4 @@
-	Subroutine hydrod(mm)			!face densities from node densities
+	Subroutine hydrod(mm)
 
       use params
 
@@ -40,16 +40,16 @@
       real :: Atch_US_Q,BayouShaffer_Qold,Div_Q
 
 !c     time in seconds
-      time=float(mm)*dt           ! elapsed time
+!      time=float(mm)*dt           ! elapsed time !it is the same as global varaible "t" calculated in main.f
       thour=mm*dt/3600            ! elapsed time in hours
       tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
       kthr=int(thour+1)
       kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
 !
 !! calculate various versions of time to be used as flags throughout program
-!      kday = ifix(time/3600./24.)   !convert time to integer days !BUG! Why is kday day+1?
-      kday = min(ceiling(time/3600./24.),simdays) !YW! Old range (1,366). New range (1,365)
-      day = time/3600./24.
+!      kday = ifix(t/3600./24.)   !convert time to integer days !BUG! Why is kday day+1?
+      kday = min(ceiling(t/3600./24.),simdays) !YW! Old range (1,366). New range (1,365)
+!      day = t/3600./24.           !"day" is a globle variable and it is already calculated in main.f
       dday=day-int(day)           ! decimal portion of day, dday=0.0 at 0:00 (midnight)
       hday=day-int(day+0.5)       ! decimal portion of day normalized to noon, hday=0.0 at 12:00 (noon)
       simhr = floor(dday*24.)     ! hour of the simulation day, in integer
@@ -61,7 +61,7 @@
 ! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
 ! Temporary values
-      Cp = 0.5
+      Cp = 0.5             !"Cp" is a global variable
       fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
       Tres = 3600.
 ! 	Vsettl=8/24/3600 !-EDW not used
@@ -69,54 +69,69 @@
 !>> default CSS and salinity concentrations in tributary flow
       CSSTRIBj=25.
       Saltribj=0.205
-
+      fbc=0.705				!ch JAM July 13, 2009  was 0.75 !"fbc" is a global variable
+	  akL = 0.01				!wind induce currents
+	  akns=0.01
 
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !cccc OPEN WATER BOUNDARY CONDITIONS
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!MP2023 zw moved tide bc and css bc update to here 04/07/2020
+
+!>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
+      Call TideBC
+
+!>> Update salinity, temperature,sediments and WQ offshore boundary conditions 
+!>> seasonal adjustment of boundary condition salinity data
 !c		do jj=101,mds+101-1
       do jjk=1,mds  !AMc 8 oct 2013
-	    jj=KBC(jjk) !AMc 8 oct 2013
-		tday= t/24/3600
-		tdayj=tday-(int(tday/365.25))*365.25					!cal julian day JAM Nov 2010
+	      jj=KBC(jjk) !AMc 8 oct 2013
+		  tday= t/24/3600
+		  tdayj=tday-(int(tday/365.25))*365.25					!cal julian day JAM Nov 2010
 
-cc _________________ JAM Nov 2010 revised
-		g0 = -0.07  !m
-		g1 = -0.000233005
-		g2 = 0.000000326479
-		g3 = -0.000000000146371
-		g4 =  0.0000000000000299401
-		g5 = -0.00000000000000000283698
-		g6 =  0.000000000000000000000100482
-		thourj=(tdayj)*24
-		tt0 = 1
-		tt1 = thourj
-		tt2 = tt1*thourj
-		tt3 = tt2*thourj
-		tt4 = tt3*thourj
-		tt5 = tt4*thourj
-		tt6 = tt5*thourj
-		agulf3= g0+g1*tt1+g2*tt2+g3*tt3+g4*tt4+g5*tt5+g6*tt6	!JAM Nov 2010
-		Sseason=agulf3*10.
-		S(jj,1) = SBC(jj)+SSeason                       !  0.6*SEARD*t/0.8+   Dec 2011
+!cc _________________ JAM Nov 2010 revised
+		  g0 = -0.07  !m
+		  g1 = -0.000233005
+		  g2 = 0.000000326479
+		  g3 = -0.000000000146371
+		  g4 =  0.0000000000000299401
+		  g5 = -0.00000000000000000283698
+		  g6 =  0.000000000000000000000100482
+		  thourj=(tdayj)*24
+		  tt0 = 1
+		  tt1 = thourj
+		  tt2 = tt1*thourj
+		  tt3 = tt2*thourj
+		  tt4 = tt3*thourj
+		  tt5 = tt4*thourj
+		  tt6 = tt5*thourj
+		  agulf3= g0+g1*tt1+g2*tt2+g3*tt3+g4*tt4+g5*tt5+g6*tt6	!JAM Nov 2010
+		  Sseason=agulf3*10.
+		  S(jj,2) = SBC(jj)+SSeason                       !  0.6*SEARD*t/0.8+   Dec 2011
+		  Tempw(jj,2)=TempwBC(jjk,kday)
+
+          do kk=1,4
+              !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
+              Css(jj,2,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
+	      enddo
+
+          Chem(jj,1,2) = BCNO3(jj) !YW removing dividing by 1000. assuming input in mg/l
+          Chem(jj,2,2) = BCNH4(jj)
+          Chem(jj,3,2) = Chem(jj,1,2) + Chem(jj,2,2)  !zw 4/28/2015 add DIN=NO3+NH4 at offshore BCs
+          Chem(jj,4,2) = BCON(jj)
+          Chem(jj,5,2) = BCTP(jj)
+          Chem(jj,6,2) = BCTOC(jj)
+          Chem(jj,7,2) = BCDO(jj)
+          Chem(jj,8,2) = BCLA(jj)
+          Chem(jj,9,2) = BCDA(jj)
+          Chem(jj,12,2) = Chem(jj,5,2)*0.9
+          Chem(jj,10,2) = 0.2               !YW originally 0.0, average calculation see infile New 0.4
+          Chem(jj,11,2) = 0.012             !YW  TP*ParDOP originally 0.0 New 0.012 0.05
+          Chem(jj,13,2) = BCTOC(jj)*0.04
+          Chem(jj,14,2) = BCTOC(jj)*0.025   !!marsh POP JAM April 16, 2011
+
+
 !		age(jj,1)=0.0											!JAM Oct 2010
-
-          Chem(jj,1,1) = BCNO3(jj) !YW removing dividing by 1000. assuming input in mg/l
-          Chem(jj,2,1) = BCNH4(jj)
-          Chem(jj,3,1) = Chem(jj,1,1) + Chem(jj,2,1)  !zw 4/28/2015 add DIN=NO3+NH4 at offshore BCs
-          Chem(jj,4,1) = BCON(jj)
-          Chem(jj,5,1) = BCTP(jj)
-          Chem(jj,6,1) = BCTOC(jj)
-          Chem(jj,7,1) = BCDO(jj)
-          Chem(jj,8,1) = BCLA(jj)
-          Chem(jj,9,1) = BCDA(jj)
-          Chem(jj,12,1) = Chem(jj,5,1)*0.9
-          Chem(jj,10,1) = 0.2               !YW originally 0.0, average calculation see infile New 0.4
-          Chem(jj,11,1) = 0.012             !YW  TP*ParDOP originally 0.0 New 0.012 0.05
-          Chem(jj,13,1) = BCTOC(jj)*0.04
-          Chem(jj,14,1) = BCTOC(jj)*0.025   !!marsh POP JAM April 16, 2011
-
-
 !		Age(jj,1)=BCage(jj)
 !		Chem(jj,1,2)=BCNO3(jj)/1000.
 !		Chem(jj,2,2)=BCNH4(jj)/1000.
@@ -134,44 +149,6 @@ cc _________________ JAM Nov 2010 revised
 !		Chem(jj,13,2)=BCTOC(jj)/1000.*0.04
 !		Chem(jj,14,2)=BCTOC(jj)/1000.*0.025   !!marsh POP JAM April 16, 2011
 !         Age(jj,2)=BCage(jj)
-		do ichem=1,14	 !zw 4/28/2015 added to replace above statements
-	       Chem(jj,ichem,2)=Chem(jj,ichem,1)
-	    enddo
-	    S(jj,2)=S(jj,1) !zw added 04/07/2020
-	enddo
-
-!MP2023 zw moved tide bc and css bc update to here 04/07/2020
-
-!*********************TIDE BC*******************************************************************
-
-!     These parameters should be moved to input to start at any time of year ** later
-!********tide information, surges, periods and phase angles
-
-      shour=0.0
-      sday=0.0
-      f1=shour*3600.						!daily phase
-      f2=(sday/28.)
-      f2=(f2-int(f2))*28.*24.*3600.		!lunar phase
-      f3=(sday/365.25)*12.*30.*24.*3600.	!Gulf phase
-      t1=23.5*3600.						!daily period
-      t2=672.*3600.						!lunar period
-      t3=4320.*3600.						!Gulf period
-      tlag=0.								!Tide lag time along the eastern boundary in the Gulf
-      aset=0.01
-
-!***********************Open Boundary Conditions I.GEORGIOU/JAMc********************************
-!***********************************************************************************************
-
-!      do jjk=1,Mds !AMc 8 oct 2013 revised Boundary
-!	    jj=KBC(jjk)
-!          Call TideBC(jj,jjk)
-!! kthr and kday now global parameters - no longer needed to be passed into subroutine
-!!          Call TideBC(jj,kthr,kday)
-!      enddo
-!>> Update water level for boundary condition cells - this subroutine will loop through all boundary condition compartments
-      Call TideBC
-!***********************END TIDE****************************************************************
-
 ! Open Boundary Sed Conc.           !needs revision to reflect MR TSS JAM Oct 2010
 !CCCCCCCCCCCCCCCCCCC AMc
 !c		Css(101,2)=(BCTSS(101)+fcbc*50.*sin(pi*wd(kday)/180.))/3.
@@ -187,33 +164,14 @@ cc _________________ JAM Nov 2010 revised
 !c		Css(102,1)=(BCTSS(101)+fcbc*40.*sin(pi*wd(kday)/180.))/3.
 !c		if(mds.gt.2) then
 
+	  enddo
 
-!>> seasonal adjustment of boundary condition sediment data
-!>> Assume Boundary condition sediment is evenly distributed amongst clay and silt size classes and half of the clay is flocced.
-      BCSedRatio(1) = 0.0
-      BCSedRatio(2) = 1./2.
-      BCSedRatio(3) = 1./4.
-      BCSedRatio(4) = 1./4.
-
-      do jjk=1,mds
-          jj=KBC(jjk)
-          do kk=1,4
-              !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
-              Css(jj,2,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
-
-        !zw added 04/07/2020
-              Css(jj,1,kk)=Css(jj,2,kk)
-              Es(jj,1)=Es(jj,2)
-              Eh(jj,2)=Es(jj,2)
-              Eh(jj,1)=Eh(jj,2)
-              BCnosurge(jj,1)=BCnosurge(jj,2)
-!              Qmarshmax(jj) = 0.0
-        !zw added 04/15/2020 Water Temperature at offshore boundary cells
-              Tempw(jj,1)=TempwBC(jjk,kday)
-              Tempw(jj,2)=Tempw(jj,1)
-	    enddo
-	 enddo    !AMc 8 oct 2013
-!c		endif
+	!zw added 04/07/2020 to determine whether a cell is offbc or not
+	  flag_offbc(:)=0
+	  do jjk=1,mds
+	      jj=KBC(jjk)
+	      flag_offbc(jj)=1
+      enddo    
 
 
 !****************************Central Difference -Hybrid Upwind for scalars**********************
@@ -224,24 +182,10 @@ cc _________________ JAM Nov 2010 revised
           fb(i)=(1.0-fa(i))				!weighting
       enddo
 
-      fbc=0.705				!ch JAM July 13, 2009  was 0.75
-	akL = 0.01				!wind induce currents
-	akns=0.01
-!      beginning of cell loop (flow, SS, Salinity, chem)
+	  do ichem = 1,14
+		  QChemSUM(ichem) = 0.0
+	  enddo
 
-	do ichem = 1,14
-		QChemSUM(ichem) = 0.0
-	enddo
-
-	!zw added 04/07/2020 to determine whether a cell is offbc or not
-	flag_offbc(:)=0
-	do jjk=1,mds
-			jj=KBC(jjk)
-			flag_offbc(jj)=1
-      enddo    
-
-
-      
 !>> Link updates of Q
       do i=1,M
 !>> Reset upwind dispersion factor to default value - this will be updated to 1.0 if flows in each link are above threshold value
