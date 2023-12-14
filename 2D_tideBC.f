@@ -24,15 +24,15 @@
 !> @param         row_transpose
 
       Subroutine TideBC
-	use params
+	  use params
 
       implicit none
-	integer :: jjk,jj,nnn
+	  integer :: jjk,jj,nnn
       integer :: use_row,row_transpose
       real :: EastWght,WestWght,EastComp,WestComp,EastBC,WestBC
 
 !>> Update boundary condition water levels for compartments WITH observed water level timeseries
-	do jjk=1,Mds
+	  do jjk=1,Mds
 		jj=KBC(jjk)
 		do nnn=1,tidegages
 !>> Check if compartment has an observed tide timeseries
@@ -48,28 +48,28 @@
 
 ! MP2023 added zw-04/06/2020
 ! last few hours of each yearly model run will simply repeat the observed tide for a number of timesteps equal to the tranpose time
-        if(use_row >= (simdays*24/dttide)) then
-            use_row = tiderow
-        endif
+                if(use_row >= (simdays*24/dttide)) then
+                    use_row = tiderow
+                endif
 
 ! jj is compartment number, jjk is boundary condition number
 !				BCnosurge(jj,2)=TideData(use_row,nnn)
 !				ES(jj,2)=BCnosurge(jj,2)+Surge(surgerow,jjk)
 !>> !YW! Interpolate tide and surge between input data time step
-                  BCnosurge(jj,2) = BCnosurge(jj,1)                          
+                BCnosurge(jj,2) = BCnosurge(jj,1)                          
      &            +(TideData(use_row+1,nnn)-TideData(use_row,nnn))
      &            /lasttidestep
-                  BCsurge(jj,2) = BCsurge(jj,1)
+                BCsurge(jj,2) = BCsurge(jj,1)
      &            +(Surge(use_row+1,jjk)-Surge(use_row,jjk))
      &            /lasttidestep  
 
-                  ES(jj,2)=BCnosurge(jj,2)+BCsurge(jj,2)
+                Es(jj,2)=BCnosurge(jj,2)+BCsurge(jj,2)
 			endif
 		enddo
-	end do
+	  end do
 
 !>> Update boundary condition water levels for compartments WITHOUT observed water level timeseries
-	do jjk=1,Mds 
+	  do jjk=1,Mds 
 		jj=KBC(jjk)
 		do nnn=1,Mds-tidegages
 			if (jj==weighted_tide(nnn,1)) then
@@ -84,16 +84,18 @@
 				WestBC = BCnosurge(WestComp,2)
 
 !        BCnosurge(jj,2)=EastWght*EastBC+WestWght*WestBC  !zw added 04/06/2020
-				ES(jj,2)=EastWght*EastBC+WestWght*WestBC
+				Es(jj,2)=EastWght*EastBC+WestWght*WestBC
 !     &                        +Surge(surgerow,jjk)
      &                    +EastWght*BCsurge(EastComp,2)               !YW! Apply the same weighting calculation as for tide
      &                    +WestWght*BCsurge(WestComp,2)               !YW! temporary for calibration
 			endif
 		enddo
-	enddo
+
+		Eh(jj,2) = Es(jj,2)      !assign water elevel in marsh = openwater level at offshore boundary compartments
+	  enddo
 
       return
-	end
+	  end
 
 !***********************End Subroutine for Tidal Boundary Condition*****************************
 
@@ -155,7 +157,7 @@
 !      setup= (aset*cdir)/10.
 !	if(setup.gt.0.5)setup=0.5								! not used here
 !      if(setup.lt.-0.5)setup=-0.4								! not used here
-cc       cdir=0.0  !test oct 15 2013 AMc						! JKS 10/30/13
+!cc       cdir=0.0  !test oct 15 2013 AMc						! JKS 10/30/13
 !	agulf2=agulf2+0.05+(aset*cdir)/3.*cos(pi*kday/8.)		! JAM 2010 /3.
 !      aoo=ao*float(jj)/float(113)
 !
@@ -175,4 +177,4 @@ cc       cdir=0.0  !test oct 15 2013 AMc						! JKS 10/30/13
 !	endif
 
 
-c***********************End Old Subroutine for Tidal Boundary Condition*****************************
+!c***********************End Old Subroutine for Tidal Boundary Condition*****************************
