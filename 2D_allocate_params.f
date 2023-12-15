@@ -507,6 +507,7 @@
  6666 format(A,I3,A,I3)
 
       allocate(linkslimiter(nlinklimiter))  !YW! store link numbers to apply flow limiter
+      allocate(flag_apply(links))           !zW! store flag to apply flow limiter in links
 
 !1D-ICM coupling variables
       allocate(tcr2D(ntc))  ! terminal connection ICM receiving compartment list

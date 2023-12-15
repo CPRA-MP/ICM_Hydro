@@ -1425,10 +1425,12 @@
 
 !>> Read input link file to apply flow limiter  !YW
       linkslimiter(:)=0
+	  flag_apply(:)=0
       if (nlinklimiter>0) then
           read(500,*)
           do kk = 1,nlinklimiter
               read(500,*) linkslimiter(kk)
+              flag_apply(linkslimiter(kk))=1
           enddo
           close(500)
 	  endif

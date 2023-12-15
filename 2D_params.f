@@ -739,6 +739,7 @@
 
       integer :: nlinklimiter                            !YW! number of link to apply flow limiter   
       integer,dimension(:),allocatable :: linkslimiter   !YW! list of link number to apply flow limiter      
+      integer,dimension(:),allocatable :: flag_apply     !ZW! flag to apply flow limiter in links (1-apply; 0-no)     
       
       integer :: numChem  !add zw 04/08/2020      
       
