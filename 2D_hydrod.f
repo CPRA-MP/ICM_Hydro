@@ -19,7 +19,7 @@
       real :: QSalSum,QTmpSum,QMarshKK
       real :: rca,rna,rnd,rcd,rcn
       real :: Q_filter1,Q_filter2                                                ! yw flow filter
-      integer :: flag_apply                                                      ! yw apply flag
+!      integer :: flag_apply                                                      ! yw apply flag
       integer :: flag_offbc(Cells)  !zw offshore bc cells flag 04/07/2020
       real :: dkd_h,Marsh_ruf,MarshRh,MarshAch                                  ! edw new parameters for replacing Kadlec-Knight with Manning's
       real :: MarshRes,MarshResist,QMarshMann                                   ! edw new parameters for replacing Kadlec-Knight with Manning's
@@ -197,7 +197,7 @@
 !>> Link type < 0 = dummy link that is not active in current run
           if (linkt(i) <= 0) then
               Q(i,2) = 0.0
-
+              EAOL(i) = 0.0
 !>> Link type 1 = rectangular channels
 !>> Link type 6 = rectangular culverts/bridges
 !>> Link type 11 = marsh 'composite flow' channel
@@ -260,7 +260,7 @@
                   EAOL(i) = 0.0
           !>> If upstream water stage is lower than bed elevation, flow is zero (downstream water stage is lower than upstream, so it is also lower than bed)
 !              elseif( (Es(upN,2)-Bed(upN)) <=0.01)then	!zw 3/16/2015
-              elseif( (Es(upN,2)-Bed(upN)) <=dry_threshold)then	!zw 3/16/2015
+              elseif( (Es(upN,2)-Bed(upN)) <=dry_threshold)then	!zw 12/5/2023
                   Q(i,2) = 0.0
                   EAOL(i) = 0.0
           !>> If only downstream water stage is lower than channel invert, calculate average depth in channel with a zero depth at downstream end of channel
@@ -280,13 +280,13 @@
      &                 (2.*(Latr2(i)-Latr1(i))+Latr4(i))
                   else
 		!>> Calculate hydraulic radius from average flow depth (if open channel)
-                  Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
+                      Rh=linkdepth*Latr4(i)/(linkdepth*2.+Latr4(i))
                   endif
 
                   Ach = linkdepth*Latr4(i)
 
           !>> Calculate channel 'resistance'
-		        AK = Latr8(i)+Latr6(i)+Latr7(i) ! Minor loss coefficients
+		          AK = Latr8(i)+Latr6(i)+Latr7(i) ! Minor loss coefficients
                   ruf=Latr3(i)*Latr5(i)*Latr5(i)
 
                   Res=(AK/2./g+ruf/Rh**(4./3.))/(Ach*Ach)	!Resistance in links
@@ -308,16 +308,17 @@
                   Q_filter1 = abs(Deta)*As(downN,1)/dt
                   Q_filter2 = sqrt(g*linkdepth)*Latr4(i)*abs(Deta)
 
-                  flag_apply = 0
-                  if (nlinklimiter > 0) then
-                      do jj = 1,nlinklimiter
-                          if (linkslimiter(jj) == i) then
-                              flag_apply = 1
-                          endif
-                      enddo
-                  endif
+!  flag-apply becomes a global array whose values are assigned in infile.f to avoid the loop below every time step for each link - ZW 12/14/2023
+!                  flag_apply = 0
+!                  if (nlinklimiter > 0) then
+!                      do jj = 1,nlinklimiter
+!                          if (linkslimiter(jj) == i) then
+!                              flag_apply = 1
+!                          endif
+!                      enddo
+!                  endif
                   
-                  if (flag_apply == 1) then
+                  if (flag_apply (i) == 1) then
                       !Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1)
                       Q(i,2) = sn*min(abs(Q(i,2)),Q_filter1,Q_filter2)
                   endif
