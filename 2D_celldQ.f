@@ -8,13 +8,13 @@
 !> @param[out]        Qsum_in(j)      sum of all flows entering compartment
 !> @param[out]        Qsum_abs(j)     magnitude of all flows entering AND leaving compartment
       
-	use params      
+	  use params      
       real(sp) :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
 
-	Qsum=0.0						!JAM Oct 2010
-	Qsumh=0.0
+	  Qsum=0.0						!JAM Oct 2010
+	  Qsumh=0.0
       Qlink = 0.0
-	cden=1./1000./24./3600.		! mm/d to m/s conversion
+	  cden=1./1000./24./3600.		! mm/d to m/s conversion
 
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'At start: ',Qsumh
@@ -28,9 +28,9 @@
 !>> Update cumulative open water flow rates in compartment from input boundary tributary flows      
 !>> sign convention on open water flow = positive is flow out of compartment
       do jn = 1,ntrib
-		if (isnan(Qmult(j,jn))) then
-              Qmult(j,jn) = 0.0
-          endif
+!          if (isnan(Qmult(j,jn))) then  !move to infile.f - ZW 12/18/2023
+!              Qmult(j,jn) = 0.0
+!          endif
           flo_trib = Qtrib(jn,kday)*Qmult(j,jn)
           Qsum = Qsum - flo_trib
           Qsum_abs(j) = Qsum_abs(j) + abs(flo_trib)
@@ -44,7 +44,7 @@
 !>> Update cumulative open water flow rates in compartment from input boundary diversion flows
 !>> sign convention on open water flow = positive is flow out of compartment
       do jjn=1,Ndiv
-		flo_div = Qdiv(jjn,kday)*Qmultdiv(j,jjn)
+		  flo_div = Qdiv(jjn,kday)*Qmultdiv(j,jjn)
           Qsum = Qsum - flo_div
           Qsum_abs(j) = Qsum_abs(j) + abs(flo_div)
           if (flo_div >= 0.0) then
@@ -54,14 +54,15 @@
           endif
       enddo
 
-c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
-	fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
-	soilm = max(0.0001, esho(j)-BedM(j))				!JAM Oct 2010
-	shh   = max(0.0001, Eh(j,1)-BedM(j))				!JAM Oct 2010
-	rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
+!c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
+	  fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
+!      soilm = max(0.0001, esho(j)-BedM(j))				!JAM Oct 2010
+!      shh   = max(0.0001, Eh(j,1)-BedM(j))				!JAM Oct 2010
+!      rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
 
 !>> Excess rainfall runoff on marsh
       Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))!*Max(1.,rhh*rhh))	!JAM Oct 2010
+!      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*fpc)	!include fpc for marsh area PET - ZW 12/18/2023
 
 !>> !YW! ignore PET at low marsh water level to avoid Eh too low
 !      if((Eh(j,1)-BedM(j))>0.1) then
@@ -82,9 +83,9 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
       ! ETA:  average ET value to use if fpet = 0
       Qsum=Qsum-(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
      &	  -fpet*PET(kday,Jet(j)))*As(j,1)*cden
-!>> Update cumulative flow rate in marsh based on excess rainfall runoff on marsh area
+!>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-	Qupld=(Qhhf+max(0.0,(Rain(kday,jrain(j))
+	  Qupld=(Qhhf+max(0.0,(Rain(kday,jrain(j))
      &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden	 
 !      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          
@@ -99,20 +100,21 @@ c correction JAM March 26 2007  ---correction JAM Aug 10 090.50093
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'Add runoff:',Qsumh
 !	endif
+
 !>> Update cumulative marsh flowrate for marsh-to-open water exchange flow (calculated via Kadlec Knight in hydrod)      
 !>> sign convention on marsh flow = positive flow is from marsh to open water
       Qsumh=Qsumh-Qmarsh(j,2)											!Qsumh is net of marsh flows 
+!>> add marsh exchange flow to open water cumulative flow
+!>> if positive, flow is open water-to-marsh flow	
+      Qsum=Qsum+Qmarsh(j,2)
 !	if((mm>=626160).AND.(j==458))then
 !		write(1,*)'time step = ',mm, 'compartment = ',j,'Add Qmarsh:',Qsumh
 !	endif
-!	 (sign convention outward normal is positive and inward is negative. 
-cccccccccc cjam collects flow from connecting links
-
-!     do k=1,13      
-!      do k=1,maxconnect						!more connection: note max number of connected links is 11 to one cell (non-marsh) ***
 
 !>> collect flow from connecting links
 !>> sign convention on link flows: positive is flow out of compartment
+!     do k=1,13      
+!      do k=1,maxconnect						!more connection: note max number of connected links is 11 to one cell (non-marsh) ***
       do k=1,nlink2cell(j)
           if(abs(icc(j,k)) /= 0) then
               Qlink = sicc(j,k)*Q(abs(icc(j,k)),2)
@@ -174,19 +176,6 @@ cccccccccc cjam collects flow from connecting links
 !                      
 !                  
                   
-                  
-                  
-!	if((mm>=626160).AND.(j==458))then
-!		write(1,*)'time step = ',mm, 'compartment = ',j,'Add Qlink:',Qsumh
-!	endif
-      
-!      if (isNan(Qmarsh(j,1))) then
-!          Qmarsh(j,1) = 0.0
-!          write(*,*) 'Qmarsh in ',j,' set to 0.0 @ step ',mm
-!      endif
-!>> add marsh exchange flow to open water cumulative flow
-!>> if positive, flow is open water-to-marsh flow	
-      Qsum=Qsum+Qmarsh(j,2)				!JAM Oct 2010 Transfer from marsh runoff or ebb flow NOTE +ve means outflow from open water cell.
 
 !JAM   change in elevation for cell j
 
@@ -218,38 +207,53 @@ cccccccccc cjam collects flow from connecting links
 !>> Update water elevation of open water portion - don't let water level drop below bed elevation
       Es(j,2)=max(Es(j,1) + Dz,Bed(j)+0.0001)				                !Stage in storage cells (m)
       
-      mmmd=float(mm+1)*dt/3600./24.                       !mmmd is 
+!>> Calculate change in marsh stage
+!>> Negative marsh flow is into marsh and will result in positive deltaZmarsh
+      if (Ahf(j) > 0.0) then
+          Dzh=(-Qsumh)/Ahf(j)*dt
+          sndzh = 1.0
+          if (Dzh < 0) then
+             sndzh = -1.0
+          endif
+          if(abs(Dzh) > maxdz) then
+              Dzh = sndzh*oscilflag   ! Dz = sndz*maxdz
+              write(*,898) 'Large deltaZh in compartment ',j,'timestep=',mm,'
+     & deltaZh set to max value allowed in RunControlR.dat'
+              write(1,898) 'Large deltaZh in compartment ',j,'timestep=',mm,'
+     & deltaZh set to max value allowed in RunControlR.dat'
+          endif
+
+!>> Update marsh water elevation
+          Eh(j,2)= Max(Eh(j,1)+Dzh, BedM(j))		!JAM Oct 2010 Marsh stage (m) 
+! move Qmarshmax to hydrod.f - ZW 12/19/2023
+! !>> Determine level where open water stage and marsh stage will be equal in compartment
+!          Elevel = (As(j,1)*Es(j,2)+Ahf(j)*Eh(j,2)) / (As(j,1)+Ahf(j))
+!!>> Determine change in marsh level to reach equilbrium with open water marsh stage
+!          Dzhlim = max(Elevel,BedM(j)) - Eh(j,2)
+!!>> Calculate magnitude of flowrate needed into/out of marsh - directionality assigned in hydrod
+!          Qmarshmax(j) = abs(Dzhlim)*Ahf(j)/dt
+              
+      else
+!>> If no marsh area in cell, set marsh water elevation to open water stage
+          Eh(j,2) = Es(j,2)
+!          Qmarshmax(j) = 0.0
+      endif      
+
+!      mmmd=float(mm+1)*dt/3600./24.                       !mmmd is 
       Dzz = sndz*min(abs(Dz),oscilflag)
-      if (abs(dzz) == oscilflag) then
-          write(*,*) 'Comp=',j,'timestep=',mm,'dz=',dz
+      Dzzh = sndzh*min(abs(Dzh),oscilflag)
+      if ((abs(dzz) == oscilflag) .or. (abs(dzzh) ==oscilflag)) then
+          write(*,*) 'Comp=',j,'timestep=',mm,'dz=',dz,'dzh=',dzh
           write(*,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,2)
           write(*,*) 'OWstg(t-1)=',Es(j,1),'OWstg(t)=',Es(j,2)
           write(*,*) 'Mstg(t-1)=',Eh(j,1),'Mstg(t)=',Eh(j,2)
-          write(1,*) 'Comp=',j,'timestep=',mm,'dz=',dz
+          write(1,*) 'Comp=',j,'timestep=',mm,'dz=',dz,'dzh=',dzh
           write(1,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,2)
           write(1,*) 'OWstg(t-1)=',Es(j,1),'OWstg(t)=',Es(j,2)
           write(1,*) 'Mstg(t-1)=',Eh(j,1),'Mstg(t)=',Eh(j,2)
       endif
 
-!>> Calculate change in marsh stage
-!>> Negative marsh flow is into marsh and will result in positive deltaZmarsh
-      if (Ahf(j) > 0.0) then
-          Dzh=(-Qsumh)/Ahf(j)*dt
 
-!>> Update marsh water elevation
-          Eh(j,2)= Max(Eh(j,1)+Dzh, BedM(j))		!JAM Oct 2010 Marsh stage (m) 
-!>> Determine level where open water stage and marsh stage will be equal in compartment
-          Elevel = (As(j,1)*Es(j,2)+Ahf(j)*Eh(j,2)) / (As(j,1)+Ahf(j))
-!>> Determine change in marsh level to reach equilbrium with open water marsh stage
-          Dzhlim = max(Elevel,BedM(j)) - Eh(j,2)
-!>> Calculate magnitude of flowrate needed into/out of marsh - directionality assigned in hydrod
-          Qmarshmax(j) = abs(Dzhlim)*Ahf(j)/dt
-              
-      else
-!>> If no marsh area in cell, set marsh water elevation to open water stage
-          Eh(j,2) = Es(j,2)
-          Qmarshmax(j) = 0.0
-      endif      
 !!>> Calculate daily values reported out to output files ! moved to hydro
 !!	if(kday <= mmmd) then 
 !	if(daystep == 1) then
@@ -271,9 +275,10 @@ cccccccccc cjam collects flow from connecting links
 
 
 !>> Calculate cumulative time marsh is flooded
-      if (ES(j,2) > (BedM(j)+dry_threshold)) then
-	    floodf(j)=Floodf(j)+dt/(24.*3600.)	!accum days of flooding JAM Nov 13, 2010
-	endif 
+!      if (ES(j,2) > (BedM(j)+dry_threshold)) then
+      if (Eh(j,2) > (BedM(j)+dry_threshold)) then
+	      floodf(j)=floodf(j)+dt/(24.*3600.)	!accum days of flooding JAM Nov 13, 2010
+	  endif 
 
 
 2222	FORMAT(<cells-1>(F20.2,','),F20.2)
@@ -289,4 +294,4 @@ cccccccccc cjam collects flow from connecting links
 	return
 	end
 
-c***********************End Subroutine for CelldQ***********************************************
+!c***********************End Subroutine for CelldQ***********************************************
