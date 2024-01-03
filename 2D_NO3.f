@@ -35,25 +35,25 @@
 !      Subroutine NO3(DChemSum,ichem,mex,j,k)
       
 ! kday now global parameter - no longer needed to be passed into subroutine   
-      Subroutine dNO3(DChemSum,ichem,j)
+    Subroutine dNO3(DChemSum,ichem,j)
 	!JAM Chem # 1
 
 	use params
 
-      implicit none
-      integer :: ichem,j
-      real :: dd,e
-      real :: no3,nh4,alg
-      real :: knit,knitf
-      real :: kdenit
-      real :: khn,pap,fnfix
-      real :: rca,rna
-      real :: dChemSUM 
+    implicit none
+    integer :: ichem,j
+    real :: dd,e
+    real :: no3,nh4,alg
+    real :: knit,knitf
+    real :: kdenit
+    real :: khn,pap,fnfix
+    real :: rca,rna
+    real :: dChemSUM 
       
 !>> NO3 routine (eq. 19 of 2012 Master Plan Appendix D-1)
 	e = 2.71828	
 
-      !>> previous time step WQ concentrations
+!>> previous time step WQ concentrations
 	no3 = chem(j,1,1)
 	nh4 = chem(j,2,1)
 	alg = chem(j,8,1)		
@@ -64,7 +64,7 @@
             
 !>> temperature-dependent nitrification rate coefficient 
 	knit20 = max(min(knit20num/dd,knitmax),knitmin)
-      knit = knit20*thetanit**(Tempw(j,2)-20.)
+    knit = knit20*thetanit**(Tempw(j,2)-20.)
 	      
 !>> temperature-dependent denitrifcation rate coefficient
 	kdenit = kdenit20*thetadenit**(Tempw(j,2)-20.)
@@ -74,13 +74,13 @@
 
 !>> calculate salinity-dependent fraction of algae that is nitrogen-fixing
 	if (S(j,2) > 2.0) then
-          fnfix = 0.0
+        fnfix = 0.0
 	else
-          fnfix = 0.1
+        fnfix = 0.1
 	endif
 
 !>> calculate phythoplankton preference for N uptake
-      pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
+    pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
      &			+ (nh4*khn/((nh4+no3+0.001)*(khn+no3)))
 
 !>> carbon-to-chlorophyll ratio
@@ -92,8 +92,8 @@
 !>> change in nitrate/nitrite concentration
 	dChemSUM = knit*nh4-(kdenit*no3/dd)-rna*(1-pap)*muph*(1-fnfix)*alg
       
-      return
-      end
+    return
+    end
       
 !	rca=0.004
 !	fixN=0.00000001
@@ -134,26 +134,26 @@
 !	return
 !	end
 
-c______________________________________________________________________________________
-cc
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
-c*********************************************************************************
-cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
-cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
-c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
-cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
-cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
-c   0	   0    0	0	0	0 -0.005 0.265 -0.055  0	 0	 0	 0	  0		!8 LiveAlgae
-c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
-cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
-cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
-cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
-cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
-cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
-c**********************************************************************************
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-c______________________________________________________________________________________
+!c______________________________________________________________________________________
+!cc
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
+!c*********************************************************************************
+!cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
+!cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
+!c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
+!cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
+!cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
+!c   0	   0    0	0	0	0 -0.005 0.265 -0.055  0	 0	 0	 0	  0		!8 LiveAlgae
+!c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
+!cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
+!cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
+!cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
+!cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
+!cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
+!c**********************************************************************************
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!c______________________________________________________________________________________
 
 
-c***********************End Subroutine for Chemical chemical NO3+NO2****************************
+!c***********************End Subroutine for Chemical chemical NO3+NO2****************************

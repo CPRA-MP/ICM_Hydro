@@ -28,15 +28,15 @@
 	
 	use params      
 
-      implicit none
+    implicit none
       
-      integer :: ichem,j
-      real :: dd
-      real :: alg,det
-      real :: kphy
-      real :: kdet
+    integer :: ichem,j
+    real :: dd
+    real :: alg,det
+    real :: kphy
+    real :: kdet
 	real :: rca, rda, vd
-      real :: DChemSUM
+    real :: DChemSUM
 
 
 !>> dead algae (detritus) calculation (eq. 24 of 2012 Master Plan Appendix D-1)
@@ -94,4 +94,4 @@
 !
 !	return
 !	end
-c***********************End Subroutine for Dead Algae ******************************************
+!c***********************End Subroutine for Dead Algae ******************************************

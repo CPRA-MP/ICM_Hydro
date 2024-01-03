@@ -1,7 +1,7 @@
 !      Subroutine POP(DChemSum,ichem,mex,j,k)
       
 ! kday now global parameter - no longer needed to be passed into subroutine   
-      Subroutine POP(DChemSum,ichem,mex,j,k,kday)			!POP= chemical PArtition SRP = ParP*TP
+    Subroutine POP(DChemSum,ichem,mex,j,k,kday)			!POP= chemical PArtition SRP = ParP*TP
 	!JAM Oct 2010 Chem #14  April 16 2011
 
 	use params
@@ -14,4 +14,4 @@
 	return
 	end
 
-c***********************End Subroutine for chemical PArtition SRP = ParP*TP --> POP*************
+!c***********************End Subroutine for chemical PArtition SRP = ParP*TP --> POP*************
