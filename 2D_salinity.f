@@ -1,6 +1,7 @@
-c***********************Start Subroutine for face salinity**************************************
+!c***********************Start Subroutine for face salinity**************************************
     
-      Subroutine salinity(mm,iab,jnb,j,k,Qsalsum)		!face densities from node densities
+!      Subroutine salinity(mm,iab,jnb,j,k,Qsalsum)		!face densities from node densities
+      Subroutine salinity(iab,jnb,j,k,Qsalsum)		!face densities from node densities
 
       use params
 !>@par General Structure of Subroutine Logic:
@@ -55,7 +56,7 @@ c***********************Start Subroutine for face salinity**********************
       endif
           
       return
-	end
+	  end
 
 
-c***********************End Subrout
+!c***********************End Subrout

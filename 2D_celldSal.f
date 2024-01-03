@@ -1,4 +1,5 @@
-      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+!      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+      Subroutine CelldSal(j,kday,k)
       
       !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
       !>>       - tributary flows into compartment
@@ -25,7 +26,7 @@
       real :: salmaxcon
       !real :: DSal, maxDSal
       
-      cden=1./1000./24./3600.		! mm/d to m/s conversion
+      !cden=1./1000./24./3600.		! mm/d to m/s conversion
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
@@ -97,7 +98,8 @@
 
           Qsalsum_b4link = Qsalsum
 
-          call salinity(mm,iab,jnb,j,k,Qsalsum)
+!          call salinity(mm,iab,jnb,j,k,Qsalsum)
+          call salinity(iab,jnb,j,k,Qsalsum)
           
 !>> check if current link has flow during timestep
           if (Q(iab,2) .ne. 0.0) then
@@ -176,32 +178,55 @@
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
       if( Ahf(j) > 0 ) then                           ! check if there is marsh area
+!          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+!              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
+!                  marsh_vol1 = ddym1*Ahf(j)
+!                  marsh_vol2 = ddym2*Ahf(j)
+!              else
+!                  marsh_vol1 = 0.0
+!                  marsh_vol2 = 0.0
+!                  if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
+!                      marsh_vol1 = ddym1*Ahf(j)
+!                      marsh_vol2 = ddym2*Ahf(j)
+!                  endif
+!              endif
+!          else
+!              marsh_vol1 = 0.0
+!              marsh_vol2 = 0.0
+!          endif
+!      else
+!          marsh_vol1 = 0.0
+!          marsh_vol2 = 0.0
           if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
-              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
-                  marsh_vol1 = ddym1*Ahf(j)
-                  marsh_vol2 = ddym2*Ahf(j)
-              else
-                  marsh_vol1 = 0.0
-                  marsh_vol2 = 0.0
-                  if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
-                      marsh_vol1 = ddym1*Ahf(j)
-                      marsh_vol2 = ddym2*Ahf(j)
-                  endif
-              endif
-          else
-              marsh_vol1 = 0.0
-              marsh_vol2 = 0.0
+              marsh_vol1 = ddym1*Ahf(j)
           endif
-      else
-          marsh_vol1 = 0.0
-          marsh_vol2 = 0.0
+          if ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
+              marsh_vol2 = ddym2*Ahf(j)
+          endif
       endif
 
-      vol1 = ddy1*As(j,1) + marsh_vol1
-      vol2 = ddy2*As(j,1) + marsh_vol2
+!     openwater volume
+      vol1 = 0.0
+      vol2 = 0.0
+      if( As(j,1) > 0 ) then                           ! check if there is openwater area
+          if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
+              vol1 = ddy1*As(j,1)
+          endif
+          if ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
+              vol2 = ddy2*As(j,1)
+          endif
+      endif
 
-      if(ddy2 > dry_depth) then
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
+!      vol1 = ddy1*As(j,1) + marsh_vol1
+!      vol2 = ddy2*As(j,1) + marsh_vol2
+      vol1 = vol1 + marsh_vol1
+      vol2 = vol2 + marsh_vol2
+
+
+!      if(ddy2 > dry_depth) then
+      if(vol2 > 0) then
+!          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
+          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2   
           ds = S(j,2) - S(j,1)
           
           !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 
@@ -271,8 +296,10 @@
                   S(j,2) = salmaxcon
               endif
           endif
-      elseif (S(j,2) > 36.) then
-          S(j,2)=36.
+!      elseif (S(j,2) > 36.) then
+!          S(j,2)=36.
+      elseif (S(j,2) > salmax) then
+          S(j,2) = salmax
       endif
 
 !>> Set marsh salinity equal to open water salinity
