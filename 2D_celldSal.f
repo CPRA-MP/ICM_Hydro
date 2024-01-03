@@ -1,5 +1,5 @@
 !      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
-      Subroutine CelldSal(j,kday,k)
+      Subroutine CelldSal(j,kday)
       
       !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
       !>>       - tributary flows into compartment
