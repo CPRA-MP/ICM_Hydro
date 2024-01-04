@@ -122,6 +122,7 @@
 
 
       allocate(SlkAve(links))
+      allocate(TlkAve(links))
 
 !output summary arrays for 500 m grid !-EDW
       allocate(pct_sand_bed_500m(n_500m_cells))
@@ -311,6 +312,7 @@
       allocate(cumul_retreat(cells))
       allocate(Sacch_int(cells,2))
       allocate(Sacch_edge(cells,2))
+      allocate(flag_offbc(cells))  !zw offshore bc cells flag 04/07/2020
 
 
       ! arrays of length equal to number of links

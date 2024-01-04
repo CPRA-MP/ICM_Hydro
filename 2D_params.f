@@ -248,6 +248,7 @@
       real(sp), dimension(:), allocatable :: per_water_500m            !lookup table - relates 500 m grid cell to percentage of grid that is  water (as calculated in Wetland Morph routine)
       real(sp), dimension(:),allocatable :: height_500m               !lookup table - relates 500 m grid cell to mean height of land above mean water level
       real(dp), dimension(:), allocatable :: SlkAve                 !average daily salinity values for links
+      real(dp), dimension(:), allocatable :: TlkAve                 !average daily salinity values for links
       
       real(dp), dimension(:,:), allocatable :: sal_daily              ! daily salinity values for compartments
       real(dp), dimension(:,:), allocatable :: sal_daily_links        ! daily salinity values for links
@@ -385,6 +386,7 @@
       integer, dimension(:), allocatable :: KBC       !should this be integer or real? implicitly defined in original
       integer, dimension(:), allocatable :: Jwind
       integer, dimension(:), allocatable :: Jet
+      integer, dimension(:), allocatable :: flag_offbc !zw offshore bc cells flag 04/07/2020
       
 !      real(sp), dimension(:), allocatable :: acss
       real(sp), dimension(:), allocatable :: Ahydro
