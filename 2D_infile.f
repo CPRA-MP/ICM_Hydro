@@ -62,7 +62,8 @@
 !     &	      Ahydro(node),		      !	area of hydrologically connected area for water balance (marsh+upland) (m2)
      &	      Percent(node),		  !	percentage open water in Ahydro for PET-to-AET conversion(0-100%)
 !     &	      dAdz(node),			  !	change in As with depth	(m)
-     &	      CSS(node,1,1),		  !	sediment concentration	- sand only (mg/L)  !BUG! CSS(node,1,1) is not used, using values from hotstar_in.dat
+!     &	      CSS(node,1,1),		  !	sediment concentration	- sand only (mg/L)  !BUG! CSS(node,1,1) is not used, using values from hotstar_in.dat
+     &	      adaption_coeff(node),	  !	non-equilibrium adaption coefficient for sand resuspension/deposition terms  
      &	      S(node,1),			  !	initial salinity (TDS) (ppt)       !BUG! S(node,1) is not used, using values from hotstar_in.dat
 !     &	      acss(node),			  !	resuspension parameters
 !     &	      bcss(node),			  !	resuspension parameters
@@ -97,7 +98,7 @@
 
           ! Eh(node,1)=Eho(node)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
           BedM(node) = BedMOrig(node) + BedMAdj(node)
-
+          if ((adaption_coeff(node)<=0) .or.(adaption_coeff(node)>1))  adaption_coeff(node)=0.25
 
 !>> Calculate amount of sediment available in erodible bed (g/m2) for each sediment class (10^6 is unit conversion for bulk density from cm3 to m3)
 !>> - once compartment is eroded by this much, only newly deposited sediment can be resuspended
@@ -107,6 +108,14 @@
           erBedAvail(node,2)=erBedDepth(node)*erBedBD(node)*1000000.0*0.45
           erBedAvail(node,3)=erBedDepth(node)*erBedBD(node)*1000000.0*0.225
           erBedAvail(node,4)=erBedDepth(node)*erBedBD(node)*1000000.0*0.225
+
+          !>> Check for missing or negative roughness attribute values (here using the KKa input value for compartment and reassign to default values if missing
+          if (KKa(node) < 0.0) then
+              KKa(node) = def_n
+          elseif ((KKa(node) >= 1) .and. (KKa(node) < 999.) ) then
+                  KKa(node) = def_n
+          endif
+
       enddo
       close(32)
 		  
@@ -401,6 +410,167 @@
 !              Latr1(lnkid) = maxmarel
               Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
           endif
+
+          if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 6) .or.
+     &              (linkt(lnkid) == 11) .or. (linkt(lnkid) == 12) .or. 
+	 &              (linkt(lnkid) == 3) .or. (linkt(lnkid) == 8) .or.
+     &              (linkt(lnkid) == 10)) then
+          !>> Check for missing roughness attribute values and reassign to default values if missing
+              if (Latr5(lnkid) < 0.0) then
+                  Latr5(lnkid) = def_n
+              elseif (Latr5(lnkid) >= 1 .and. Latr5(lnkid) < 999.) then
+                  Latr5(lnkid) = def_n
+              endif
+          !>> Set channel length to default value if missing
+              if (Latr3(lnkid) <= 0.0) then
+                  write(1,*)'Length (Latr3) for link',lnkid,'is missing'
+                  write(1,*) 'Default value of 1000 is assigned
+     & but this should be fixed in the input file.'
+
+                  write(*,*)'Length (Latr3) for link',lnkid,'is missing'
+                  write(*,*) 'Default value of 1000 is assigned
+     & but this should be fixed in the input file.'
+                  Latr3(lnkid) = 1000.0
+              endif
+	      
+		  endif
+
+!>> weir link attribute checks
+          if(linkt(lnkid) == 2) then
+!>> set weir coefficient to default value if outside of standard range
+              if (Latr8(lnkid) < 0.55) then
+                  Latr8(lnkid) = 0.62
+              elseif (Latr8(lnkid) > 0.65) then
+                  Latr8(lnkid) = 0.65
+              endif
+!>> check for missing weir invert attributes and assign to compartment bed elev
+!              if (Latr2(lnkid) < -9990.) then
+!                  Latr2(lnkid) = Latr3(lnkid)
+!              elseif (Latr2(lnkid) > 100.) then
+!                  Latr2(lnkid) = Latr3(lnkid)
+!              endif
+!   weir upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
+			  Latr2(lnkid)=bed(jus(lnkid))
+			  Latr3(lnkid)=bed(jds(lnkid))
+!   weir upstream & downstream ground elevation can not be higher than crest elevation
+              if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr3(lnkid)>=Latr1(lnkid)))then
+                  write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
+	 & bed elevation of connecting compartments'
+                  write(*,925) 'Weir link',lnkid,'has crest elevation lower than 
+	 & bed elevation of connecting compartments'
+	              stop
+			  endif
+              if(Latr4(lnkid) <=0)then
+                  write(1,925) 'Weir link',lnkid,'has crest length lower than 0'
+                  write(*,925) 'Weir link',lnkid,'has crest length lower than 0'
+	              stop
+			  endif
+
+!!!ZW 12/15/2023 upwind factor for weir link should always be 1???
+              !fa_mult(lnkid) = 1.0  
+          endif
+
+!>> Tidal gate/orifice link attribute checks
+          if((linkt(lnkid) == 4) .or. (linkt(lnkid) == 5)) then
+!   orifice upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
+			  Latr3(lnkid)=bed(jus(lnkid))
+			  Latr5(lnkid)=bed(jds(lnkid))
+
+              if(Latr2(lnkid)<=Latr1(lnkid))then
+                  write(1,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
+	 & invert elevation'
+                  write(*,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
+	 & invert elevation'
+	              stop
+			  endif
+!   orifice upstream & downstream ground elevation can not be higher than structure invert elevation
+              if((Latr3(lnkid)>=Latr1(lnkid)) .or. (Latr5(lnkid)>=Latr1(lnkid)))then
+                  write(1,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
+	 & bed elevation of connecting compartments'
+                  write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
+	 & bed elevation of connecting compartments'
+	              stop
+			  endif
+              if(Latr4(lnkid) <=0)then
+                  write(1,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
+                  write(*,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
+	              stop
+			  endif
+!!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
+              !fa_mult(lnkid) = 1.0  
+          endif
+
+!>> pump link attribute checks
+          if(linkt(lnkid) == 7) then
+!   pump upstream stage threshold can not be lower than bed/marsh elevation
+              if((Latr1(lnkid)<bed(jus(lnkid))) .or. (Latr2(lnkid)<bed(jus(lnkid))))then
+                  write(1,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
+	 & bed elevation'
+                  write(*,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
+	 & bed elevation'
+			  endif
+              if(Latr9(lnkid) <=0)then
+                  write(1,925) 'pump link',lnkid,'has pump capacity lower than 0'
+                  write(*,925) 'pump link',lnkid,'has pump capacity lower than 0'
+			  endif
+
+!!!ZW 12/15/2023 upwind factor for weir link should always be 1???
+              !fa_mult(lnkid) = 1.0  
+          endif
+
+!>> ridge link attribute checks
+          if(linkt(lnkid) == 9) then
+!   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
+			  Latr2(lnkid)=bed(jus(lnkid))
+			  Latr10(lnkid)=bed(jds(lnkid))
+!   weir upstream & downstream ground elevation can not be higher than crest elevation
+              if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr10(lnkid)>=Latr1(lnkid)))then
+                  write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
+	 & bed elevation of connecting compartments'
+                  write(*,925) 'Ridge link',lnkid,'has crest elevation lower than 
+	 & bed elevation of connecting compartments'
+	              stop
+			  endif
+              if(Latr4(lnkid) <=0)then
+                  write(1,925) 'Ridge link',lnkid,'has crest length lower than 0'
+                  write(*,925) 'Ridge link',lnkid,'has crest length lower than 0'
+	              stop
+			  endif
+              if(Latr3(lnkid) <=0)then
+                  write(1,925) 'Ridge link',lnkid,'has crest width lower than 0'
+                  write(*,925) 'Ridge link',lnkid,'has crest width lower than 0'
+	              Latr3(lnkid) = 10.0  !default 10m ridge crest width
+			  endif
+
+!!!ZW 12/15/2023 upwind factor for weir link should always be 1???
+              !fa_mult(lnkid) = 1.0  
+          endif
+
+!>> Exy check
+          if(Exy(lnkid) < 0) then	!zw 3/14/2015 revised
+              write(1,925)'Exy value for link',lnkid,'is missing.'
+              write(1,*) 'Default value of 100 is assigned
+     &    but this should be fixed in the input file.'
+
+              write(*,925)'Exy value for link',lnkid,'is missing.'
+              write(*,*) 'Default value of 100 is assigned
+     &    but this should be fixed in the input file.'
+
+              Exy(lnkid) = 100.0
+          endif
+
+!>> fa check
+          if(fa_mult(lnkid) < 0.5) then	!zw 3/14/2015 revised
+              write(1,925)'Exy value for link',lnkid,'is less than 0.5'
+              write(1,*) 'Default value of 0.5 is assigned'
+
+              write(*,925)'Exy value for link',lnkid,'is missing.'
+              write(*,*) 'Default value of 0.5 is assigned'
+
+              fa_mult(lnkid) = 0.5
+          endif
+
+! Latr11 is for type 3 Lock Links, not in the attribute inputs.  Used in hydrod.f		  
           Latr11(lnkid) = 0.0            
       enddo
 	  close(33)
@@ -587,6 +757,11 @@
 
       do j=1,N
 	      READ(77,*) node,(Qmult(node,jn), jn=1,Ntrib)   !dumps first column (which is compartment number)
+          do jn = 1,Ntrib
+	          if (isnan(Qmult(node,jn))) then
+                  Qmult(node,jn) = 0.0
+              endif
+          enddo
       enddo
 	  close(77)
 
@@ -615,6 +790,11 @@
           read(88,*)
           do j=1,N
 	          READ(88,*) node,(Qmultdiv(node,jjn), jjn=1,Ndiv)   !dumps first column (which is compartment number)
+          do jjn = 1,Ndiv
+	          if (isnan(Qmultdiv(node,jjn))) then
+                  Qmultdiv(node,jjn) = 0.0
+              endif
+          enddo
           enddo
 	      close(88)
 	  endif
@@ -1251,6 +1431,12 @@
       KBC(:)=0
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
       close(125)
+	!zw added 04/07/2020 to determine whether a cell is offbc or not
+	  flag_offbc(:)=0
+	  do jjk=1,mds
+	      jj=KBC(jjk)
+	      flag_offbc(jj)=1
+      enddo    
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
