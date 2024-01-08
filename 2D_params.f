@@ -195,6 +195,7 @@
       real(sp),dimension(:),allocatable :: SWRsand
       real(sp),dimension(:),allocatable :: SWRfines
       real(sp),dimension(:),allocatable :: cssFines
+      real(sp),dimension(:),allocatable :: adaption_coeff   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
 ! arrays used for BIMODE tidal prism
       real(sp),dimension(:,:),allocatable :: tidal_range_daily
       real(sp),dimension(:),allocatable :: dailyLW
