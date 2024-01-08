@@ -20,7 +20,7 @@
       real :: rca,rna,rnd,rcd,rcn
       real :: Q_filter1,Q_filter2                                                ! yw flow filter
 !      integer :: flag_apply                                                      ! yw apply flag
-      integer :: flag_offbc(Cells)  !zw offshore bc cells flag 04/07/2020
+!      integer :: flag_offbc(Cells)  !zw offshore bc cells flag 04/07/2020
       real :: dkd_h,Marsh_ruf,MarshRh,MarshAch                                  ! edw new parameters for replacing Kadlec-Knight with Manning's
       real :: MarshRes,MarshResist,QMarshMann                                   ! edw new parameters for replacing Kadlec-Knight with Manning's
 
@@ -41,7 +41,7 @@
 
 !c     time in seconds
 !      time=float(mm)*dt           ! elapsed time !it is the same as global varaible "t" calculated in main.f
-      thour=mm*dt/3600            ! elapsed time in hours
+      thour=mm*dt/3600.            ! elapsed time in hours
       tmon=thour/730.				!!added JAM June 23, 2009  -- 730.5--> 730 June 26, 2009
       kthr=int(thour+1)
       kmon=ifix(tmon)				!+1    !!added JAM June 23, 2009
@@ -68,7 +68,7 @@
       dref=4.0
 !>> default CSS and salinity concentrations in tributary flow
       CSSTRIBj=25.
-      Saltribj=0.205
+      Saltribj=0.1          !0.205  0.1 is used inside celldSal.f
       fbc=0.705				!ch JAM July 13, 2009  was 0.75 !"fbc" is a global variable
 	  akL = 0.01				!wind induce currents
 	  akns=0.01
@@ -166,22 +166,18 @@
 
 	  enddo
 
-	!zw added 04/07/2020 to determine whether a cell is offbc or not
-	  flag_offbc(:)=0
-	  do jjk=1,mds
-	      jj=KBC(jjk)
-	      flag_offbc(jj)=1
-      enddo    
+!    move to infile.f - 12/15/2023
+!	!zw added 04/07/2020 to determine whether a cell is offbc or not
+!	  flag_offbc(:)=0
+!	  do jjk=1,mds
+!	      jj=KBC(jjk)
+!	      flag_offbc(jj)=1
+!      enddo    
 
 
 !****************************Central Difference -Hybrid Upwind for scalars**********************
 !        fa=0.750  !1.0 upwind !0.5 central
 !cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-!>> update upwind & downwind factors for dispersion based on previous timestep's upwind factor
-      do i = 1,M
-          fb(i)=(1.0-fa(i))				!weighting
-      enddo
-
 	  do ichem = 1,14
 		  QChemSUM(ichem) = 0.0
 	  enddo
@@ -241,17 +237,18 @@
                   sn = -1.0
               endif
 
-          !>> Check for missing roughness attribute values and reassign to default values if missing
-              if (Latr5(i) < 0.0) then
-                  Latr5(i) = def_n
-              elseif (Latr5(i) >= 1) then
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/14/2023
+!          !>> Check for missing roughness attribute values and reassign to default values if missing
+!              if (Latr5(i) < 0.0) then
+!                  Latr5(i) = def_n
+!              elseif (Latr5(i) >= 1) then
           !>> Set zero multiplier for infinitely high roughness values
-                  if (Latr5(i) >= 999.) then
-                      dkd = 0.0
-                  else
-                      Latr5(i) = def_n
-                  endif
+              if (Latr5(i) >= 999.) then
+                   dkd = 0.0
+!                  else
+!                      Latr5(i) = def_n
               endif
+!             endif
 
           !>> If upstream water stage is lower than channel invert, flow is zero (downstream water stage is lower than upstream, so it is also lower than invert)
 !              if (Es(upN,2) < latr1(i)) then
@@ -365,18 +362,19 @@
               !! Latr9 = n/a
               !! Latr10 = n/a
 
-          !>> set weir coefficient to default value if outside of standard range
-              if (Latr8(i) < 0.55) then
-                  Latr8(i) = 0.62
-              elseif (Latr8(i) > 0.65) then
-                  Latr8(i) = 0.65
-              endif
-           !>> check for missing invert attributes and assign upstream invert to downstream value
-              if (Latr2(i) < -9990.) then
-                  Latr2(i) = Latr3(i)
-              elseif (Latr2(i) > 100.) then
-                  Latr2(i) = Latr3(i)
-              endif
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/14/2023
+!          !>> set weir coefficient to default value if outside of standard range
+!              if (Latr8(i) < 0.55) then
+!                  Latr8(i) = 0.62
+!              elseif (Latr8(i) > 0.65) then
+!                  Latr8(i) = 0.65
+!              endif
+!           !>> check for missing invert attributes and assign upstream invert to downstream value
+!              if (Latr2(i) < -9990.) then
+!                  Latr2(i) = Latr3(i)
+!              elseif (Latr2(i) > 100.) then
+!                  Latr2(i) = Latr3(i)
+!              endif
 
             !>> determine direction of flow through link and re-assign upstream/downstream attributes if necessary
 
@@ -424,7 +422,8 @@
                   else
           !>> If weir is partially submerged calculate submergence coefficient, ksub
                       if (subp >= 0.85) then
-                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       else
                           w_ksub = 1.0
                       endif
@@ -452,21 +451,22 @@
               endif
               ! Assume flow length through weir is 10 m for EAOL calculations
               if (htup > 0.0) then
-                  !if(Exy(i) > -9990.0) then
-                  if(Exy(i) < 0) then	!zw 3/14/2015 revised
-                      if (mm == 1) then
-
-                          write(1,*)'Exy value for link',i,'is missing.'
-                          write(1,*) 'Default value of 100 is assigned
-     &    but this should be fixed in the input file.'
-
-                          write(*,*)'Exy value for link',i,'is missing.'
-                          write(*,*) 'Default value of 100 is assigned
-     &    but this should be fixed in the input file.'
-
-                      endif
-                      Exy(i) = 100.0
-                  endif
+!                 move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/14/2023
+!                  !if(Exy(i) > -9990.0) then
+!                  if(Exy(i) < 0) then	!zw 3/14/2015 revised
+!                      if (mm == 1) then
+!
+!                          write(1,*)'Exy value for link',i,'is missing.'
+!                          write(1,*) 'Default value of 100 is assigned
+!     &    but this should be fixed in the input file.'
+!
+!                          write(*,*)'Exy value for link',i,'is missing.'
+!                          write(*,*) 'Default value of 100 is assigned
+!     &    but this should be fixed in the input file.'
+!
+!                      endif
+!                      Exy(i) = 100.0
+!                  endif
                   EAOL(i)=Exy(i)*htup*Latr4(i)/10.
                   
                   !>> calculate channel velocity
@@ -484,7 +484,7 @@
               endif
 
 !>> Link type 3 = rectangular channels with a lock control structure
-              elseif (linkt(i) == 3) then
+          elseif (linkt(i) == 3) then
 
               !! Channel attributes for channels with locks
               !! Latr1 = Channel invert elevation
@@ -503,7 +503,9 @@
               !! Latr6 = channel entrance loss, Ken
               !! Latr7 = channel exit loss, Kex
               !! Latr8 = Structure loss through lock (when open), Kstr
-              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,6=observed timeseries, 7=target discharge, 8=u/s WSEL, 9=(u/s-d/s) diff stage, 10=d/s WSEL or u/s Sal>Latr2, 11=d/s WSEL or u/s Sal<Latr2)
+              !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,
+			             !! 6=observed timeseries, 7=target discharge, 8=u/s WSEL, 9=(u/s-d/s) diff stage, 
+						 !! 10=d/s WSEL or u/s Sal>Latr2, 11=d/s WSEL or u/s Sal<Latr2)
               !! Latr10 = control scheme threshold value that shuts lock
                       ! if Latr9 = 1, Latr10 = diff stage (m)
                       ! if Latr9 = 2, Latr10 = -9999
@@ -513,7 +515,7 @@
                       ! if Latr9 = 6, Latr10 = corresponding column in LockControlObservedData.csv.
                       ! if Latr9 = 7, Latr10 = discharge (cms)
                       ! if Latr9 = 8, Latr10 = u/s WSEL (m)
-		      ! if Latr9 = 9, Latr10 = diff stage (m)
+		              ! if Latr9 = 9, Latr10 = diff stage (m)
                       ! if Latr9 = 10, Latr10 = d/s WSEL (m)
                       ! if Latr9 = 11, Latr10 = d/s WSEL (m)
 		      
@@ -521,33 +523,34 @@
           !>> Initialize link's on/off flag to on
               dkd=1.0	  
 
-          !>> Check for missing roughness attribute values and reassign to default values if missing
-              if (Latr5(i) < 0.0) then
-                  Latr5(i) = def_n
-              elseif (Latr5(i) >= 1) then
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/15/2023
+!          !>> Check for missing roughness attribute values and reassign to default values if missing
+!              if (Latr5(i) < 0.0) then
+!                  Latr5(i) = def_n
+!              elseif (Latr5(i) >= 1) then
           !>> Set zero multiplier for infinitely high roughness values
-                  if (Latr5(i) >= 999.) then
-                      dkd = 0.0
-                  else
-                      Latr5(i) = def_n
-                  endif
+              if (Latr5(i) >= 999.) then
+                   dkd = 0.0
+!                  else
+!                      Latr5(i) = def_n
               endif
+!              endif
 
-          !>> Set channel length to default value if missing
-              if (Latr3(i) <= 0.0) then
-                  if (mm == 1) then
-
-                      write(1,*)'Length (Latr3) for link',i,'is missing'
-                      write(1,*) 'Default value of 1000 is assigned
-     & but this should be fixed in the input file.'
-
-                      write(*,*)'Length (Latr3) for link',i,'is missing'
-                      write(*,*) 'Default value of 1000 is assigned
-     & but this should be fixed in the input file.'
-
-                  endif
-                  Latr3(i) = 1000.0
-              endif
+!          !>> Set channel length to default value if missing
+!              if (Latr3(i) <= 0.0) then
+!                  if (mm == 1) then
+!
+!                      write(1,*)'Length (Latr3) for link',i,'is missing'
+!                      write(1,*) 'Default value of 1000 is assigned
+!     & but this should be fixed in the input file.'
+!
+!                      write(*,*)'Length (Latr3) for link',i,'is missing'
+!                      write(*,*) 'Default value of 1000 is assigned
+!     & but this should be fixed in the input file.'
+!
+!                  endif
+!                  Latr3(i) = 1000.0
+!              endif
 
               if ( ES(jus(i),2) >= ES(jds(i),2) ) then
                   upN = jus(i)
@@ -668,7 +671,7 @@
                       Latr11(i) = Latr11(i) + dt/lockOPstep                      
                   endif
 	      
-	      endif	!>> end of Latr(9) if statement
+	          endif	!>> end of Latr(9) if statement
                   
               if (Latr11(i) < 0) then
                   Latr11(i) = 0
@@ -697,23 +700,27 @@
                   endif
 
 
-			    Rh=linkdepth*Latr4(i)/(linkdepth*2.0+Latr4(i))
+			      Rh=linkdepth*Latr4(i)/(linkdepth*2.0+Latr4(i))
 
                   Ach = linkdepth*Latr4(i)
 
 
           !>> Calculate channel 'resistance'
-		        AK = Latr8(i)+Latr6(i)+Latr7(i) ! Minor loss coefficients
+		          AK = Latr8(i)+Latr6(i)+Latr7(i) ! Minor loss coefficients
                   ruf=Latr3(i)*Latr5(i)*Latr5(i)
 
                   Res=(AK/2./g+ruf/Rh**(4./3.))/(Ach*Ach)	!Resistance in links
                   Resist=1.0/sqrt(abs(Res))		!Resistance in links
+                  if(isNaN(Resist)) then
+                      Resist = 0.0
+                  endif
                   Deta=Es(upN,2)-Es(downN,2)
 
           !>> Put a low pass filter on Deta to avoid infinity and NaN values
                   !Deta = min(abs(Deta),100.)	  !zw 3/14/2015 comments out:Es is already checked in celldQ
 
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd*Latr11(i)
+!!!ZW 12/15/2023  should Latr11 be applied to diffusion EAOL???
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd*Latr11(i)  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Type3 Lock Link',i,' flow is NaN'
@@ -761,38 +768,38 @@
               !! Latr9 = n/a
               !! Latr10 = n/a
 
-			if ( ES(jus(i),2) >= ES(jds(i),2) ) then
+			  if ( ES(jus(i),2) >= ES(jds(i),2) ) then
                   upN = jus(i)
                   downN = jds(i)
                   invup = Latr3(i)
-				sn = 1.0
+				  sn = 1.0
               else
                   upN = jds(i)
                   downN = jus(i)
                   invup = Latr5(i)
 
 	!>> if link type is orifice, set flow sign to negative if downstream water surface is greater than upstream
-				if(linkt(i) == 5) then
-					sn = -1.0
-				else
+				  if(linkt(i) == 5) then
+					  sn = -1.0
+				  else
 	!>> if link type is flood gate and downstream water elevation is greater, set flow sign to 0, so backwards flow is set equal to zero
-					sn = 0.0
-				endif
-			endif
-			delp = ES(upN,2) - ES(downN,2)
-			htup = ES(upN,2) - Latr1(i)
+					  sn = 0.0
+				  endif
+			  endif
+			  delp = ES(upN,2) - ES(downN,2)
+			  htup = ES(upN,2) - Latr1(i)
               htdn = ES(downN,2) - Latr1(i)
 
 	!>> if water level is below orifice invert, there is no flow
 			!if (htup <= 0.0) then
 !			if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	  !zw 3/16/2015
-			if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then	  !zw 3/16/2015
-				Q(i,2) = 0.0
+			  if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then	  !zw 3/16/2015
+				  Q(i,2) = 0.0
                   ! set flow area for no-flow orifice
                   Ach = 0.0
 	!>> If water water level is above tide gate invert, but below crown, flow is calculated with weir equation
-			elseif (Es(upN,2) <= Latr2(i)) then
-	            if(htup /= 0.0) then
+			  elseif (Es(upN,2) <= Latr2(i)) then
+	              if(htup /= 0.0) then
                       subp = htdn/htup
                   else
                       subp = 1.0
@@ -800,54 +807,55 @@
                   p = Latr1(i) - invup
                   eqC = 0.62
 		!>> If orifice-as-equivalent-weir is fully submerged, calculate flow with submerged weir equation
-				if (subp > 0.95) then
-					Q(i,2) = sn*0.6*Latr4(i)*htup*sqrt(2*g*(htup-htdn))
-				else
+				  if (subp > 0.95) then
+					  Q(i,2) = sn*0.6*Latr4(i)*htup*sqrt(2*g*(htup-htdn))
+				  else
           !>> If orifice-as-equivalent-weir is partially submerged calculate submergence coefficient, ksub
-					if (subp >= 0.85) then
-						w_ksub = -14.167*subp**2.+23.567*subp-8.815
-					elseif (subp < 0.85) then
-						w_ksub = 1.0
-					endif
+					  if (subp >= 0.85) then
+! BUG						w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+					  elseif (subp < 0.85) then
+						  w_ksub = 1.0
+					  endif
           !>> If orifice-as-equivalent-weir is not fully submerged calculate flow with standard homogeneous weir equation Ven Te Chow (1959)
-					w_k = w_ksub*(eqC+0.05*htup/p)*max(0.6,(1-0.2*htup/p))
-					Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*htup**1.5
-				endif
+					  w_k = w_ksub*(eqC+0.05*htup/p)*max(0.6,(1-0.2*htup/p))
+					  Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*htup**1.5
+				  endif
                   ! set flow area for non-full orifice
-				Ach = Latr4(i)*htup
+				  Ach = Latr4(i)*htup
 	!>> If orifice crown is submerged, use orifice equation
 	
 	! use orifice coefficient adjustment eq. 8.22 from A Brief Introduction ot Fluid Mechanics, 3rd ed. Young, Munson and Okiishi. 2004.
 	! beta is the ratio of orifice opening to pipe diameter (this should be less than 1, since an orifice opening must be smaller than the diameter of the pipe)
 	! here we set a max beta value of 0.9 to avoid div by 0 errors
-			else
-				orarea = (Latr2(i)-Latr1(i))*Latr4(i)
-				!beta = min(0.99,(Latr2(i)-Latr1(i))/(Es(upN,2)-invup))
-				beta = 0.0  ! do not use adjustment on orifice coefficient - just use values from links.csv as calibration factor
-				orC = Latr8(i)/(1-beta**4.0)
+			  else
+				  orarea = (Latr2(i)-Latr1(i))*Latr4(i)
+				  !beta = min(0.99,(Latr2(i)-Latr1(i))/(Es(upN,2)-invup))
+				  beta = 0.0  ! do not use adjustment on orifice coefficient - just use values from links.csv as calibration factor
+				  orC = Latr8(i)/(1-beta**4.0)
 
-				Q(i,2) = sn*orC*orarea*sqrt(abs(2*delp*g))
+				  Q(i,2) = sn*orC*orarea*sqrt(abs(2*delp*g))
 
                   ! set flow area for full orifice
                   Ach = orarea
-			endif
-            if(isNan(Q(i,2))) then
-                write (*,*) 'Type',linkt(i), ' Link',i,' flow is NaN'
-                write(*,*) 'Invert elevation=',Latr1(i)
-                write(*,*) 'Crown elevation=',Latr2(i) 
-			    write(*,*) 'Ground elevation upstream=',Latr3(i) 
-                write(*,*) 'average width=', Latr4(i)
-			    write(*,*) 'Ground elevation downstream=',Latr5(i) 
-                write(*,*) 'orifice coefficient=',Latr8(i)
-                write(*,*) 'invup=',invup
-                write(*,*) 'htup=',htup
-                write(*,*) 'htdn=',htdn
-                write(*,*) 'p=',Latr1(i) - invup
-                write(*,*) 'beta=',Es(upN,2)-invup
-                write(*,*) 'Es(jus)=',Es(jus(i),2)
-                write(*,*) 'Es(jds)=',Es(jds(i),2)
-                stop !pause
-            endif
+			  endif
+              if(isNan(Q(i,2))) then
+                  write (*,*) 'Type',linkt(i), ' Link',i,' flow is NaN'
+                  write(*,*) 'Invert elevation=',Latr1(i)
+                  write(*,*) 'Crown elevation=',Latr2(i) 
+			      write(*,*) 'Ground elevation upstream=',Latr3(i) 
+                  write(*,*) 'average width=', Latr4(i)
+			      write(*,*) 'Ground elevation downstream=',Latr5(i) 
+                  write(*,*) 'orifice coefficient=',Latr8(i)
+                  write(*,*) 'invup=',invup
+                  write(*,*) 'htup=',htup
+                  write(*,*) 'htdn=',htdn
+                  write(*,*) 'p=',Latr1(i) - invup
+                  write(*,*) 'beta=',Es(upN,2)-invup
+                  write(*,*) 'Es(jus)=',Es(jus(i),2)
+                  write(*,*) 'Es(jds)=',Es(jds(i),2)
+                  stop !pause
+              endif
               
               !>> calculate channel velocity
               if (Ach > 0.0) then
@@ -928,17 +936,18 @@
 
           !>> Set zero multiplier for infinitely high roughness values
               dkd=1.0
-          !>> Check for missing roughness attribute values and reassign to default values if missing
-              if (Latr5(i) < 0.0) then
-                  Latr5(i) = def_n
-              elseif (Latr5(i) >= 1) then
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/15/2023
+!          !>> Check for missing roughness attribute values and reassign to default values if missing
+!              if (Latr5(i) < 0.0) then
+!                  Latr5(i) = def_n
+!              elseif (Latr5(i) >= 1) then
           !>> Set zero multiplier for infinitely high roughness values
-                  if (Latr5(i) >= 999.) then
-                      dkd = 0.0
-                  else
-                      Latr5(i) = def_n
-                  endif
+              if (Latr5(i) >= 999.) then
+                  dkd = 0.0
+!                  else
+!                      Latr5(i) = def_n
               endif
+!              endif
 
           !>> determine direction of flow through link and re-assign upstream/downstream attributes if necessary
               if ( EH(jus(i),2) >= EH(jds(i),2) ) then
@@ -1023,6 +1032,11 @@
             
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
+          !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
+              if (abs(link_vel(i)) >= upwind_vel) then
+                  fa(i) = 1.0
+              endif
+
 !>> Link type 9 = ridges/levees
           elseif( linkt(i) == 9) then
               !! Channel attributes for ridges/levees
@@ -1052,24 +1066,25 @@
                    invup = Latr10(i)
                    invdown = Latr2(i)
               endif
-!>> check for missing invert elevations
-              if (invup < -9990.0) then          ! invup is missing
-                  if (invdown > -9990.0) then     ! invdown exists
-                      invup = invdown + 0.1
-                  else                            ! both are missing
-                      invup = -3.0
-                      invdown = -3.1
-                  endif
-              elseif (invdown < -9990.0) then    ! invup exists and invdown is missing
-                  invdown = invup - 0.1
-              endif
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/15/2023
+! !>> check for missing invert elevations
+!              if (invup < -9990.0) then          ! invup is missing
+!                  if (invdown > -9990.0) then     ! invdown exists
+!                      invup = invdown + 0.1
+!                  else                            ! both are missing
+!                      invup = -3.0
+!                      invdown = -3.1
+!                  endif
+!              elseif (invdown < -9990.0) then    ! invup exists and invdown is missing
+!                  invdown = invup - 0.1
+!              endif
 
               htup = ES(upN,2) - Latr1(i)
 
 !>> check if upstream water elevation is above ridge elevation - set flow to zero if it is lower than ridge
               if (htup <= 0.0) then
                   Q(i,2) = 0.0
-				Ach = 0.0    !zw 3/14/2015 add to ensure diffusion is zero for no flow condtion
+				  Ach = 0.0    !zw 3/14/2015 add to ensure diffusion is zero for no flow condtion
 !>> otherwise, calculate flow across ridge
               else
 !>> check if downstream water is below ridge elevation - if so, set downstream height to 0
@@ -1106,7 +1121,8 @@
                   else
            !>> If weir is partially submerged calculate submergence coefficient
                       if (subp >= 0.85) then
-                           w_ksub = -14.167*subp**2.+23.567*subp-8.815
+! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       elseif (subp < 0.85) then
                            w_ksub = 1.0
                       endif
@@ -1162,17 +1178,18 @@
               !! Latr10 = Regime D50 (mm)
 
               dkd=1.0
-          !>> Check for missing roughness attribute values and reassign to default values if missing
-              if (Latr5(i) < 0.0) then
-                  Latr5(i) = 0.025 !0.025 is default n for regime channels
-              elseif (Latr5(i) >= 1) then
+!          move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/18/2023
+!          !>> Check for missing roughness attribute values and reassign to default values if missing
+!              if (Latr5(i) < 0.0) then
+!                  Latr5(i) = 0.025 !0.025 is default n for regime channels
+!              elseif (Latr5(i) >= 1) then
           !>> Set zero multiplier for infinitely high roughness values
-                  if (Latr5(i) >= 999.) then
-                      dkd = 0.0
-                  else
-                      Latr5(i) = 0.025 !0.025 is default n for regime channels
-                  endif
+              if (Latr5(i) >= 999.) then
+                  dkd = 0.0
+!                  else
+!                      Latr5(i) = 0.025 !0.025 is default n for regime channels
               endif
+!              endif
            !>> calculate flow from Lacey Regime channel equations
               reg_p = 4.84*Latr9(i)**(1./2.)
               reg_fs = 1.587*Latr10(i)**(1./2.)
@@ -1205,59 +1222,85 @@
                   Q(i,2) = 0.0
               endif
 
-               !>> calculate channel velocity - not used for regime channels - keep set to zero
-               link_vel(i) = 0.0
+              !>> calculate channel velocity - not used for regime channels - keep set to zero
+              link_vel(i) = 0.0
 
 
               EAOL(i)=EAOL(Latr2(i))
-
+          else
+		      write(1,*)'Warning - Link ',i, 'is not a defined link type (1-12)!!!'
+              Q(i,2) = 0
+			  EAOL(i) = 0
 !>> end flowrate calculations based on linktype
           endif
 
 
 
 !>> Calculate volume of water in upstream compartment available for exchange during timestep
-          sn =(Es(jus(i),2)-Es(jds(i),2))/max(0.000001,abs(Es(jus(i),2)-Es(jds(i),2)))
-          if (sn > 0) then
-!              volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jus(i),1)
-              volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
-     &                        As(jus(i),1)
-
-          elseif (sn < 0) then
-!              volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jds(i),1)
-              volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
-     &                        As(jds(i),1)
-          else
-              volavailable = 0.0
-          endif
 !>> Calculate separate volume of water available for exchange for overland marsh flow links
           if (linkt(i) == 8) then
-              sn = (Eh(jus(i),2)-Eh(jds(i),2))/max(0.000001,abs(Eh(jus(i),2)-Eh(jds(i),2)))
+!              sn = (Eh(jus(i),2)-Eh(jds(i),2))/max(0.000001,abs(Eh(jus(i),2)-Eh(jds(i),2)))
+              if ( Eh(jus(i),2) > Eh(jds(i),2) ) then
+                  sn = 1.0
+              elseif ( Eh(jus(i),2) < Eh(jds(i),2) ) then
+                  sn = -1.0
+			  else
+			      sn = 0.0
+              endif
               if (sn > 0) then
                   if (Ahf(jus(i)) > 0.0) then 
-                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
-     &                            Ahf(jus(i))
+!                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
+!     &                            Ahf(jus(i))
+                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.0)*Ahf(jus(i))
                   else
-                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
-     &                        As(jus(i),1)
+!                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
+!     &                        As(jus(i),1)
+                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.0)*As(jus(i),1)
                   endif
               elseif(sn < 0) then
                   if (Ahf(jds(i)) > 0.0) then 
-                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
-     &                            Ahf(jds(i))
+!                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
+!     &                            Ahf(jds(i))
+                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.0)*Ahf(jds(i))
                   else
-                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
-     &                        As(jds(i),1)
+!                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
+!     &                        As(jds(i),1)
+                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.0)*As(jds(i),1)
                   endif              
               else
                   volavailable = 0.0
               endif
+          elseif(linkt(i) > 0) then
+!              sn =(Es(jus(i),2)-Es(jds(i),2))/max(0.000001,abs(Es(jus(i),2)-Es(jds(i),2)))
+              if ( ES(jus(i),2) > ES(jds(i),2) ) then
+                  sn = 1.0
+              elseif ( ES(jus(i),2) < ES(jds(i),2) ) then
+                  sn = -1.0
+		      else
+		          sn = 0.0
+              endif
+              if (sn > 0) then
+!                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jus(i),1)
+!                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
+!     &                        As(jus(i),1)
+                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.0)*As(jus(i),1)
+
+              elseif (sn < 0) then
+!                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jds(i),1)
+!                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
+!     &                        As(jds(i),1)
+                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.0)*As(jds(i),1)
+              else
+                  volavailable = 0.0
+              endif
+		  else
+		      volavailable = 0.0
           endif
 
 !>> Determine flowrate required to exchange all available water during timestep
           Qmax = volavailable/dt
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to this max rate
-          if (linkt(i) >= 0.0) then
+          if (linkt(i) > 0.0) then
               if (Qmax < abs(Q(i,2))) then
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
@@ -1276,6 +1319,11 @@
 
       
 !>> End link updates of Q
+      enddo
+
+!>> update upwind & downwind factors for dispersion based on current timestep's upwind factor
+      do i = 1,M
+          fb(i)=(1.0-fa(i))				!weighting
       enddo
 
 !>> ****HARDCODED FLOW CONTROL TRIGGERS - START*****
@@ -1306,8 +1354,6 @@
 !          endif
 !          SalLockStatusCSC = -1*SalLockStatusCSC
 !      endif
-
-
 
 !!>> MP project - Increase Atch Flow to Terrebonne - set flowrates for Atchafalaya diversion projects - MP project # 03b.DI.04
 !!      link numbers to use
@@ -1428,25 +1474,22 @@
 !          StgTriggerStatusSuperiorCanal=-1*StgTriggerStatusSuperiorCanal
 !      endif
 
-
 !>> ****HARDCODED FLOW TRIGGERS - END*****
 
 
-
-
 !>> Kadlec-Knight flow into/out of marsh.
-	do j=1,N
-!		dkd=1.0
-!		drefm=0.1										!Manning's n based on reference depth of 1/3 foot.
-!		if(han(j) >= 999.) then
+	  do j=1,N
+!		   dkd=1.0
+!		   drefm=0.1										!Manning's n based on reference depth of 1/3 foot.
+!		   if(han(j) >= 999.) then
 !              dkd=0.0
-!         endif
-!		Rh=max(Eh(j,1)-BedM(j),0.01)					!hydraulic radius for exchange flow
-!		Ach = Rh*hWidth(j)+100.*RSSS					!exchange X-sectional area & 1% slope of topography
-!		AK=hkm(j)										!minor loss
+!          endif
+!		   Rh=max(Eh(j,1)-BedM(j),0.01)					!hydraulic radius for exchange flow
+!		   Ach = Rh*hWidth(j)+100.*RSSS					!exchange X-sectional area & 1% slope of topography
+!		   AK=hkm(j)										!minor loss
 
           !>> sign of flow direction (must match celldQ), positive is open water-to-marsh flow, negative is marsh-to-open water flow
-          if (Es(j,2) > Eh(j,2)) then
+          if (Es(j,2) >= Eh(j,2)) then
               sDetah = 1.0
           else
               sDetah = -1.0
@@ -1454,31 +1497,36 @@
 
 
           !>> Stage differential between open water and marsh (with sign, negative is marsh-to-open water flow direction)
-		Detah=sDetah*max(0.0,abs(Es(j,2)-Eh(j,2)))							!driving head into marsh
+		  Detah=sDetah*max(0.0,abs(Es(j,2)-Eh(j,2)))							!driving head into marsh
 		
           !added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
           if(sDetah<0) then
 !              if((Eh(j,2)-BedM(j))<=0.01) then
-              if((Eh(j,2)-BedM(j))<=dry_threshold) then
+              if((Eh(j,2)-BedM(j))<=KKdepth(j)) then
                   Detah = 0.0;
               endif
+          else
+              if((Es(j,2)-Bed(j))<=dry_threshold) then
+                  Detah = 0.0;
+              endif
+		  
           endif
 
-          !>> Depth in marsh, used in Kadlec-Knight equation - minimum allowed is input parameter to each compartment
-          Dmarsh=max(KKdepth(j),Eh(j,2)-BedM(j))
+!          !>> Depth in marsh, used in Kadlec-Knight equation - minimum allowed is input parameter to each compartment
+!          Dmarsh=max(KKdepth(j),Eh(j,2)-BedM(j))
 
-!          Dmarsh=Max(0.01,Eh(j,1)-BedM(j))				!marsh depth
-!		Sf = abs(Deta)/hLength(j)						!Gradient towards marsh
-!		hann=han(j)*drefm/Dmarsh						!increased resistance as marsh depth-->0
-!		Res= (AK/2./g+hLength(j)*hann*hann/Rh**(4/3))/(Ach*Ach)
-!		hResist=1.0/sqrt(abs(Res))
-!		if(Eh(j,2) <= BedM(j)) then
+!!          Dmarsh=Max(0.01,Eh(j,1)-BedM(j))				!marsh depth
+!		   Sf = abs(Deta)/hLength(j)						!Gradient towards marsh
+!		   hann=han(j)*drefm/Dmarsh						!increased resistance as marsh depth-->0
+!		   Res= (AK/2./g+hLength(j)*hann*hann/Rh**(4/3))/(Ach*Ach)
+!		   hResist=1.0/sqrt(abs(Res))
+!		   if(Eh(j,2) <= BedM(j)) then
 !              Eh(j,2)=BedM(j)+0.01
 !          endif
-!		sn=1.0											!positive into marsh
-!		if(Deta <= 0) then
+!		   sn=1.0											!positive into marsh
+!		   if(Deta <= 0) then
 !              sn=-1.0							!negative leaving marsh
-!		endif
+!		   endif
 !          QMarsh(j,2)=sqrt(abs(Deta))*hResist*sn*dkd
           MarshEdge = max(hwidth(j),0.01)
           MarshL = hLength(j)
@@ -1490,40 +1538,60 @@
           
           !>> Calculate marsh flow 'resistance'
 		
-          !>> Check for missing or negative roughness attribute values (here using the KKa input value for compartment and reassign to default values if missing
+!         move the attribute check to infile.f to avoid repeating every time step - 12/18/2023
+!          !>> Check for missing or negative roughness attribute values (here using the KKa input value for compartment and reassign to default values if missing
           dkd_h = 1.0
-          if (KKa(j) < 0.0) then
-              KKa(j) = def_n
-          elseif (KKa(j) >= 1) then
-              if (KKa(j) >= 999.) then
+!          if (KKa(j) < 0.0) then
+!              KKa(j) = def_n
+!          elseif (KKa(j) >= 1) then
+          if (KKa(j) >= 999.) then
           !>> Set zero multiplier for infinitely high roughness values
-                  dkd_h = 0.0
-              else
-                  KKa(j) = def_n
-              endif
+              dkd_h = 0.0
+!              else
+!                  KKa(j) = def_n
           endif
+!          endif
 
           Marsh_ruf=MarshL*KKa(j)*KKa(j)
-          MarshRh=abs(Detah)   ! hyd. radius of marsh is approx. equal to depth
-          MarshAch=MarshEdge*abs(Detah)
-          MarshRes=(Marsh_ruf/MarshRh**(4./3.))/(MarshAch*MarshAch)	!Resistance in marsh-open-water exchange links
-          MarshResist=1.0/sqrt(abs(MarshRes))		!Resistance in marsh-open-water exchange link
+          if(Detah == 0) then
+		     QMarshMann = 0
+          else			 
+		     MarshRh=abs(Detah)   ! hyd. radius of marsh is approx. equal to depth
+             MarshAch=MarshEdge*abs(Detah)
+             MarshRes=(Marsh_ruf/MarshRh**(4./3.))/(MarshAch*MarshAch)	!Resistance in marsh-open-water exchange links
+             MarshResist=1.0/sqrt(abs(MarshRes))		!Resistance in marsh-open-water exchange link
           
-          if(isNaN(MarshResist)) then
-              MarshResist = 0.0
+             if(isNaN(MarshResist)) then
+                 MarshResist = 0.0
+             endif
+          
+             QMarshMann = sqrt(abs(Detah))*MarshResist*sDetah*dkd_h
           endif
-          
-          QMarshMann = sqrt(abs(Detah))*MarshResist*sDetah*dkd_h
       
 
-!>> Determine volume of water available for exchange with marsh during timestep
-!          if (sDetaH < 0) then
+! !>> Determine volume of water available for exchange with marsh during timestep
+!          if (sDetaH > 0) then
 !              volavailable = (Es(j,2) - Eh(j,2))*As(j,1)
 !          else
 !              volavailable = (Eh(j,2) - BedM(j))*Ahf(j)
 !          endif
-!>> Determine maximum flowrate from available exchange water
+! !>> Determine maximum flowrate from available exchange water
 !          Qmax = volavailable/dt
+!
+!>> Determine level where open water stage and marsh stage will be equal in compartment
+          Elevel = (As(j,1)*Es(j,2)+Ahf(j)*Eh(j,2)) / (As(j,1)+Ahf(j))
+          if (sDetah < 0) then !Es<Eh internal flow direction is marsh->OW
+!>> Determine change in marsh stage level to reach equilbrium with open water stage
+              Dzhlim = max(Elevel,BedM(j)) - Eh(j,2)
+!>> Calculate magnitude of flowrate needed out of marsh
+              Qmarshmax(j) = abs(Dzhlim)*Ahf(j)/dt
+          else  !Es>Eh internal flow direction is OW->marsh
+!>> Determine change in open water stage level to reach equilbrium with marsh stage
+              Dzhlim = max(Elevel,Bed(j)) - Es(j,2)
+!>> Calculate magnitude of flowrate needed into/out of marsh - directionality assigned in hydrod
+              Qmarshmax(j) = abs(Dzhlim)*As(j,1)/dt
+          endif
+              
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to the max flowrate calculated in celldQ
           if (Ahf(j) > 0.0) then
 ! 2023test !              QMarsh(j,2) = sDetaH*min(abs(QMarshKK),Qmarshmax(j))
@@ -1535,135 +1603,121 @@
 
      
 !============================cell updating
-	do j=1,N
+	  do j=1,N
 !============================cell continuity
-! day, dday, kthr, and kday now global parameters - no longer needed to be passed into subroutines
-      if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
+! day now global parameters - no longer needed to be passed into subroutines
+          if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
 
-          call CelldQ(j,kday,fcrop,mm,dday)
+              call CelldQ(j,kday,fcrop,mm,dday)
 
-          if (iSed == 1) then
-              call waves_YV(j)                                                            !-EDW
-              call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
-          endif
+              if (iSed == 1) then
+                  call waves_YV(j)                                                            !-EDW
+!                  call CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)               !JAM Oct 2010!
+                  call CelldSS(j,kday)               
+              endif
           
-          if (iSal == 1) then
-              call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-          endif
+              if (iSal == 1) then
+!                  call CelldSal(QSalSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+                  call CelldSal(j,kday)
+              endif
 
-          if (iTemp == 1) then
-              call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-          endif
+              if (iTemp == 1) then
+!                  call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+                  call CelldTmp(j,kday)
+              endif
 
-!          call Celldage(QageSUM,Dz,j,kday,kthr,ageTRIBj,dref,Tres)
-
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)                                                            !-EDW
-! QSSUM is now global parameter - doesn't need to be passed into subroutine
-! QSsumh is calculated in CelldSS - therefore it is no longer passed into subroutine but is calculated only locally
-!          call CelldQ(QSUM,Dz,j,fcrop,mm)
-!          call waves_YV(j)
-
-!          call CelldSS(Dz,j,CSSTRIBj,dref,Tres)               !JAM Oct 2010
-!	    call CelldSal(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-!          call CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-
-
+              if (iWQ == 1) then
 !>> reset photosynthesis parameters so they can be reset for current compartment at timestep in photo.f
-          muph = 0.0
-          fpp = 0.0
-
+                  muph = 0.0
+                  fpp = 0.0
 !>> call photosnythesis rate calculation to pass into water quality routines that require it, this updates muph and fpp values
-          if (iWQ == 1) then
-              call photo(j)
+                  call photo(j)
 
 !>> loop through WQ constituents for each WQ type that utilizes transport equation
-              do ichem = 1,2
-                  call CelldChem(j,kday,ichem)
-		    enddo
-!              write(*,*) chem(j,kday,1),chem(j,kday,2)
-              ichem = 5
-              call CelldChem(j,kday,ichem)
+                  do ichem = 1,2
+                      call CelldChem(j,kday,ichem)
+		          enddo
 
-              do ichem = 7,11
+                  ichem = 5
                   call CelldChem(j,kday,ichem)
-		    enddo
 
-              !ichem = 14
-              !call CelldChem(j,kday,ichem)  !zw 4/28/2015 POP calculated in MP2012 by ALG and DET see below
+                  do ichem = 7,11
+                      call CelldChem(j,kday,ichem)
+		          enddo
+
+                  !ichem = 14
+                  !call CelldChem(j,kday,ichem)  !zw 4/28/2015 POP calculated in MP2012 by ALG and DET see below
 
 !>> Update WQ concentrations that are calculated from other constituents and did not rely on the transport equation
 !>>-- set carbon-to-chlorophyll A ratio
-	        rca = 75.0
+	              rca = 75.0
 !>>-- set nitrogen-chlorophyll A stoichiometric mass ratio for Organic N calculation
-	        rna = 0.176*rca
+	              rna = 0.176*rca
 !>>-- set nitrogen-detritus stoichiometric mass ratio for Organic N calculation
-              rnd = 0.072
+                  rnd = 0.072
 !>>-- set carbron-detritus stoichiometric mass ratio for Organic C calculation
-              rcd = 0.41
+                  rcd = 0.41
 !>>-- set carbon-nitrogen stoichiometric mass ratio for Organic C calculation
-              rcn = 5.69
+                  rcn = 5.69
 
 !>>-- Dissolved Inorganic N is function of NO3 and NH4
-              Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
+                  Chem(j,3,2) = Chem(j,1,2) + Chem(j,2,2)
 
 !>>-- Organic N is function of: dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-              Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
+                  Chem(j,4,2) = Chem(j,10,2)+rna*Chem(j,8,2)+rnd*Chem(j,9,2)
 
 !>>-- Total Organic Carbon is function of:dissovled organic N (ichem = 10) Algae (ichem = 8) and Detritus (ichem = 9) and stoichiometric ratios
-              Chem(j,6,2) = rcn*Chem(j,10,2)+
+                  Chem(j,6,2) = rcn*Chem(j,10,2)+
      &                        rca*Chem(j,8,2)+rcd*Chem(j,9,2)
 
 !>>-- Dissolved Inorganic P is function of Total Inorganic P (ichem = 5) and fraction of TIP that is in particulate form (calculated in photo.f)
-              Chem(j,12,2) = (1-fpp)*chem(j,5,2)
+                  Chem(j,12,2) = (1-fpp)*chem(j,5,2)
 
 !>>-- Chlorophyll A not calculated - set to -9999
-              Chem(j,13,2) = -9999
+                  Chem(j,13,2) = -9999
 
 ! used to be located at end of hydrod
-		    Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
+		          Chem(j,7,2) = O2Sat(int(day)+1)		!zw 4/28/2015 change Chem(j,7,1) to Chem(j,7,2)
 
 ! Particulate Organic P (POP) is function of ALG and DET
-			Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
+			      Chem(j,14,2) = 0.0244*rca*Chem(j,8,2)+0.01*Chem(j,9,2)  !zw 4/28/2015 added POP calculation from MP2012
 
+! !>> Apply low and high pass filters to newly calculated WQ concentrations
+	              !zw 4/28/2015 remove the WQ low and high pass filters
+                  !do ichem = 1,14
+                  !    if(Chem(j,ichem,2) < 0.0) Chem(j,ichem,2)=0.0
+	              !enddo
+
+                  !if(Chem(j,8,2) <= 0.0001) Chem(j,8,2)=0.0001
+	              !if(Chem(j,5,2) > 0.001) Chem(j,5,2)=0.001					! JKS Sept 2011
+	              !if(Chem(j,12,2) > 0.001) Chem(j,12,2)=0.001				! JKS Sept 2011
+	              !if(Chem(j,10,2) > 0.0005) Chem(j,10,2)=0.0005
+
+                  !if(Chem(j,1,2) > 0.003) Chem(j,1,2)=0.003					! JAM June 2011
+	              !if(Chem(j,2,2) > 0.001) Chem(j,2,2)=0.001
+	              !if(Chem(j,3,2) > 10.) chem(j,3,2)=10.0
+	              !if(Chem(j,4,2) > 10.) chem(j,4,2)=10.0
+	              !if(Chem(j,5,2) > 10.) chem(j,5,2)=10.0
+	              !if(Chem(j,6,2) > 10.) chem(j,6,2)=10.0
+	              !if(Chem(j,7,2) > 10.) chem(j,7,2)=10.0
+	              !if(Chem(j,8,2) > 10.) chem(j,8,2)=10.0
+	              !if(Chem(j,9,2) > 10.) chem(j,9,2)=10.0
+	              !if(Chem(j,10,2) > 10.) chem(j,10,2)=10.0
+	              !if(Chem(j,11,2) > 10.) chem(j,11,2)=10.0
+	              !if(Chem(j,12,2) > 10.) chem(j,12,2)=10.0
+                  !if(Chem(j,13,2) > 10.) chem(j,13,2)=10.0
+	              !if(Chem(j,14,2) > 10.) chem(j,14,2)=10.0
+              endif
           endif
-      endif
-
-!>> Apply low and high pass filters to newly calculated WQ concentrations
-	    !zw 4/28/2015 rove the WQ low and high pass filters
-          !do ichem = 1,14
-          !    if(Chem(j,ichem,2) < 0.0) Chem(j,ichem,2)=0.0
-	    !enddo
-
-          !if(Chem(j,8,2) <= 0.0001) Chem(j,8,2)=0.0001
-	    !if(Chem(j,5,2) > 0.001) Chem(j,5,2)=0.001					! JKS Sept 2011
-	    !if(Chem(j,12,2) > 0.001) Chem(j,12,2)=0.001				! JKS Sept 2011
-	    !if(Chem(j,10,2) > 0.0005) Chem(j,10,2)=0.0005
-
-          !if(Chem(j,1,2) > 0.003) Chem(j,1,2)=0.003					! JAM June 2011
-	    !if(Chem(j,2,2) > 0.001) Chem(j,2,2)=0.001
-	    !if(Chem(j,3,2) > 10.) chem(j,3,2)=10.0
-	    !if(Chem(j,4,2) > 10.) chem(j,4,2)=10.0
-	    !if(Chem(j,5,2) > 10.) chem(j,5,2)=10.0
-	    !if(Chem(j,6,2) > 10.) chem(j,6,2)=10.0
-	    !if(Chem(j,7,2) > 10.) chem(j,7,2)=10.0
-	    !if(Chem(j,8,2) > 10.) chem(j,8,2)=10.0
-	    !if(Chem(j,9,2) > 10.) chem(j,9,2)=10.0
-	    !if(Chem(j,10,2) > 10.) chem(j,10,2)=10.0
-	    !if(Chem(j,11,2) > 10.) chem(j,11,2)=10.0
-	    !if(Chem(j,12,2) > 10.) chem(j,12,2)=10.0
-!	    if(Chem(j,13,2) > 10.) chem(j,13,2)=10.0
-	    !if(Chem(j,14,2) > 10.) chem(j,14,2)=10.0
-
       enddo										!j do loop
 
       dmod=thour-int(thour)
 
       if (dmod == 0) then
-		khr=int(thour)
-		dmod=khr-3*int(float(khr)/3.)
+		  khr=int(thour)
+		  dmod=khr-3*int(float(khr)/3.)
 
-	endif
+	  endif
 
 
 !>> generate array of hourly water level in boundary condition compartments (if flag is set to write hourly output file)
@@ -1671,19 +1725,19 @@
 
 !>> Write hourly water level in boundary compartments
           if(nstghr > 0) then
-		    do jj = 1,nstghr
-			    EShrly(jj)=ES(stghrwrite(jj),2)
-		    enddo
-		    WRITE(210,1111) (EShrly(jj),jj=1,nstghr)
+		      do jj = 1,nstghr
+			      EShrly(jj)=ES(stghrwrite(jj),2)  !instanenous value instead of hourly average
+		      enddo
+		      WRITE(210,1111) (EShrly(jj),jj=1,nstghr)
           endif
       endif
 
-!>> Write flow output for select links
+!>> Write flow output for select links, unit m^3/day
       if(nlinksw > 0) then
 !>> If first timestep of day, reset average flow term
           if (daystep == 1) then
               do jj = 1,nlinksw
-			    FLO(jj) = Q(linkswrite(jj),2)*dt/(3600.*24.)
+			      FLO(jj) = Q(linkswrite(jj),2)*dt/(3600.*24.)
               enddo
           else
               do jj = 1,nlinksw
@@ -1753,21 +1807,22 @@
       enddo
 
 
-
       do kk=1,M
           if(daystep == 1) then
 !>> reset average salinity value for links at start of day
 		    SlkAve(kk) = SL(kk,2)*dt/(3600.*24.)
+		    TlkAve(kk) = TL(kk,1)*dt/(3600.*24.)             !ZW 12/18/2023
           else
 !>> Update average salinity value for links by timestep's contribution to daily average
 		    SlkAve(kk)=SlkAve(kk) + SL(kk,2)*dt/(3600.*24.)
+		    TlkAve(kk)=TlkAve(kk) + TL(kk,1)*dt/(3600.*24.)  !ZW 12/18/2023
 	    endif
       enddo
 
 
 
 !>> Write daily averages to output files
-	if (daystep == lastdaystep) then
+	  if (daystep == lastdaystep) then
 !>-- Write daily average water stage elevation in open water to STG.out
           WRITE(111,2222)  (ESAV(j,1),j=1,N)
 !>-- Write daily average water stage elevation in marsh to STGm.out
@@ -1849,7 +1904,8 @@
 !              sal_daily(day_int,j) = max(min(SALAV(j),35.0),0.2)
 !              sal_daily(day_int,j) =
 !     &                max(min((S(j,2)+STEMP(j,2))/2.,35.),0.2)        ! salinity equation same as used to write SAL.out file (unit=75)
-              tmp_daily(day_int,j) = Tempw(j,2)
+!              tmp_daily(day_int,j) = Tempw(j,2)
+              tmp_daily(day_int,j) = TempwAve(j)  !change tmp_daily to daily average value instead of instanenous avlue - ZW 12/18/2023
               tkn_daily(day_int,j) = ChemAve(j,2)+ChemAve(j,4)
               tss_daily(day_int,j) = TSSAve(j)
               ! Reset daily high and low waters to zero
@@ -1866,8 +1922,9 @@
 !          sal_daily_links(day_int,kk)=max(min(SlkAve(kk),35.),0.2)
 !              sal_daily_links(day_int,kk) =
 !     &                max(min((SL(kk,2)+SLTEMP(kk,2))/2.,35.),0.2)
-              tmp_daily_links(day_int,kk) = TL(kk,1)
-	    enddo
+!              tmp_daily_links(day_int,kk) = TL(kk,1)
+              tmp_daily_links(day_int,kk) = Tlkave(kk)  !ZW 12/18/2023
+	      enddo
 
 !          kyear=int(float(kday)/365.25)+1
 !          WRITE(*,*)kyear,tmon											!,S(10,2)
@@ -1896,11 +1953,12 @@
  9229	FORMAT(<cells-1>(F0.4,','),F0.4)
  2227	FORMAT(<cells-1>(F0.4,','),F0.4)
  2222	FORMAT(<cells-1>(F0.4,','),F0.4)
- 1324 FORMAT(<cells-1>(F0.6,','),F0.6)
- 1111 FORMAT(<nstghr-1>(F0.4,','),F0.4)
- 1112 FORMAT(<nlinksw-1>(F0.4,','),F0.4)
- 1113 FORMAT(F0.4)
-      return
+ 1324   FORMAT(<cells-1>(F0.6,','),F0.6)
+ 1111   FORMAT(<nstghr-1>(F0.4,','),F0.4)
+ 1112   FORMAT(<nlinksw-1>(F0.4,','),F0.4)
+ 1113   FORMAT(F0.4)
+
+    return
 	end
 
 !***********************End Subroutine hydrodynamic*********************************************
