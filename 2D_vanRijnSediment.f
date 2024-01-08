@@ -73,8 +73,8 @@
       subroutine vanRijnSediment(j,kday)
 
       use params
-	implicit none
-	integer :: j,jn,jt,k,kk,kday
+	  implicit none
+	  integer :: j,jn,jt,k,kk,kday
 	
       real :: ddy_1,ddy_2,OWwidth,OWArea,Uflows
       real :: windx_value,windy_value,wind_spd,Uwind,Ubed,Tbed
@@ -90,7 +90,7 @@
 !>@par General Structure of Subroutine Logic:
 
 !>> Calculate kinematic viscosity from temperature.(eq 7d in methodology memo)
-	kinvisc(j) = 0.00000179/
+	  kinvisc(j) = 0.00000179/
      &				(1+0.03369*Tempw(j,1)+0.000221*Tempw(j,1)**2)
 
 !>> Calculate water depths for current and previous timesteps - depth is not allowed to be less than 0.0001 in celldQ, so these values will always be non-zero
@@ -104,11 +104,11 @@
 
 
 !>> Calculate portion of fines available for flocculation as function of salinity (eq. 8 in methodology memo) 
-	if (S(j,1) < Csalmax) then
-		Pfloc = Pflocmax*S(j,1)/Csalmax
-	else
-		Pfloc = Pflocmax
-	endif
+	  if (S(j,1) < Csalmax) then
+		  Pfloc = Pflocmax*S(j,1)/Csalmax
+	  else
+		  Pfloc = Pflocmax
+	  endif
 
 !>> Read in concentrations of different sediment classes from previous timestep
       CSand = CSS(j,1,1)
@@ -128,34 +128,40 @@
 !>> Calculate settling velocities for different sediment classes
 !>> particle class size (k): 1=sand,2=silt,3=unfloc clay, 4=floc clay
       do k=1,4 
-		Dgr(k) = D50(k)         !Dgr(k) is grain size - can set to non-D50 values here in the future
+		  Dgr(k) = D50(k)         !Dgr(k) is grain size - can set to non-D50 values here in the future
           D90(k) = D90x*D50(k)
-		SGsed(k) = Specg        !ability to set different sediment specific gravities - currently use one value
+		  SGsed(k) = Specg        !ability to set different sediment specific gravities - currently use one value
           rhoSed(k) = SGsed(k)*rhow 
 
 !>> Calculate settling velocity for sand particles (eq. 7a & 7b in methodology  memo)		
-		if (k == 1) then
-		 	Dr = Dgr(k)*sqrt((g*(SGsed(k)-1.)/kinvisc(j)**2.))
-			velF = max(sqrt((36./Dr**3.) + 2./3.) - sqrt(36./(Dr**3.)),0.0)
-			velset(j,k) = velF*sqrt((SGsed(k)-1.)*Dgr(k)*g)
-		else
+		  if (k == 1) then
+		 	  Dr = Dgr(k)*sqrt((g*(SGsed(k)-1.)/kinvisc(j)**2.))
+			  velF = max(sqrt((36./Dr**3.) + 2./3.) - sqrt(36./(Dr**3.)),0.0)
+			  velset(j,k) = velF*sqrt((SGsed(k)-1.)*Dgr(k)*g)
+		  else
 !>> Calculate settling velocity for silt & clay particles (eq. 6 in methodology memo)
-			velset(j,k) = (g*(SGsed(k)-1)*D50(k)**2)/(18*kinvisc(j))
-		endif
-	enddo
+			  velset(j,k) = (g*(SGsed(k)-1)*D50(k)**2)/(18*kinvisc(j))
+		  endif
+	  enddo
 
 !>> Update settling velocity for flocculated clay particles (sediment class (k) = 4) 
-	if (CClayFloc < flocC1) then
-		flocset = velset(j,4)
-	elseif (CClayFloc < flocC3) then
-		flocset = flocA*(CClayFloc**flocN)/(CClayFloc**2+flocB**2)**flocM
-	else
-		flocset = 0.000001
-	endif
-	velset(j,4) = flocset
+! BUG - flocC1 and flocC3 unit is kg/m3 in the inputs whereas CSS is in g/m3!!
+! BUG - flocA/flocB/flocN/flocM in eq.9 of methodology memo are for unit of kg/m3!!
+! BUG fix - need to convert CClayFloc from g/m3 to kg/m3 in the following codes - zw 1/4/2024
+!	  if (CClayFloc < flocC1) then
+	  if (CClayFloc/1000.0 < flocC1) then
+		  flocset = velset(j,4)
+!	  elseif (CClayFloc < flocC3) then
+!		  flocset = flocA*(CClayFloc**flocN)/(CClayFloc**2+flocB**2)**flocM
+	  elseif (CClayFloc/1000.0 < flocC3) then
+		  flocset = flocA*((CClayFloc/1000.0)**flocN)/((CClayFloc/1000.0)**2+flocB**2)**flocM
+	  else
+		  flocset = 0.000001
+	  endif
+	  velset(j,4) = flocset
 	
 !>> Calculate wind-driven currents.
-	windx_value = windx(j)
+      windx_value = windx(j)
       windy_value = windy(j)
       wind_spd = sqrt(windx_value**2 + windy_value**2)
       Uwind = ka(j)*wind_spd
@@ -163,7 +169,8 @@
 !>> Determine cumulative flow into and out of compartment
 !>> Convert cumulative flow into magnitude of velocities into and out of compartment (assume half of flows leave compartment, half enter - hence divide by 2)
       OWwidth = sqrt(As(j,1))        ! assume open water portion of compartment is square
-      Uflows = Qsum_abs(j)/(2*ddy_2*OWwidth) 
+!      Uflows = Qsum_abs(j)/(2*ddy_2*OWwidth) 
+      Uflows = Uwind + ave_vel(j)  !Uflows should exclude tributary flows
       
 !>> Calculate total velocity at bed of open water compartment (winds, flows, waves).
       Ubed = Uwind + Uorb(j,1) + ave_vel(j) !Uflows
@@ -209,23 +216,25 @@
               elseif (D50(k) <= 0.002) then
                   aa = 8.5
                   bb = 0.6
-                  cc = 8.5
+!                  cc = 8.5
+!BUG fix - 0.95 in van Rijn 2013 as cited in methodology memo - zw 1/4/2024
+                  cc = 0.95  
                   dd = 0.57
                   ee = 0.43
                   ff = 0.14
               else
-				write(1,*) '*************ERROR**************'
-				write(1,*) 'D50 for sand is greater than 2 mm.'
-				write(1,*) 'The van Rijn equation should not be used.'
-				write(1,*) 'Correct grain size definitions and re-run.' 
+				  write(1,*) '*************ERROR**************'
+				  write(1,*) 'D50 for sand is greater than 2 mm.'
+				  write(1,*) 'The van Rijn equation should not be used.'
+				  write(1,*) 'Correct grain size definitions and re-run.' 
                             
                   write(*,*) '*************ERROR**************'
-				write(*,*) 'D50 for sand is greater than 2 mm.'
-				write(*,*) 'The van Rijn equation should not be used.'
-				write(*,*) 'Correct grain size definitions and re-run.' 
-				stop !pause
+				  write(*,*) 'D50 for sand is greater than 2 mm.'
+				  write(*,*) 'The van Rijn equation should not be used.'
+				  write(*,*) 'Correct grain size definitions and re-run.' 
+				  stop !pause
                   
-			endif
+              endif
                   
 !>> -- calculate van Rijn terms
               YY = log10( 12*ddy_2/(3*D90(k)) )
@@ -238,40 +247,54 @@
               Me = abs((Ue-Ucr)/sqrt(g*D50(k)*(SGsed(k)-1))) ! need absolute value since this value is raised to 2.4 power - removes sign of Ucr
               sMe = Me/((Ue-Ucr)/sqrt(g*D50(k)*(SGsed(k)-1)))
 !>> -- dimensionless shear stress
-              T_dimless = Tcrit(k)/((rhoSed(k)-rhow)*g*D50(k))
+!              T_dimless = Tcrit(k)/((rhoSed(k)-rhow)*g*D50(k))
+!  BUG fix - Tbed should be used instead of Tcrit - zw 1/4/2024
+              T_dimless = Tbed/((rhoSed(k)-rhow)*g*D50(k))
 !>> -- reference particle diameter, Dstar
               Dstar = D50(k)*(g*(SGsed(k)-1)/(kinvisc(j)**2.))**(1./3.)
 !>> -- dimensionless CRITICAL shear stress for sand
               if (Dstar<4) then
-                  Tcrit_dimless = 0.115*(Dstar**-0.5)
+                  Tcrit_dimless = 0.115*(Dstar**(-0.5))
               else
-                  Tcrit_dimless = 0.14*(Dstar**-0.64)
+                  Tcrit_dimless = 0.14*(Dstar**(-0.64))
               endif
-!>> -- van Rijn sediment flux (kg/m2-sec) - represents the sediment carrying capacity of the flowing water - can be negative, this would represent periods of deposition b/c flow does not have any carrying capacity for sand                 
-              if (T_dimless < Tcrit_dimless) then
+!>> -- van Rijn sediment flux (kg/m-sec) - represents the sediment carrying capacity of the flowing water - can be negative, this would represent periods of deposition b/c flow does not have any carrying capacity for sand                 
+!              if (T_dimless < Tcrit_dimless) then
+!Bug fix - use Ucr instead of Tcrit because Ucr is converted from Tcrit
+              if (Ue <= Ucr) then
                   vRqs = 0.0
               else
                   vRqs = sMe*alphaSed(j)*rhoSed(k)*Uflows*
-     &                     D50(k)*(Me**2.4)*(Dstar**-0.6)
+     &                     D50(k)*(Me**2.4)*(Dstar**(-0.6))
               endif
-!>> -- van Rijn equilibrium sediment flux out of compartment, Qse        
-              vRQse = vRqs*OWwidth        !equilibrium sand load (in kg/sec)
-!>> -- van Rijn suspended sand concentration in compartment for current timestep - CSS value of flows leaving compartment - in mg/L, same as CSS(:)
-!>> -- if effective velocity is less than critical velocity, van Rijn sediment flux calculation is negative - deposition will occur and van Rijn suspended sand concentration should be set to zero
-              if (Qsum_out(j) /= 0.0) then
-                  CSSvRs(j,2) = min(CSSresusOff(k), max(
-     &                           1000.0*vRQse*dt/(As(j,1)*ddy_2),0.0))
-              else
-                  CSSvRs(j,2) = 0.0
-              endif
+! !>> -- van Rijn equilibrium sediment flux out of compartment, Qse        
+!              vRQse = vRqs*OWwidth        !equilibrium sand load (in kg/sec)
+! !>> -- van Rijn suspended sand concentration in compartment for current timestep - CSS value of flows leaving compartment - in mg/L, same as CSS(:)
+! !>> -- if effective velocity is less than critical velocity, van Rijn sediment flux calculation is negative - deposition will occur and van Rijn suspended sand concentration should be set to zero
+!              if (Qsum_out(j) /= 0.0) then
+!                  CSSvRs(j,2) = min(CSSresusOff(k), max(
+!     &                           1000.0*vRQse*dt/(As(j,1)*ddy_2),0.0))
+!              else
+!                  CSSvRs(j,2) = 0.0
+!              endif
+!>> -- var Rijn equilibrium concentration (kg/m3 -> g/m3) - zw 1/4/2024
+			  CSSvRs(j,2) = vRqs/(Uflows*ddy_2)*1000.0 
 !>> -- calculate maximum possible sand sediment accumulation rate (g/sec) based on sediment fluxes (positive rate is deposition on open water bed)              
-              SedAccumRate(k) = (CSS(j,1,k)*As(j,1)*ddy_1/dt)
-     &                         - (CSSvRs(j,2)*As(j,1)*ddy_2/dt)   
-     &                         - MEESedRate(k)
-     &                         - QSmarsh(k)
-     &                         - QSsum(k)
-     &                         - QStrib(k)
-     &                         - QSdiv(k)
+!              SedAccumRate(k) = (CSS(j,1,k)*As(j,1)*ddy_1/dt)
+!     &                         - (CSSvRs(j,2)*As(j,1)*ddy_2/dt)   
+!     &                         - MEESedRate(k)
+!     &                         - QSmarsh(k)
+!     &                         - QSsum(k)
+!     &                         - QStrib(k)
+!     &                         - QSdiv(k)
+! Source/sink term for sand (g/sec) = alpha*settling velocity *(ceq-c) where ceq=CSSvRs(j,2), c=CSS(j,1,k) - zw 1/4/2024
+! alpha is non equilibrium adaptation coefficient (constant or varying)
+! The nonequilibrium adaptation coefficient is assigned different values by different
+! investigators in their studies. Han et al. (1980) and Wu and Li (1992) used a=1 for strong erosion,
+! a = 0:25 for strong deposition and a = 0:5 for weak erosion and deposition. Yang (1998) used a
+! very small value 0.001. Thus, the nonequilibrium adaptation coefficient is defined as
+! a user-defined parameter in the model?
+              SedAccumRate(k) = (CSS(j,1,k)-CSSvRs(j,2))*velset(j,k)*As(j,1)*adaption_coeff(j)   
           endif
 
 !>> Reduce maximum sediment accumulation rates (g/sec) based on available sediment in water column or in erodible bed
