@@ -1,8 +1,9 @@
 !       Subroutine CellDSS(Dz,j,CSSTRIBj,dref,Tres)
 
 ! QSSUM, QSSumh, kthr and kday now global parameters - no longer needed to be passed into subroutine      
-  	Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
-cJAM      Tributary and resuspension/deposition contributions to SS
+!  	Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
+  	Subroutine CelldSS(j,kday)
+!cJAM      Tributary and resuspension/deposition contributions to SS
 
 !> @param     QSsum(k)        sediment flux in Open Water from all links - negative value is flux INTO open water (g/s)
 !> @param     QSsumh(k)       sediment flux in Marsh from all marsh links - negative value is flux INTO marsh (g/s)
@@ -15,7 +16,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !> @param     depo_avail_h    sediment flux available to deposit in marsh during timestep based on available sediment (g/s)
 !> @param     depo_settling_h sediment flux available to desposit in marsh based on settling velocity (g/s)
       
-	use params      
+	  use params      
       
       
       real :: ddy_1,ddy_2,ddh_1,ddh_2
@@ -89,7 +90,7 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !>> if flow is out of marsh and there are suspended solids in marsh determine maximum possible sediment flux (g/sec) based on available sediment
               if (Cssh(j,1,k) > CSSmin) then
                   QSmarsh_avail = -CSSh(j,1,k)*Ahf(j)*ddh_1/dt
-	            QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
+	              QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
 
               else
                   QSmarsh(k) = 0.0
@@ -155,24 +156,29 @@ cJAM      Tributary and resuspension/deposition contributions to SS
                   jnb=jds(abs(icc(j,k)))
               endif  
           endif
-              iab=abs(icc(j,k))
+          iab=abs(icc(j,k))
 !>> if link value in connectivity matrix is non-zero - call subroutine that will accumulate sediment flux from all links
           if (iab /= 0) then
 !>> calculate velocity magnitude of all flows into/out of compartment
               if (linkt(iab) > 0) then		
-                  if (linkt(iab) /= 8) then
-                      if (linkt(iab) /= 9) then
+!                  if (linkt(iab) /= 8) then
+!                      if (linkt(iab) /= 9) then
+! pump link velocity should be accounted into average link velocity for sediment - zw 1/4/2024
+                  if ((linkt(iab) /= 7) .and. (linkt(iab) /= 8) .and. (linkt(iab) /= 9))  then
                           ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
-                          ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
+!                          ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
+! when link vel=0, it should not be accounted into average link velocity for sediment - zw 1/4/2024
+                          if (abs(link_vel(iab))>0) ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0
                           max_vel(j) = max( max_vel(j),abs(link_vel(iab)) )
                           min_vel(j) = min( min_vel(j),abs(link_vel(iab)) )
-                      endif
+!                      endif
                   endif
-	      endif
+	          endif
               
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
-                  call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
+!                  call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
+                  call TSSOLIDS(iab,jnb,j,k,sedclass)
                   !if (j == 115) then
                   !    write(*,*) sedclass,iab,jnb,j,QSsum(sedclass)
                   !end if
@@ -204,7 +210,10 @@ cJAM      Tributary and resuspension/deposition contributions to SS
           dSacc(k) = 0.0
 !>> loop over sediment classes to 
 !>> Calculate change in open water CSS concentration for each sediment class,  based on net accumulation rates
-          CSS(j,2,k) = ((CSS(j,1,k)*As(j,1)*ddy_1/dt)
+          if(ddy_2 <= dry_depth) then
+		      CSS(j,2,k)=0
+		  else
+              CSS(j,2,k) = ((CSS(j,1,k)*As(j,1)*ddy_1/dt)
      &                - SedAccumRate(k)   
      &                - MEESedRate(k)
      &                - QSmarsh(k)
@@ -213,9 +222,9 @@ cJAM      Tributary and resuspension/deposition contributions to SS
      &                - QSdiv(k))
      &                *dt/(As(j,1)*ddy_2)
 
-          
 !>> Update CSS for each sediment class - filter based on available sediment
-          CSS(j,2,k)=min(max(CSSmin,CSS(j,2,k)),CSSmax)
+              CSS(j,2,k)=min(max(CSSmin,CSS(j,2,k)),CSSmax)
+          endif
                     
 !>> Calculate total mass accumulated on open water bed
 !>> If available sediment in erodible bed has already been lost, SedAccumRate was set to zero and only use positive SedAccumRate will be used (deposition)         
@@ -234,13 +243,16 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               SedAccumRate_h(k) = min(depo_settling_h,depo_avail_h)
 
 !>> Calculate change in marsh CSS concentration in each sediment class
-              CSSh(j,2,k) = (CSSh(j,1,k)*Ahf(j)*ddh_1/dt
+              if(ddh_2 <= dry_depth)then
+			      CSSh(j,2,k) = 0
+			  else
+                  CSSh(j,2,k) = (CSSh(j,1,k)*Ahf(j)*ddh_1/dt
      &            + QSmarsh(k)
      &            - QSsumh(k)
      &            - SedAccumRate_h(k))
      &            *dt/(ddh_2*Ahf(j))
-              
-              CSSh(j,2,k) = min(max(CSSmin,CSSh(j,2,k)),CSSmax)
+                  CSSh(j,2,k) = min(max(CSSmin,CSSh(j,2,k)),CSSmax)
+              endif
               
 !>> Calculate mass deposited in marsh zones (in g/m2)
 !>> Sand particles deposit in marsh edge zone (first 30 meters) 
@@ -286,16 +298,16 @@ cJAM      Tributary and resuspension/deposition contributions to SS
               CSSh(j,2,k) = CSSh(j,1,k)
           endif
 
-!>> Check if depths are at or below dry-depth threshold
-          if (ddy_2 <= dry_depth) then
-              CSS(j,2,k) = 0.0
-              !CSS(j,2,k) = CSS(j,1,k)
-          endif
-          
-          if (ddh_2 <= dry_depth) then
-              CSSh(j,2,k) = 0.0
-              !CSSh(j,2,k) = CSSh(j,1,k)
-          endif
+! !>> Check if depths are at or below dry-depth threshold
+!          if (ddy_2 <= dry_depth) then
+!              CSS(j,2,k) = 0.0
+!              !CSS(j,2,k) = CSS(j,1,k)
+!          endif
+!          
+!          if (ddh_2 <= dry_depth) then
+!              CSSh(j,2,k) = 0.0
+!              !CSSh(j,2,k) = CSSh(j,1,k)
+!          endif
           
 !>> Check if compartment has an offshore TSS concentration assigned in Cells.csv
 !>> If set to -9999 then the CSS calculated above will be used, otherwise the value will be set to 
@@ -345,5 +357,5 @@ cJAM      Tributary and resuspension/deposition contributions to SS
 !     endif
 
      
-      return 
+    return 
 	end
