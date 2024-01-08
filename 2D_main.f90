@@ -372,6 +372,7 @@
       READ(30,*) dry_threshold   ! 105      dry water depth threshold
       close(30)
 
+      fa_def=1 !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
 
 !>> Determine number of simulation timesteps
       ndt_ICM = dt
@@ -476,14 +477,6 @@
           enddo
       endif
 
-!C> initially set GrowAlgae array equal to zero
-      do j=1,N
-          do ichem=1,14
-              do me=1,14
-                  GrowAlgae(j,ichem,me) = 0.
-              enddo
-          enddo
-      enddo
 
 !>> determine upper CSS threshold for each sediment class where resuspension of bed material will be deactivated
 !>> These values are based on an assumption that at a TSS value equal to the threshold concentration, the particle size distribution is 10% sand, 45% silt, and 45% clay.
@@ -623,19 +616,6 @@
       open(unit=400,file='hotstart_in.dat',form='formatted')
       open(unit=401,file='hotstart_out.dat',form='formatted')
 
-! Initialize some variables and arrays
-!      NR(:)=0.0
-      stds=0.
-      do j=1,N
-          accsed(j)=0.0
-          sal_ave(j)=0.0
-          cumul_retreat(j) = 0.0
-      enddo
-
-      do i=1,M
-          asedout(i)=0.0
-      enddo
-
 !>> Call 'infile' subroutine, which reads input text files and stores data into arrays
       call infile
 
@@ -675,7 +655,11 @@
       surgerow = 0	!YW!
       lockrow = 0	!YW!
 
-!>> Set initial conditions for links (from input files)
+!>> Initialize some variables and arrays
+!      NR(:)=0.0
+      stds=0.
+
+!>> Set initial conditions for links
       do i=1,M
           fa(i) = fa_def*fa_mult(i) !Set array of initial upwind factor to default value
           Q(i,1)=0.0	!YW!
@@ -685,9 +669,17 @@
           EAOL(i)=0.0
           !FLO(i)=0.0 !YW! flo range nlinksw
           SlkAve(i) = 0
+          SL(i,1) = 0  ! SL is for links
           SL(i,2)=0
           TL(i,1)=0
+          asedout(i)=0.0
       enddo
+
+      if(nlinksw > 0) then               !YW!
+          do jj = 1,nlinksw
+              FLO(jj) = 0.0
+          enddo
+      endif
 
 
 !>> Initialize hardcoded salinity and stage control trigger flags
@@ -699,44 +691,48 @@
       !SalLockTriggerCSC = 1
       !Atch_div_onoff = 1
 
-
-!>> Initialize some variables and arrays
+!>> Initialize compartment related arrays
       do j=1,N
-          Sandacc(j,1) = 0.0
-          Siltacc(j,1) = 0.0
-          Clayacc(j,1) = 0.0
-
-          As(j,2)= As(j,1)				    ! Surface area of cells (m2)
+          As(j,2)= As(j,1)				    ! Surface water area of cells (m2)
           Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
-          ds(j,1)= Es(j,2)-Bed(j)			! Depth in storage cells (m)
+          ds(j,1)= Es(j,1)-Bed(j)			! Depth in storage cells (m)
           !Eh(j,1) = BedM(j) + 0.1           ! Initial marsh depth (override hotstart file read in above)
           Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
           BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
           BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
           BCsurge(j,2) = BCsurge(j,1)
+          ESMX(j,2)=ES(j,1)
+          ESMN(j,2)=ES(j,1)
+          dailyHW(j)=0.0
+          dailyLW(j)=0.0
+          ESAV(j,1) = ES(j,1)*dt/(3600.*24.)
+          EHAV(j,1) = EH(j,1)*dt/(3600.*24.)
           
           Qmarsh(j,1) = 0.0				    ! Flow into/out of marsh area
           Qmarsh(j,2) = Qmarsh(j,1)		    
           Qmarshmax(j) = 0.0
+          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
+
           S(j,2) = S(j,1)
+          SALAV(j) = S(j,1)*dt/(3600.*24.)
+          sal_ave(j)=0.0
           Tempw(j,2) = Tempw(j,1)
+          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
 
-          do ichem=1,14                     
-              Chem(j,ichem,2)=Chem(j,ichem,1)
-          enddo
-
-!>> Initialize variables
-          SL(j,1) = 0
-          SL(j,2) = 0
           do sedclass=1,4
                CSS(j,2,sedclass) = CSS(j,1,sedclass)
                CSSh(j,1,sedclass) = CSS(j,1,sedclass)
                CSSh(j,2,sedclass) = CSS(j,1,sedclass)
           enddo
+          accsed(j)=0.0
+          cumul_retreat(j) = 0.0
           Sacc(j,1)=0.0
           Sacch_int(j,1)=0.0
           Sacch_edge(j,1)=0.0
+          Sandacc(j,1) = 0.0
+          Siltacc(j,1) = 0.0
+          Clayacc(j,1) = 0.0
           CSSvRs(j,1)= 0.0
           Sacc(j,2)=Sacc(j,1)
           Sacch_int(j,2)=Sacch_int(j,1)
@@ -745,28 +741,23 @@
           Siltacc(j,2) = Siltacc(j,1)
           Clayacc(j,2) = Clayacc(j,1)
           CSSvRs(j,2)= CSSvRs(j,1)
-
-          ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
-          EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
           TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2) + CSS(j,1,3) + CSS(j,1,4) )*dt/(3600.*24.)
-          SALAV(j) = S(j,2)*dt/(3600.*24.)
-          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
-          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
 
-          ESMX(j,2)=ES(j,2)
-          ESMN(j,2)=ES(j,2)
-          dailyHW(j)=0.0
-          dailyLW(j)=0.0
           do ichem = 1,14
-               ChemAve(j,ichem) = Chem(j,ichem,2)*dt/(3600.*24.)
+              Chem(j,ichem,2)=Chem(j,ichem,1)
+              ChemAve(j,ichem) = Chem(j,ichem,1)*dt/(3600.*24.)
+              ! initially set GrowAlgae array equal to zero
+              do me=1,14
+                  GrowAlgae(j,ichem,me) = 0.
+              enddo
           enddo
+          denit(j,1)=0
           denit(j,2)=0
 
       enddo
-      close(400)
 
-      Emax=0.0
-      Emin=0.0
+!      Emax=0.0  !never used
+!      Emin=0.0  !never used
       
 !>> initialize BCnosurge and BCsurge with initial tide and surge       -YW
       do jj=1,tidegages
@@ -778,12 +769,6 @@
           enddo
       enddo
               
-      if(nlinksw > 0) then               !YW!
-          do jj = 1,nlinksw
-              FLO(jj) = 0.0
-          enddo
-      endif
-
  
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
@@ -809,7 +794,6 @@
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
           if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
 
 !>> -- Calculate various versions of time to be used as flags throughout program
@@ -956,7 +940,7 @@
 
 
 !>> Call 1D channel routing subroutines
-	  if (n1d> 0) then
+	      if (n1d> 0) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
@@ -1072,6 +1056,7 @@
 !>> -- Check if any link flowrate values are NaN - if so, pause model run
           do i=1,M
               Q(i,1)=Q(i,2)
+              SL(i,1) = SL(i,2) !SL is for links
               if(isNAN(Q(i,2))) then
                   write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
                   write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
@@ -1084,7 +1069,6 @@
           do j=1,N
               Es(j,1)=Es(j,2)
               S(j,1)=S(j,2)				! resetting ICs
-              SL(j,1) = SL(j,2)
               BCnosurge(j,1) = BCnosurge(j,2)
               BCsurge(j,1) = BCsurge(j,2)                !YW!
               do sedclass=1,4
@@ -1376,7 +1360,7 @@
          'WLV_stage_summer',		&
          'ave_depth_summer',		&
          'ave_depth'
-	write(206,1119)'GRID_ID',		&
+	  write(206,1119)'GRID_ID',		&
          'sal_ave_jan',		&
          'sal_ave_feb',		&
          'sal_ave_mar',		&
@@ -1415,7 +1399,7 @@
          'tkn_ave_oct',		&
      	'tkn_ave_nov',		&
          'tkn_ave_dec'
-	write(209,1119)'GRID_ID',		&
+	  write(209,1119)'GRID_ID',		&
          'TSS_ave_jan',		&
          'TSS_ave_feb',		&
          'TSS_ave_mar',		&
@@ -1431,25 +1415,25 @@
 
 	! write various summary results in 500m grid output file
       do k=1,n_500m_cells
-          write(204,1116) grid_lookup_500m(k,1),		&
-         min(salmax,salinity_500m(k)),		&
-         min(salmax,salinity_IDW_500m(k)),		&
-         min(salmax,salinity_summer_500m(k)),		&
-         min(salmax,salinity_summer_IDW_500m(k)),		&
-         min(salmax,sal_thresh_500m(k)),		&
-         min(salmax,sal_thresh_IDW_500m(k)),		&
-         pct_sand_bed_500m(k),		&
-         min(tmpmax,tmp_500m(k)),		&
-         min(tmpmax,tmp_IDW_500m(k)),		&
-         min(tmpmax,tmp_summer_500m(k)),		&
-         min(tmpmax,tmp_summer_IDW_500m(k)),		&
-         max(-stagemax,min(stagemax,stage_500m(k))),		&
-         max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
-         max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
-         max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
-         max(-depthmax,min(depthmax,depth_500m(k)))
+         write(204,1116) grid_lookup_500m(k,1),		&
+           min(salmax,salinity_500m(k)),		&
+           min(salmax,salinity_IDW_500m(k)),		&
+           min(salmax,salinity_summer_500m(k)),		&
+           min(salmax,salinity_summer_IDW_500m(k)),		&
+           min(salmax,sal_thresh_500m(k)),		&
+           min(salmax,sal_thresh_IDW_500m(k)),		&
+           pct_sand_bed_500m(k),		&
+           min(tmpmax,tmp_500m(k)),		&
+           min(tmpmax,tmp_IDW_500m(k)),		&
+           min(tmpmax,tmp_summer_500m(k)),		&
+           min(tmpmax,tmp_summer_IDW_500m(k)),		&
+           max(-stagemax,min(stagemax,stage_500m(k))),		&
+           max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
+           max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
+           max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
+           max(-depthmax,min(depthmax,depth_500m(k)))
 
- 		write(206,1120) k,		&
+ 		 write(206,1120) k,		&
      	   min(salmax,sal_IDW_500m_month(1,k)),		&
      	   min(salmax,sal_IDW_500m_month(2,k)),		&
            min(salmax,sal_IDW_500m_month(3,k)),		&
@@ -1463,7 +1447,7 @@
      	   min(salmax,sal_IDW_500m_month(11,k)),		&
      	   min(salmax,sal_IDW_500m_month(12,k))
 
- 		write(207,1120) k,		&
+ 		 write(207,1120) k,		&
      	   min(tmpmax,tmp_IDW_500m_month(1,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(2,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(3,k)),		&
@@ -1477,7 +1461,7 @@
      	   min(tmpmax,tmp_IDW_500m_month(11,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(12,k))
 
- 		write(208,1120) k,		&
+ 		 write(208,1120) k,		&
      	   min(tknmax,tkn_500m_month(1,k)),		&
      	   min(tknmax,tkn_500m_month(2,k)),		&
      	   min(tknmax,tkn_500m_month(3,k)),		&
@@ -1491,7 +1475,7 @@
      	   min(tknmax,tkn_500m_month(11,k)),		&
      	   min(tknmax,tkn_500m_month(12,k))
 
- 		write(209,1120) k,TSS_500m_month(1,k),		&
+ 		 write(209,1120) k,TSS_500m_month(1,k),		&
      	   min(tssmax,TSS_500m_month(2,k)),		&
      	   min(tssmax,TSS_500m_month(3,k)),		&
      	   min(tssmax,TSS_500m_month(4,k)),		&
