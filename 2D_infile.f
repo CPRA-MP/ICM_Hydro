@@ -413,7 +413,7 @@
 
           if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 6) .or.
      &              (linkt(lnkid) == 11) .or. (linkt(lnkid) == 12) .or. 
-	 &              (linkt(lnkid) == 3) .or. (linkt(lnkid) == 8) .or.
+     &              (linkt(lnkid) == 3) .or. (linkt(lnkid) == 8) .or.
      &              (linkt(lnkid) == 10)) then
           !>> Check for missing roughness attribute values and reassign to default values if missing
               if (Latr5(lnkid) < 0.0) then
@@ -455,9 +455,9 @@
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr3(lnkid)>=Latr1(lnkid)))then
                   write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
                   write(*,925) 'Weir link',lnkid,'has crest elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
 	              stop
 			  endif
               if(Latr4(lnkid) <=0)then
@@ -478,17 +478,17 @@
 
               if(Latr2(lnkid)<=Latr1(lnkid))then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
-	 & invert elevation'
+     & invert elevation'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
-	 & invert elevation'
+     & invert elevation'
 	              stop
 			  endif
 !   orifice upstream & downstream ground elevation can not be higher than structure invert elevation
               if((Latr3(lnkid)>=Latr1(lnkid)) .or. (Latr5(lnkid)>=Latr1(lnkid)))then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
 	              stop
 			  endif
               if(Latr4(lnkid) <=0)then
@@ -505,9 +505,9 @@
 !   pump upstream stage threshold can not be lower than bed/marsh elevation
               if((Latr1(lnkid)<bed(jus(lnkid))) .or. (Latr2(lnkid)<bed(jus(lnkid))))then
                   write(1,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
-	 & bed elevation'
+     & bed elevation'
                   write(*,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
-	 & bed elevation'
+     & bed elevation'
 			  endif
               if(Latr9(lnkid) <=0)then
                   write(1,925) 'pump link',lnkid,'has pump capacity lower than 0'
@@ -526,9 +526,9 @@
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr10(lnkid)>=Latr1(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
                   write(*,925) 'Ridge link',lnkid,'has crest elevation lower than 
-	 & bed elevation of connecting compartments'
+     & bed elevation of connecting compartments'
 	              stop
 			  endif
               if(Latr4(lnkid) <=0)then
