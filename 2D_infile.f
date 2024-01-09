@@ -1859,11 +1859,11 @@
               read(402,*)                                                           ! dump header row of compartment input file
               read(402,*)                                                           ! dump header row of compartment input file
               do i = 1,ntc
-                  read(402,*) tcr1D(i), &                                           ! 1D region
-                      tcn1D(i), &                                                   ! 1D node            
-                      tcr2D(i), &                                                   ! ICM receiving compartment
-                      tcf2D(i), &                                                   ! ICM connecting compartment
-                      tcl2D(i)                                                      ! ICM connecting link
+                  read(402,*) tcr1D(i),                                            ! 1D region
+     &                        tcn1D(i),                                                    ! 1D node            
+     &                        tcr2D(i),                                                    ! ICM receiving compartment
+     &                        tcf2D(i),                                                    ! ICM connecting compartment
+     &                        tcl2D(i)                                                     ! ICM connecting link
               enddo
               close(402)
           endif
@@ -1874,11 +1874,11 @@
               read(403,*)                                                          ! dump header row of compartment input file
               read(403,*)
               do i = 1,nlc
-                  read(403,*) lcr1D(i), &
-                      lcn1D(i), &                
-                      lcr2D(i), &
-                      lcf2D(i), &
-                      lcl2D(i)
+                  read(403,*) lcr1D(i), 
+     &                        lcn1D(i),                 
+     &                        lcr2D(i),
+     &                        lcf2D(i),
+     &                        lcl2D(i)
               enddo        
               close(403)
           endif
@@ -1889,11 +1889,11 @@
               read(404,*)                                                          ! dump header row of compartment input file
               read(404,*)
               do i = 1,nuc
-                  read(404,*) ucr1D(i), &
-                      ucn1D(i), &              
-                      ucr2D(i), &
-                      ucf2D(i), &
-                      ucl2D(i)
+                  read(404,*) ucr1D(i), 
+     &                        ucn1D(i),               
+     &                        ucr2D(i), 
+     &                        ucf2D(i), 
+     &                        ucl2D(i)
               enddo        
               close(404)
           endif
@@ -1911,29 +1911,29 @@
       write(*,*)'-----------------------------------------------'
       read(400,*)                       ! ignore header row
       do j=1,N
-          read(400,*) node,		&   ! no need to save compartment number - read in to a dummy integer variable
-                      Es(node,1),       &
-                      S(node,1),		&
-                      Css(node,1,1),		&
-                      Css(node,1,2),		&
-                      Css(node,1,3),		&
-                      Css(node,1,4),		&
-                      Tempw(node,1),		&
-                      Chem(node,1,1),		&
-                      Chem(node,2,1),		&
-                      Chem(node,3,1),		&
-                      Chem(node,4,1),		&
-                      Chem(node,5,1),		&
-                      Chem(node,6,1),		&
-                      Chem(node,7,1),		&
-                      Chem(node,8,1),		&
-                      Chem(node,9,1),		&
-                      Chem(node,10,1),		&
-                      Chem(node,11,1),		&
-                      Chem(node,12,1),		&
-                      Chem(node,13,1),		&
-                      Chem(node,14,1),		& !Chem unit = mg/L
-                      Eh(node,1)
+          read(400,*) node,		   ! no need to save compartment number - read in to a dummy integer variable
+     &                Es(node,1),       
+     &                S(node,1),		
+     &                Css(node,1,1),	
+     &                Css(node,1,2),	
+     &                Css(node,1,3),	
+     &                Css(node,1,4),	
+     &                Tempw(node,1),	
+     &                Chem(node,1,1),	
+     &                Chem(node,2,1),	
+     &                Chem(node,3,1),	
+     &                Chem(node,4,1),	
+     &                Chem(node,5,1),	
+     &                Chem(node,6,1),	
+     &                Chem(node,7,1),	
+     &                Chem(node,8,1),	
+     &                Chem(node,9,1),	
+     &                Chem(node,10,1),	
+     &                Chem(node,11,1),	
+     &                Chem(node,12,1),	
+     &                Chem(node,13,1),	
+     &                Chem(node,14,1),	!Chem unit = mg/L
+     &                Eh(node,1)
 
       enddo
       close(400)
