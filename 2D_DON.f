@@ -30,40 +30,40 @@
       
 !      Subroutine DON(DChemSum,ichem,mex,j,k)
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine dDON(DChemSum,ichem,j)
+      Subroutine dDON(DChemSum,ichem,j)
 
-	use params
+	  use params
       
-    implicit none
-    integer :: ichem,j
-    real :: det,don
-    real :: kdet
-    real :: kdon
-    real :: rnd
-    real :: dChemSUM
+      implicit none
+      integer :: ichem,j
+      real :: det,don
+      real :: kdet
+      real :: kdon
+      real :: rnd
+      real :: dChemSUM
       
 !>> DON routine (eq. 20 of 2012 Master Plan Appendix D-1)
 
 !>> previous time step WQ concentrations
-	det = chem(j,9,1)
-	don = chem(j,10,1)
+	  det = chem(j,9,1)
+	  don = chem(j,10,1)
       
 !>> temperature-dependent detritus dissolution hydrolysis rate coefficient 
-	kdet = kdet20*thetadet**(Tempw(j,2)-20.)
+	  kdet = kdet20*thetadet**(Tempw(j,2)-20.)
       
 !>> temperature-dependent DON hydrolysis rate coefficient 
-	kdon20 = 0.015
-	thetadon = 1.047
-	kdon = kdon20*thetadon**(Tempw(j,2)-20.)
+	  kdon20 = 0.015
+	  thetadon = 1.047
+	  kdon = kdon20*thetadon**(Tempw(j,2)-20.)
       
 !>> nitrogen-detritus stoichometric mass ratio
-    rnd = 0.072
+      rnd = 0.072
       
 !>> change in dissolved organic nitrogen concentration
-    dChemSUM = rnd*kdet*det-kdon*don
+      dChemSUM = rnd*kdet*det-kdon*don
 
-    return
-    end
+      return
+      end
       
       !JAM Oct 2010 Chem #10
 

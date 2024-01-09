@@ -27,40 +27,40 @@
       
 !      Subroutine DON(DChemSum,ichem,mex,j,k)
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine dDOP(DChemSum,ichem,j)
+      Subroutine dDOP(DChemSum,ichem,j)
 
-	use params
+	  use params
       
-    implicit none
-    integer :: ichem,j
-    real :: det,dop
-    real :: kdet
-    real :: kdop20,thetadop,kdop
-    real :: rpd
-    real :: dChemSUM
+      implicit none
+      integer :: ichem,j
+      real :: det,dop
+      real :: kdet
+      real :: kdop20,thetadop,kdop
+      real :: rpd
+      real :: dChemSUM
       
 !>> DOP routine (eq. 23 of 2012 Master Plan Appendix D-1)
 
 !>> previous time step WQ concentrations
-	det = chem(j,9,1)
-	dop = chem(j,11,1)
+	  det = chem(j,9,1)
+	  dop = chem(j,11,1)
       
 !>> temperature-dependent detritus dissolution hydrolysis rate coefficient 
-	kdet = kdet20*thetadet**(Tempw(j,2)-20.)
+	  kdet = kdet20*thetadet**(Tempw(j,2)-20.)
       
 !>> temperature-dependent DOP hydrolysis rate coefficient 
-	kdop20 = 0.1
-    thetadop = 1.047
-	kdop = kdop20*thetadop**(Tempw(j,2)-20.)
+	  kdop20 = 0.1
+      thetadop = 1.047
+	  kdop = kdop20*thetadop**(Tempw(j,2)-20.)
       
 !>> phosphorus-to-detritus stoichometric mass ration
-    rpd = 0.01
+      rpd = 0.01
       
 !>> change in dissolved organic phosphorus concentration
-    dChemSUM = rpd*kdet*det-kdop*dop
+      dChemSUM = rpd*kdet*det-kdop*dop
  
-    return
-    end
+      return
+      end
 
 
 

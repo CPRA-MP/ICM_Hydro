@@ -1,30 +1,30 @@
 !      Subroutine DIN(DChemSum,ichem,mex,j,k)
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine DIN(DChemSum,ichem,mex,j,k,kday)		! Nitrate + nitrite as N		
+      Subroutine DIN(DChemSum,ichem,mex,j,k,kday)		! Nitrate + nitrite as N		
 	!JAM Chem # 3  JAM March 12 2011
 
-	use params      
+	  use params      
       
-	rca=0.004
-	fixN=0.00000001
-	fixNO3=rca*Chem(j,8,1)*fixN
-	Tcorn=1.085**(Tempw(j,2)-20.)							! Temperature Correction  Nitrification
-	Tcord=1.05**(Tempw(j,2)-20.)							! Temperature Correction deNitrification
-	ALAG=0.2
-	PP=1-0.2*cos(2*PI*(Float(kday)/365.25-ALAG)) 
-	fnodin=Chem(j,1,1)/(Chem(j,3,1)+10E-08)					! Assumes proportionate uptake of NO3 and NH4
-	FNoC=1./5.681
-	cxx=1/3600/24/1000000.
-	fcN=1.
-    FSEASON2=1.0+0.2*cos(2*PI*(Float(kday)/365.25+0.25))	! JAM Jan 09 11
-    frr=0.82
-	fmm=1
+	  rca=0.004
+	  fixN=0.00000001
+	  fixNO3=rca*Chem(j,8,1)*fixN
+	  Tcorn=1.085**(Tempw(j,2)-20.)							! Temperature Correction  Nitrification
+	  Tcord=1.05**(Tempw(j,2)-20.)							! Temperature Correction deNitrification
+	  ALAG=0.2
+	  PP=1-0.2*cos(2*PI*(Float(kday)/365.25-ALAG)) 
+	  fnodin=Chem(j,1,1)/(Chem(j,3,1)+10E-08)					! Assumes proportionate uptake of NO3 and NH4
+	  FNoC=1./5.681
+	  cxx=1/3600/24/1000000.
+	  fcN=1.
+      FSEASON2=1.0+0.2*cos(2*PI*(Float(kday)/365.25+0.25))	! JAM Jan 09 11
+      frr=0.82
+	  fmm=1
 !	dz=ES(j,2)-ES(j,1)
-    Chem(j,3,2)=Chem(j,1,2)+Chem(j,2,2)
-	QChemsum(3)=QChemsum(1)+QChemsum(2)						! JAM March 12 2011 
+      Chem(j,3,2)=Chem(j,1,2)+Chem(j,2,2)
+	  QChemsum(3)=QChemsum(1)+QChemsum(2)						! JAM March 12 2011 
 	
-	return
-	end
+	  return
+	  end
 
 !c______________________________________________________________________________________
 !cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP

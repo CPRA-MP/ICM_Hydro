@@ -1,7 +1,7 @@
 !     Subroutine CelldQ(QSUM,Dz,j,fcrop,mm)
 	
 ! day, dday, and kday now global parameters - no longer needed to be passed into subroutine      
- 	Subroutine CelldQ(j,kday,fcrop,mm,dday)			!Solves Continuity for cell j 
+      Subroutine CelldQ(j,kday,fcrop,mm,dday)			!Solves Continuity for cell j 
 
       
 !> @param[out]        Qsum_out(j)     sum of all flows leaving compartment
@@ -196,10 +196,10 @@
       !
       if(abs(Dz) > maxdz) then
           Dz = sndz*oscilflag   ! Dz = sndz*maxdz
-          write(*,898) 'Large deltaZ in compartment ',j,'timestep=',mm,'
-     & deltaZ set to max value allowed in RunControlR.dat'
-          write(1,898) 'Large deltaZ in compartment ',j,'timestep=',mm,'
-     & deltaZ set to max value allowed in RunControlR.dat'
+          write(*,898) 'Large deltaZ in compartment ',j,'timestep=',mm,
+     & 'deltaZ set to max value allowed in RunControlR.dat'
+          write(1,898) 'Large deltaZ in compartment ',j,'timestep=',mm,
+     & 'deltaZ set to max value allowed in RunControlR.dat'
           !pause
 898   Format(x,A,I0,x,A,x,I0,x,A)
       endif
@@ -216,11 +216,11 @@
              sndzh = -1.0
           endif
           if(abs(Dzh) > maxdz) then
-              Dzh = sndzh*oscilflag   ! Dz = sndz*maxdz
-              write(*,898) 'Large deltaZh in compartment ',j,'timestep=',mm,'
-     & deltaZh set to max value allowed in RunControlR.dat'
-              write(1,898) 'Large deltaZh in compartment ',j,'timestep=',mm,'
-     & deltaZh set to max value allowed in RunControlR.dat'
+            Dzh = sndzh*oscilflag   ! Dz = sndz*maxdz
+            write(*,898) 'Large deltaZh in compartment ',j,'timestep=',mm,
+     & 'deltaZh set to max value allowed in RunControlR.dat'
+            write(1,898) 'Large deltaZh in compartment ',j,'timestep=',mm,
+     & 'deltaZh set to max value allowed in RunControlR.dat'
           endif
 
 !>> Update marsh water elevation
@@ -291,7 +291,7 @@
 !		write(1,3333)Qsumh,Qhhf*cden,Qupld,Rain(kday,jrain(j)),rhh
 !	endif
 3333  Format(5(1x,f15.4))
-	return
-	end
+	  return
+	  end
 
 !c***********************End Subroutine for CelldQ***********************************************

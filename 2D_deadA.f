@@ -24,19 +24,19 @@
 !> @param 		rda  			DET-to-chlorophyll A stoichiometric mass ratio
 !> @param			vd				settling rate of detritus (m/day)
       
-	Subroutine dDeadA(DChemSum,ichem,j)
+	  Subroutine dDeadA(DChemSum,ichem,j)
 	
-	use params      
+	  use params      
 
-    implicit none
+      implicit none
       
-    integer :: ichem,j
-    real :: dd
-    real :: alg,det
-    real :: kphy
-    real :: kdet
-	real :: rca, rda, vd
-    real :: DChemSUM
+      integer :: ichem,j
+      real :: dd
+      real :: alg,det
+      real :: kphy
+      real :: kdet
+	  real :: rca, rda, vd
+      real :: DChemSUM
 
 
 !>> dead algae (detritus) calculation (eq. 24 of 2012 Master Plan Appendix D-1)
@@ -44,33 +44,33 @@
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
 !	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
-	dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
 
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)
-	det = chem(j,9,1)
+	  alg = chem(j,8,1)
+	  det = chem(j,9,1)
 
 !>> temperature-dependent phytoplankton mortality rate coefficient
-	kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
+	  kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
 
 !>> temperature-dependent detritus dissolution hydrolysis rate coefficient 
 
-	kdet = kdet20*thetadet**(Tempw(j,2)-20.)
+	  kdet = kdet20*thetadet**(Tempw(j,2)-20.)
 
 !>> detritus settling rate in compartments (m/day) - weighted by marsh area - if compartment is all marsh, settling is at a maximum rate of 0.05 m/day, if there is no marsh (e.g. all open water), there is no settling of detritus
-	vd = 0.05*apctmarsh(j)
+	  vd = 0.05*apctmarsh(j)
 
 !>> carbon-to-chlorophyll ratio
-	rca = 75.0
+	  rca = 75.0
       
 !>> detritus-to-chlorophyll A stoichometric mass ratio
-	rda = 2.44*rca
+	  rda = 2.44*rca
 
 !>> change in dead algae (detritus) concentration
-	DChemSUM = rda*kphy*alg - (kdet+vd/dd)*det
+	  DChemSUM = rda*kphy*alg - (kdet+vd/dd)*det
 
-	return
-	end
+	  return
+	  end
 
 
 !      Subroutine DeadA(DChemSum,ichem,mex,j,k)

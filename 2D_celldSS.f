@@ -2,7 +2,7 @@
 
 ! QSSUM, QSSumh, kthr and kday now global parameters - no longer needed to be passed into subroutine      
 !  	Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
-  	Subroutine CelldSS(j,kday)
+  	  Subroutine CelldSS(j,kday)
 !cJAM      Tributary and resuspension/deposition contributions to SS
 
 !> @param     QSsum(k)        sediment flux in Open Water from all links - negative value is flux INTO open water (g/s)
@@ -357,5 +357,5 @@
 !     endif
 
      
-    return 
-	end
+      return 
+	  end

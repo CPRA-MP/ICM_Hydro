@@ -39,73 +39,73 @@
       
 !      Subroutine TP(DChemSum,ichem,mex,j,k)
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine dTP(DChemSum,ichem,j) ! THIS CALCULATED TOTAL INORGANIC PHOSPHORUS
+      Subroutine dTP(DChemSum,ichem,j) ! THIS CALCULATED TOTAL INORGANIC PHOSPHORUS
 	!JAM Oct 2010 Chem #5
 
-	use params      
+	  use params      
 
-    implicit none
+      implicit none
       
-    integer :: ichem,j
-    real :: dd
-    real :: alg,tip,dop
-    real :: kresp
-    real :: kdop20,thetadop,kdop
-    real :: kpo4
-    real :: rca,rp,po4release
-    real :: vs,fmarsh
-    real :: DChemSUM
+      integer :: ichem,j
+      real :: dd
+      real :: alg,tip,dop
+      real :: kresp
+      real :: kdop20,thetadop,kdop
+      real :: kpo4
+      real :: rca,rp,po4release
+      real :: vs,fmarsh
+      real :: DChemSUM
 
 !>> total inorganic phosphorus calculation (eq. 22 of 2012 Master Plan Appendix D-1)
 
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
 !	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
-	dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
       
 !>> portion of compartment that is marsh
-    fmarsh = Apctmarsh(j)
+      fmarsh = Apctmarsh(j)
       
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)		
-    tip = chem(j,5,1)
-    dop = chem(j,11,1)
+	  alg = chem(j,8,1)		
+      tip = chem(j,5,1)
+      dop = chem(j,11,1)
       
 !>> temperature-dependent phytoplankton respiration rate coefficient
-	kresp = kresp20*thetaresp**(Tempw(j,2)-20.)      
+	  kresp = kresp20*thetaresp**(Tempw(j,2)-20.)      
       
 !>> temperature-dependent DOP hydrolysis rate coefficient 
-	kdop20 = 0.1
-    thetadop = 1.047
-	kdop = kdop20*thetadop**(Tempw(j,2)-20.)
+	  kdop20 = 0.1
+      thetadop = 1.047
+	  kdop = kdop20*thetadop**(Tempw(j,2)-20.)
 
 !>> temperature-dependent orthophosphate release rate coefficient 
-	kpo4 = kpo420*thetapo4**(Tempw(j,2)-20.)
+	  kpo4 = kpo420*thetapo4**(Tempw(j,2)-20.)
 
 !>> carbon-to-chlorophyll ratio
-	rca = 75.0
+	  rca = 75.0
       
 !>> phosphorus-to-chlorophyll A stoichometric mass ratio
-	rp = 0.0244*rca
+	  rp = 0.0244*rca
       
 !>> settling rate for phosphorus calculations - average settling velocity of four particle classes converted to m/day
 !      vs=3600.*24.*(velset(j,1)+velset(j,2)+velset(j,3)+velset(j,4))/4.
-    vs=3600.*24.*velset(j,4)
+      vs=3600.*24.*velset(j,4)
       
 !>> calculate salinity-dependent orthophosphate release from marsh sediments
-    if (S(j,2) > 1.0) then
-        po4release = fmarsh*kpo4/dd
-    else
-        po4release = 0.0
-    endif
+      if (S(j,2) > 1.0) then
+          po4release = fmarsh*kpo4/dd
+      else
+          po4release = 0.0
+      endif
       
 !>> change in total phosphorus concentration      
-    DChemSUM = kdop*dop + (kresp - muph)*rp*alg
+      DChemSUM = kdop*dop + (kresp - muph)*rp*alg
      &             - vs*fpp*tip/dd + po4release
     
      
-    return
-    end
+      return
+      end
       
       
       

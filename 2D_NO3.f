@@ -35,65 +35,65 @@
 !      Subroutine NO3(DChemSum,ichem,mex,j,k)
       
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine dNO3(DChemSum,ichem,j)
+      Subroutine dNO3(DChemSum,ichem,j)
 	!JAM Chem # 1
 
-	use params
+	  use params
 
-    implicit none
-    integer :: ichem,j
-    real :: dd,e
-    real :: no3,nh4,alg
-    real :: knit,knitf
-    real :: kdenit
-    real :: khn,pap,fnfix
-    real :: rca,rna
-    real :: dChemSUM 
+      implicit none
+      integer :: ichem,j
+      real :: dd,e
+      real :: no3,nh4,alg
+      real :: knit,knitf
+      real :: kdenit
+      real :: khn,pap,fnfix
+      real :: rca,rna
+      real :: dChemSUM 
       
 !>> NO3 routine (eq. 19 of 2012 Master Plan Appendix D-1)
-	e = 2.71828	
+	  e = 2.71828	
 
 !>> previous time step WQ concentrations
-	no3 = chem(j,1,1)
-	nh4 = chem(j,2,1)
-	alg = chem(j,8,1)		
+	  no3 = chem(j,1,1)
+	  nh4 = chem(j,2,1)
+	  alg = chem(j,8,1)		
 
 !>> current depth in compartment
 !	dd = max(Es(j,2) - Bed(j),0.01)
-	dd = max(Es(j,2) - Bed(j),dry_threshold)
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)
             
 !>> temperature-dependent nitrification rate coefficient 
-	knit20 = max(min(knit20num/dd,knitmax),knitmin)
-    knit = knit20*thetanit**(Tempw(j,2)-20.)
+	  knit20 = max(min(knit20num/dd,knitmax),knitmin)
+      knit = knit20*thetanit**(Tempw(j,2)-20.)
 	      
 !>> temperature-dependent denitrifcation rate coefficient
-	kdenit = kdenit20*thetadenit**(Tempw(j,2)-20.)
+	  kdenit = kdenit20*thetadenit**(Tempw(j,2)-20.)
 
 !>> half saturation concentration  for algal uptake of N (mg/L)
-	khn = 0.02
+	  khn = 0.02
 
 !>> calculate salinity-dependent fraction of algae that is nitrogen-fixing
-	if (S(j,2) > 2.0) then
-        fnfix = 0.0
-	else
-        fnfix = 0.1
-	endif
+	  if (S(j,2) > 2.0) then
+          fnfix = 0.0
+	  else
+          fnfix = 0.1
+	  endif
 
 !>> calculate phythoplankton preference for N uptake
-    pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
+      pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
      &			+ (nh4*khn/((nh4+no3+0.001)*(khn+no3)))
 
 !>> carbon-to-chlorophyll ratio
-	rca = 75.0
+	  rca = 75.0
 
 !>> nitrogen-chlorophyll A stoichiometric mass ratio
-	rna = 0.176*rca
+	  rna = 0.176*rca
 
 !>> change in nitrate/nitrite concentration
-	dChemSUM = knit*nh4-(kdenit*no3/dd)-rna*(1-pap)*muph*(1-fnfix)*alg
+	  dChemSUM = knit*nh4-(kdenit*no3/dd)-rna*(1-pap)*muph*(1-fnfix)*alg
       
-    return
-    end
+      return
+      end
       
 !	rca=0.004
 !	fixN=0.00000001

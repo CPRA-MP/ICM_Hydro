@@ -1,25 +1,25 @@
 !      Subroutine DOx(DChemSum,ichem,mex,j,k)
       ! kday now global parameter - no longer needed to be passed into subroutine   
-	subroutine DOx(DChemSum,ichem,mex,j,k,kday)		! DO as O
+	  subroutine DOx(DChemSum,ichem,mex,j,k,kday)		! DO as O
 	!JAM Oct 2010 Chem #7
       
-    use params
+      use params
       
 
-	FOoC=2.*16/14.								! JAM guess
-	FOoN=3*16/12.								! JAM guess
-	REO=.1										! Re-aeration rate per day
-	DDO=O2Sat(kday)-Chem(j,ichem,1)/consd
-	if(DDO.LT.0.0)ddo=0.0
-	windspd = sqrt(windx(j)**2+windy(j)**2)
-    DChemSUM=DChemSUM+decay(ichem,ichem)*windspd*windspd*DDO	! Re-aeration
+	  FOoC=2.*16/14.								! JAM guess
+	  FOoN=3*16/12.								! JAM guess
+	  REO=.1										! Re-aeration rate per day
+	  DDO=O2Sat(kday)-Chem(j,ichem,1)/consd
+	  if(DDO.LT.0.0)ddo=0.0
+	  windspd = sqrt(windx(j)**2+windy(j)**2)
+      DChemSUM=DChemSUM+decay(ichem,ichem)*windspd*windspd*DDO	! Re-aeration
 !      DChemSUM=DChemSUM+decay(ichem,ichem)*wspd(kday)*wspd(kday)*DDO	! Re-aeration
-	DChemSUM=DChemSUM+decay(ichem,2)*Chem(j,2,1)*FOoN				! Nitrification 
-    DChemSUM=DChemSUM+decay(ichem,8)*Chem(j,8,1)					! Net photosynthesis and respiration  
-    DChemSUM=DChemSUM+decay(ichem,9)*Chem(j,9,1)*FOoC				! Loss by oxydation of TOC as Dead Algae C
+	  DChemSUM=DChemSUM+decay(ichem,2)*Chem(j,2,1)*FOoN				! Nitrification 
+      DChemSUM=DChemSUM+decay(ichem,8)*Chem(j,8,1)					! Net photosynthesis and respiration  
+      DChemSUM=DChemSUM+decay(ichem,9)*Chem(j,9,1)*FOoC				! Loss by oxydation of TOC as Dead Algae C
 
-	return
-	end
+	  return
+	  end
 !c______________________________________________________________________________________
 !cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
 !cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********

@@ -55,105 +55,105 @@
 !> @param 		limlight		light limitation factor
 !> @param 		limsal			salinity limitation factor
 
-    Subroutine photo(j)
+      Subroutine photo(j)
 	
 
-    use params
+      use params
       
-    implicit none
-    integer :: j
-    real :: e,perOW,dd,daylight,solrad,dailysolrad
-    real :: alg,det,din,tip,iss
-    real :: khn,khp,fnfix,kd,kdc,dip_up,kphot
-    real :: limnp1,limnp2,limnp
-    real :: keb,alphai,alphao,alphap,alphapn,ke,klp
-    real :: par0ave,limlight1,limlight2,limlight3,limlight
-    real :: limsal    
+      implicit none
+      integer :: j
+      real :: e,perOW,dd,daylight,solrad,dailysolrad
+      real :: alg,det,din,tip,iss
+      real :: khn,khp,fnfix,kd,kdc,dip_up,kphot
+      real :: limnp1,limnp2,limnp
+      real :: keb,alphai,alphao,alphap,alphapn,ke,klp
+      real :: par0ave,limlight1,limlight2,limlight3,limlight
+      real :: limsal    
 
 !>>  photosynthesis rate routine (eq. 27 of 2012 Master Plan Appendix D-1)
-	e = 2.71828	
+	  e = 2.71828	
 
 !>> percent open water of compartment (used in light limitation factor)
-	perOW = Apctwater(j)
+	  perOW = Apctwater(j)
 
 !>> current depth in compartment
 !	dd = max(Es(j,2) - Bed(j),0.01)
-	dd = max(Es(j,2) - Bed(j),dry_threshold)
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)
 
 !>> fraction of daylight hours
-	daylight = 0.5
+	  daylight = 0.5
 
 ! average daily solar radiation at NO Int Airport ~ 4000 Wh/m2 (NCDC National Solar Radiation Database - MSY is NSRD station # 722310) 
-    dailysolrad=4000.0/24.0
+      dailysolrad=4000.0/24.0
 !>> incident solar radiation @ surface (langly/day) (0.484 converts W/m2 to langley/day)
-	solrad = dailysolrad/0.484
+	  solrad = dailysolrad/0.484
 
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)		
-	det = chem(j,9,1)
-	din = chem(j,3,1)
-    tip = chem(j,5,1)
-	iss = css(j,2,1) + css(j,2,2) + css(j,2,3) + css(j,2,4)
+	  alg = chem(j,8,1)		
+	  det = chem(j,9,1)
+	  din = chem(j,3,1)
+      tip = chem(j,5,1)
+	  iss = css(j,2,1) + css(j,2,2) + css(j,2,3) + css(j,2,4)
 
 !>> temperature-dependent max photosynthetic rate
-	kphot = kphot20*thetaphot**(Tempw(j,2)-20.)
+	  kphot = kphot20*thetaphot**(Tempw(j,2)-20.)
       
 !>> half saturation concentration  for algal uptake of N (mg/L)
-	khn = 0.02
+	  khn = 0.02
 
 !>> half saturation concentration for algal uptake of P (mg/L)
-	khp = 0.001
+	  khp = 0.001
 
 !>> calculate salinity-dependent algae coefficients: phythoplankton preference for NH4 uptake and fraction of algae that is nitrogen-fixing
-	if (S(j,2) > 2.0) then
-		fnfix = 0.0
-	else
-		fnfix = 0.1
-	endif 
+	  if (S(j,2) > 2.0) then
+		  fnfix = 0.0
+	  else
+		  fnfix = 0.1
+	  endif 
 
 !>> convert total inorganic phosphorus to dissolved inorganic phosphorus readily available for uptake (eq 37 in App D1)
-    kd = 500.0              ! TIP sorption distribution coefficient (L/kg)
-    kdc = kd/1000000.0
-    fpp = kdc*iss/(1.0+kdc*iss)
-    dip_up = (1 - fpp)*tip      
+      kd = 500.0              ! TIP sorption distribution coefficient (L/kg)
+      kdc = kd/1000000.0
+      fpp = kdc*iss/(1.0+kdc*iss)
+      dip_up = (1 - fpp)*tip      
 
 !>> nutrient limitation factor
-	limnp1 = (1-fnfix)*din/(khn+din)+fnfix
-	limnp2 = dip_up/(khp+dip_up)
-	limnp = min(limnp1,limnp2)
+	  limnp1 = (1-fnfix)*din/(khn+din)+fnfix
+	  limnp2 = dip_up/(khp+dip_up)
+	  limnp = min(limnp1,limnp2)
 
 !>> light extinction factor
-	keb = 0.3
-	alphai = 0.052
-	alphao = 0.174
-	alphap = 8.8		!units = 8.8 L/mg/m 
-	alphapn = 5.412		!units = 5.412 (L/mg)^0.667/m.
-	ke = keb + alphai*iss + alphao*det + alphap*alg
+	  keb = 0.3
+	  alphai = 0.052
+	  alphao = 0.174
+	  alphap = 8.8		!units = 8.8 L/mg/m 
+	  alphapn = 5.412		!units = 5.412 (L/mg)^0.667/m.
+	  ke = keb + alphai*iss + alphao*det + alphap*alg
      &		+ alphapn*alg**(2./3.)
       
 !>> photosynthetically available radiation (langly/day) - PAR for optimal growth = 300.0
-	klp = 300.0
-	par0ave = 0.47*solrad
+	  klp = 300.0
+	  par0ave = 0.47*solrad
 
 !>> light limitation factor
-	limlight1 = (-par0ave*e**(-ke*dd))/klp
-	limlight2 = -par0ave/klp
-	limlight3 = e**limlight1 - e**limlight2
+	  limlight1 = (-par0ave*e**(-ke*dd))/klp
+	  limlight2 = -par0ave/klp
+	  limlight3 = e**limlight1 - e**limlight2
 !	limlight = 2.718*daylight*limlight3/(ke*dd)
-    limlight = limlight3
+      limlight = limlight3
       
 !>> salinity limitation factor
-	limsal = saltox**2/(saltox**2+S(j,2)**2)
+	  limsal = saltox**2/(saltox**2+S(j,2)**2)
 
 !>> photosynthesis rate
-	muph = kphot*limnp*limlight*limsal
+	  muph = kphot*limnp*limlight*limsal
       
-    if(isNan(ke)) then
-        write(*,*) alphai,alphao,alphap,alphapn,iss,det,alg
-        write(*,*) 'NaN encountered in Photosynthesis calculations'
-        stop!pause
-    endif
+      if(isNan(ke)) then
+          write(*,*) alphai,alphao,alphap,alphapn,iss,det,alg
+          write(*,*) 'NaN encountered in Photosynthesis calculations'
+          stop!pause
+      endif
       
       
-    return
-    end
+      return
+      end

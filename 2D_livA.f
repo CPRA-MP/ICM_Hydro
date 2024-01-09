@@ -19,43 +19,43 @@
 !> @param 		kphy			temperature dependent reaction rate for phytoplankton mortality
 !> @param 		kresp			temperature dependent reaction rate for phytoplankton respiration
 	
-	Subroutine dLivA(DChemSum,ichem,j)
+	  Subroutine dLivA(DChemSum,ichem,j)
 !	dLivA(DChemSum,ichem,mex,j,k,kday)
-    use params
+      use params
       
-	implicit none
+	  implicit none
 
-	integer :: j, ichem
-	real :: dd
-	real :: alg
-	real :: kresp
-    real :: kphy
-	real :: va
-    real :: DChemSUM
+	  integer :: j, ichem
+	  real :: dd
+	  real :: alg
+	  real :: kresp
+      real :: kphy
+	  real :: va
+      real :: DChemSUM
 
 !>> live algae calculation (eq. 25 of 2012 Master Plan Appendix D-1)
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
 !	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
-	dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
 
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)
+	  alg = chem(j,8,1)
       
 !>> temperature-dependent phytoplankton respiration rate coefficient
-	kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
+	  kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
 
 !>> temperature-dependent phytoplankton mortality rate coefficient
-	kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
+	  kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
 
 !>> algae settling rate in compartments (m/day)
-	va = 0.01
+	  va = 0.01
 
 !>> change in live algae concentration (mg/L)
-	DChemSUM = (muph-kresp-kphy-va/dd)*alg
+	  DChemSUM = (muph-kresp-kphy-va/dd)*alg
 
-	return
-	end
+	  return
+	  end
 
 
 !      Subroutine LivA(DChemSum,ichem,mex,j,k)

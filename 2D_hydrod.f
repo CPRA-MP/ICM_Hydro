@@ -1,4 +1,4 @@
-	Subroutine hydrod(mm)
+	  Subroutine hydrod(mm)
 
       use params
 
@@ -1958,7 +1958,7 @@
  1112   FORMAT(<nlinksw-1>(F0.4,','),F0.4)
  1113   FORMAT(F0.4)
 
-    return
-	end
+      return
+	  end
 
 !***********************End Subroutine hydrodynamic*********************************************

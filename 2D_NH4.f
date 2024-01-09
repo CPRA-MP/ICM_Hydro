@@ -36,70 +36,70 @@
       !      Subroutine NH4(DChemSum,ichem,mex,j,k)
       
 ! kday now global parameter - no longer needed to be passed into subroutine   
-    Subroutine dNH4(DChemSum,ichem,j)
+      Subroutine dNH4(DChemSum,ichem,j)
 	!JAM Oct 2010 Chem #2
 
-    use params
+      use params
       
-    implicit none
-    integer :: ichem,j
-    real :: dd,e
-    real :: no3,nh4,alg,don,kdon
-    real :: kresp,knit,knitf
-    real :: khn,khp,pap,fnfix
-    real :: rca,rna
-    real :: dChemSUM 
+      implicit none
+      integer :: ichem,j
+      real :: dd,e
+      real :: no3,nh4,alg,don,kdon
+      real :: kresp,knit,knitf
+      real :: khn,khp,pap,fnfix
+      real :: rca,rna
+      real :: dChemSUM 
       
 !>> NH4 routine (eq. 20 of 2012 Master Plan Appendix D-1)
-	e = 2.71828	
+	  e = 2.71828	
 
 !>> previous time step WQ concentrations
-	no3 = chem(j,1,1)
-	nh4 = chem(j,2,1)
-	alg = chem(j,8,1)		
-	don = chem(j,10,1)
+	  no3 = chem(j,1,1)
+	  nh4 = chem(j,2,1)
+	  alg = chem(j,8,1)		
+	  don = chem(j,10,1)
 
 !>> temperature-dependent DON hydrolysis rate coefficient 
-	kdon = kdon20*thetadon**(Tempw(j,2)-20.)
+	  kdon = kdon20*thetadon**(Tempw(j,2)-20.)
 	
 !>> temperature-dependent phytoplankton respiration rate coefficient
-	kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
+	  kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
       
 !>> current depth in compartment
 !	dd = max(Es(j,2) - Bed(j),0.01)
-	dd = max(Es(j,2) - Bed(j),dry_threshold)
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)
             
 !>> temperature-dependent nitrification rate coefficient 
-	knit20 = max(min(knit20num/dd,knitmax),knitmin)
-    knit = knit20*thetanit**(Tempw(j,2)-20.)
+	  knit20 = max(min(knit20num/dd,knitmax),knitmin)
+      knit = knit20*thetanit**(Tempw(j,2)-20.)
 	      
 
 !>> half saturation concentration  for algal uptake of N (mg/L)
-	khn = 0.02
+	  khn = 0.02
 
 !>> calculate salinity-dependent fraction of algae that is nitrogen-fixing
-	if (S(j,2) > 2.0) then
-		fnfix = 0.0
-	else
-		fnfix = 0.1
-	endif 
+	  if (S(j,2) > 2.0) then
+		  fnfix = 0.0
+	  else
+		  fnfix = 0.1
+	  endif 
 
 !>> calculate phythoplankton preference for N uptake
-    pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
+      pap = (nh4*no3/((khn+nh4)*(khn+no3))) 
      &			+ (nh4*khn/((nh4+no3+0.001)*(khn+no3)))
 
 !>> carbon-to-chlorophyll ratio
-	rca = 75.0
+	  rca = 75.0
 
 !>> nitrotgen-chlorophyll A stoichometric mass ratio
-	rna = 0.176*rca
+	  rna = 0.176*rca
 
 !>> change in ammonium concentration
-	dChemSUM = kdon*don - knit*nh4 + 
+	  dChemSUM = kdon*don - knit*nh4 + 
      &                (rna*kresp - rna*pap*muph*(1-fnfix))*alg
       
-    return
-    end
+      return
+      end
       
 !	rca=0.004
 !	fixN=0.000001
