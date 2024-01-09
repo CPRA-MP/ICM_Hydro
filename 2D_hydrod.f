@@ -32,7 +32,7 @@
       real :: p,subp,pexcess,marshedge,marshl
       real :: Qmax,Qpump,Qrunoff,reg_r,reg_s,reg_p,reg_fs
       real :: ruf,w_k,w_ksub,wid
-      real :: sDetah,volavailable
+      real :: sDetah,volavailable,Elevel,Dzhlim
       integer :: downN,upN,pumpon
 
 ! parameters for Atchafalya River diversion for MP project runs
