@@ -422,8 +422,8 @@
                   else
           !>> If weir is partially submerged calculate submergence coefficient, ksub
                       if (subp >= 0.85) then
-! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
-                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       else
                           w_ksub = 1.0
                       endif
@@ -812,8 +812,8 @@
 				  else
           !>> If orifice-as-equivalent-weir is partially submerged calculate submergence coefficient, ksub
 					  if (subp >= 0.85) then
-! BUG						w_ksub = -14.167*subp**2.+23.567*subp-8.815
-                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+						w_ksub = -14.167*subp**2.+23.567*subp-8.815
+! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
 					  elseif (subp < 0.85) then
 						  w_ksub = 1.0
 					  endif
@@ -1121,8 +1121,8 @@
                   else
            !>> If weir is partially submerged calculate submergence coefficient
                       if (subp >= 0.85) then
-! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
-                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       elseif (subp < 0.85) then
                            w_ksub = 1.0
                       endif
