@@ -255,7 +255,11 @@
               iab=abs(icc(j,k))
               if(iab /= 0) then
                   Qlink = sicc(j,k)*Q(iab,2)
-                  write(1,*)'LinkID=',iab,'LinkType=',linkt(iab),'Qlink=',Qlink
+                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
+                  if (linkt(iab) == 9) then
+                     write(1,*)'Es(jus)=',Es(jus(iab),1),
+     &                         'Es(jds)=',Es(jds(iab),1)
+                  endif
               endif
           enddo
           stop
