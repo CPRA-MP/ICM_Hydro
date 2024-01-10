@@ -251,6 +251,14 @@
           write(1,*) 'Qsum=',Qsum,'Qmarsh=',Qmarsh(j,2)
           write(1,*) 'OWstg(t-1)=',Es(j,1),'OWstg(t)=',Es(j,2)
           write(1,*) 'Mstg(t-1)=',Eh(j,1),'Mstg(t)=',Eh(j,2)
+          do k=1,nlink2cell(j)
+              iab=abs(icc(j,k))
+              if(iab /= 0) then
+                  Qlink = sicc(j,k)*Q(iab,2)
+                  write(1,*)'LinkID=',iab,'LinkType=',linkt(iab),'Qlink=',Qlink
+              endif
+          enddo
+          stop
       endif
 
 
