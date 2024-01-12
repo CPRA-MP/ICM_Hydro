@@ -130,11 +130,16 @@
 !				if((mm>=626160).AND.(j==458))then
 !					write(1,*)'time step = ',mm, 'compartment = ',j,abs(icc(j,k)),Qlink
 !				endif
+! distribute ridge link flows to both marsh & OW proportionly based on the percentage area
+              elseif (linkt(abs(icc(j,k))) == 9) then
+                  Qsumh = Qsumh + Qlink*Ahf(j)/(Ahf(j)+As(j,1))
+                  Qsum = Qsum + Qlink*As(j,1)/(Ahf(j)+As(j,1))
 !>> if link is not marsh overland flow type, then add flow to water flow sum
               else    
                   Qsum = Qsum + Qlink
               endif
               
+
 !>> calculate magnitude of all flow and only in/out flows for use in sediment routing equations            
               Qsum_abs(j) = Qsum_abs(j) + abs(Qlink)
             
@@ -255,10 +260,12 @@
               iab=abs(icc(j,k))
               if(iab /= 0) then
                   Qlink = sicc(j,k)*Q(iab,2)
-                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
-                  if (linkt(iab) == 9) then
+                  if(abs(Qlink)>0) then
+				     write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
                      write(1,*)'Es(jus)=',Es(jus(iab),1),
      &                         'Es(jds)=',Es(jds(iab),1)
+                     write(1,*)'Eh(jus)=',Eh(jus(iab),1),
+     &                         'Eh(jds)=',Eh(jds(iab),1)
                   endif
               endif
           enddo
