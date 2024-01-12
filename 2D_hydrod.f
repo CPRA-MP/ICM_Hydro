@@ -422,8 +422,8 @@
                   else
           !>> If weir is partially submerged calculate submergence coefficient, ksub
                       if (subp >= 0.85) then
-                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
-! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp-8.815  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       else
                           w_ksub = 1.0
                       endif
@@ -812,8 +812,8 @@
 				  else
           !>> If orifice-as-equivalent-weir is partially submerged calculate submergence coefficient, ksub
 					  if (subp >= 0.85) then
-						w_ksub = -14.167*subp**2.+23.567*subp-8.815
-! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+! BUG						w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp-8.815  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
 					  elseif (subp < 0.85) then
 						  w_ksub = 1.0
 					  endif
@@ -1104,13 +1104,13 @@
 
            !>> calculate average flow depth across ridge crest
                   dv = max(0.5*(htup+htdn),0.01)
-           !>> calculate headloss due to friction as flow passes over ridge crest (function of Q@t-1)
-                  hf=Latr3(i)*(Latr5(i)*Q(i,1)/
-     &                          (Latr4(i)*dv**(5./3.)))**2.0
-           !>> correct upstream water elevation for headloss (only used in flow calculations - NOT in submerged coefficient calculations)
-           !>> if headloss is too great, set upstream water elevation to value JUST above downstream water elevation
-                  htupf = max((htup-hf),(htdn+0.01))
-
+!           !>> calculate headloss due to friction as flow passes over ridge crest (function of Q@t-1)
+!                  hf=Latr3(i)*(Latr5(i)*Q(i,1)/
+!     &                          (Latr4(i)*dv**(5./3.)))**2.0
+!           !>> correct upstream water elevation for headloss (only used in flow calculations - NOT in submerged coefficient calculations)
+!           !>> if headloss is too great, set upstream water elevation to value JUST above downstream water elevation
+!                  htupf = max((htup-hf),(htdn+0.01))
+                  htupf = htup
                ! set flow area for use in EAOL calculation
                   Ach = dv*Latr4(i)
 
@@ -1121,8 +1121,8 @@
                   else
            !>> If weir is partially submerged calculate submergence coefficient
                       if (subp >= 0.85) then
-                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
-! BUG                          w_ksub = -14.137*subp**2.+23.567*subp**(-8.815)  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
+! BUG                          w_ksub = -14.167*subp**2.+23.567*subp-8.815
+                          w_ksub = -14.137*subp**2.+23.567*subp-8.815  !zw 12/14/2023 MP2017 Attachment C3-22-1 Page 7 Eq.(5)
                       elseif (subp < 0.85) then
                            w_ksub = 1.0
                       endif
