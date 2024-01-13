@@ -59,7 +59,8 @@
      &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
 !     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
      
-        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
+!        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
+        QTMPsum=QTMPsum-QRain*Tempw(j,1)            !ZW 1/13/2024 
       
 !>> update mass flux (QTMPsum) for link flows into/out of compartment            
         do k=1,nlink2cell(j)
