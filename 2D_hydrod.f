@@ -1239,58 +1239,69 @@
 !>> Calculate volume of water in upstream compartment available for exchange during timestep
 !>> Calculate separate volume of water available for exchange for overland marsh flow links
           if (linkt(i) == 8) then
+!>> Determine level where stage will be equal in conecting compartment
+              if ((Ahf(jus(i)) > 0.0) .and. (Ahf(jds(i)) > 0.0)) then
+                  Elevel = (Ahf(jus(i))*Eh(jus(i),2)
+     &                 +Ahf(jds(i))*Eh(jds(i),2))/(Ahf(jus(i))+Ahf(jds(i)))
+              endif
+              if ((Ahf(jus(i)) == 0.0) .and. (Ahf(jds(i)) == 0.0)) then
+                  Elevel = (As(jus(i),1)*Es(jus(i),2)
+     &                 +As(jds(i),2)*Es(jds(i),2))/(As(jus(i),1)+As(jds(i),2))
+              endif
+              if ((Ahf(jus(i)) > 0.0) .and. (Ahf(jds(i)) == 0.0)) then
+                  Elevel = (Ahf(jus(i))*Eh(jus(i),2)
+     &                 +As(jds(i),2)*Es(jds(i),2))/(Ahf(jus(i))+As(jds(i),2))
+              endif
+              if ((Ahf(jus(i)) == 0.0) .and. (Ahf(jds(i)) > 0.0)) then
+                  Elevel = (As(jus(i),1)*Es(jus(i),2)
+     &                 +Ahf(jds(i))*Eh(jds(i),2))/(As(jus(i),1)+Ahf(jds(i)))
+              endif
 !              sn = (Eh(jus(i),2)-Eh(jds(i),2))/max(0.000001,abs(Eh(jus(i),2)-Eh(jds(i),2)))
               if ( Eh(jus(i),2) > Eh(jds(i),2) ) then
                   sn = 1.0
-              elseif ( Eh(jus(i),2) < Eh(jds(i),2) ) then
-                  sn = -1.0
-			  else
-			      sn = 0.0
-              endif
-              if (sn > 0) then
                   if (Ahf(jus(i)) > 0.0) then 
 !                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
 !     &                            Ahf(jus(i))
-                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.0)*Ahf(jus(i))
+                      volavailable=Max(Eh(jus(i),2)-Elevel),0.0)*Ahf(jus(i))
                   else
 !                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
 !     &                        As(jus(i),1)
-                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.0)*As(jus(i),1)
+                      volavailable=Max(Es(jus(i),2)-Elevel),0.0)*As(jus(i),1)
                   endif
-              elseif(sn < 0) then
+              elseif ( Eh(jus(i),2) < Eh(jds(i),2) ) then
+                  sn = -1.0
                   if (Ahf(jds(i)) > 0.0) then 
 !                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
 !     &                            Ahf(jds(i))
-                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.0)*Ahf(jds(i))
+                      volavailable=Max(Eh(jds(i),2)-Elevel),0.0)*Ahf(jds(i))
                   else
 !                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
 !     &                        As(jds(i),1)
-                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.0)*As(jds(i),1)
+                      volavailable = Max(Es(jds(i),2)-Elevel),0.0)*As(jds(i),1)
                   endif              
               else
+                  sn = 0.0
                   volavailable = 0.0
               endif
           elseif(linkt(i) > 0) then
+!>> Determine level where stage will be equal in conecting compartment
+              Elevel = (As(jus(i),1)*Es(jus(i),2)
+     &                 +As(jds(i),2)*Es(jds(i),2))/(As(jus(i),1)+As(jds(i),2))
 !              sn =(Es(jus(i),2)-Es(jds(i),2))/max(0.000001,abs(Es(jus(i),2)-Es(jds(i),2)))
               if ( ES(jus(i),2) > ES(jds(i),2) ) then
                   sn = 1.0
-              elseif ( ES(jus(i),2) < ES(jds(i),2) ) then
-                  sn = -1.0
-		      else
-		          sn = 0.0
-              endif
-              if (sn > 0) then
 !                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jus(i),1)
 !                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
 !     &                        As(jus(i),1)
-                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.0)*As(jus(i),1)
-
-              elseif (sn < 0) then
+                  volavailable = Max(Es(jus(i),2)-Elevel,0.0)*As(jus(i),1)
+              elseif ( ES(jus(i),2) < ES(jds(i),2) ) then
+                  sn = -1.0
 !                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jds(i),1)
 !                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
 !     &                        As(jds(i),1)
-                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.0)*As(jds(i),1)
-              else
+                  volavailable = Max(Es(jds(i),2)-Elevel,0.0)*As(jds(i),1)
+		      else
+		          sn = 0.0
                   volavailable = 0.0
               endif
 		  else
