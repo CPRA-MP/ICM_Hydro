@@ -55,8 +55,6 @@
 
 ! no diffusion associated with ridge links unless submerged         
           if(linkt(iab)==9) then
-              Csalface=0  !exclude ridge link salinity - testing purpose!!! ZW 1/13/2024
-              diffus = 0.0
               d1 = Es(j,1)-Latr1(iab) 
               d2 = Es(jnb,1)-Latr1(iab) 
               if((d1<0) .or. (d2<0)) then
