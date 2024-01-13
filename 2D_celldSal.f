@@ -290,12 +290,12 @@
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
           S(j,2) = 0.0
-      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
-          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
-              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
-                  S(j,2) = salmaxcon
-              endif
-          endif
+!zw 1/13/24      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+!          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
+!              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+!                  S(j,2) = salmaxcon
+!              endif
+!          endif
 !      elseif (S(j,2) > 36.) then
 !          S(j,2)=36.
       elseif (S(j,2) > salmax) then
