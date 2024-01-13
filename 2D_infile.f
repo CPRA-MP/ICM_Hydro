@@ -567,10 +567,10 @@
 
 !>> fa check
           if(fa_mult(lnkid) < 0.5) then	!zw 3/14/2015 revised
-              write(1,925)'Exy value for link',lnkid,'is less than 0.5'
+              write(1,925)'fa value for link',lnkid,'is less than 0.5'
               write(1,*) 'Default value of 0.5 is assigned'
 
-              write(*,925)'Exy value for link',lnkid,'is missing.'
+              write(*,925)'fa value for link',lnkid,'is missing.'
               write(*,*) 'Default value of 0.5 is assigned'
 
               fa_mult(lnkid) = 0.5
