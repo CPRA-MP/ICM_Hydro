@@ -1262,22 +1262,22 @@
                   if (Ahf(jus(i)) > 0.0) then 
 !                      volavailable=Max(Eh(jus(i),2)-Bedm(jus(i)),0.01)*
 !     &                            Ahf(jus(i))
-                      volavailable=Max(Eh(jus(i),2)-Elevel),0.0)*Ahf(jus(i))
+                      volavailable=Max((Eh(jus(i),2)-Elevel),0.0)*Ahf(jus(i))
                   else
 !                      volavailable=Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
 !     &                        As(jus(i),1)
-                      volavailable=Max(Es(jus(i),2)-Elevel),0.0)*As(jus(i),1)
+                      volavailable=Max((Es(jus(i),2)-Elevel),0.0)*As(jus(i),1)
                   endif
               elseif ( Eh(jus(i),2) < Eh(jds(i),2) ) then
                   sn = -1.0
                   if (Ahf(jds(i)) > 0.0) then 
 !                      volavailable=Max(Eh(jds(i),2)-Bedm(jds(i)),0.01)*
 !     &                            Ahf(jds(i))
-                      volavailable=Max(Eh(jds(i),2)-Elevel),0.0)*Ahf(jds(i))
+                      volavailable=Max((Eh(jds(i),2)-Elevel),0.0)*Ahf(jds(i))
                   else
 !                      volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
 !     &                        As(jds(i),1)
-                      volavailable = Max(Es(jds(i),2)-Elevel),0.0)*As(jds(i),1)
+                      volavailable = Max((Es(jds(i),2)-Elevel),0.0)*As(jds(i),1)
                   endif              
               else
                   sn = 0.0
