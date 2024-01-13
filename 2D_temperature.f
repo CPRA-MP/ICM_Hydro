@@ -34,15 +34,15 @@
           Qlink = Q(iab,2)
 
 ! exclude marsh link flow contribution to openwater temperature
-          if ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
-              CTMPface = 0.0
-              diffus = 0.0
-          endif
+!ZW 1/13/24          if ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
+!              CTMPface = 0.0
+!              diffus = 0.0
+!          endif
 
 ! ridge link distribute water to OW & marsh proportionally based on area 
 ! no diffusion associated with ridge links unless submerged         
           if(linkt(iab)==9) then
-              Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
+!ZW 1/13/24              Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
               d1 = Es(j,1)-Latr1(iab) 
               d2 = Es(jnb,1)-Latr1(iab) 
               if((d1<0) .or. (d2<0)) then

@@ -54,8 +54,10 @@
         enddo
 
 !>> temperature source term from rainfall
+  !ZW 1/13/2024 adding marsh area rainfall
         QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
+     &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
+!     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
      
         QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
       
@@ -106,6 +108,23 @@
                 vol2 = ddy2*As(j,1)
             endif
         endif
+
+! ZW-1/13/2024 adding marsh water volume
+        ddym1 = Eh(j,1)-BedM(j)
+        ddym2 = Eh(j,2)-BedM(j)
+
+        marsh_vol1 = 0.0
+        marsh_vol2 = 0.0
+        if( Ahf(j) > 0 ) then                           ! check if there is marsh area
+            if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
+                marsh_vol1 = ddym1*Ahf(j)
+            endif
+            if ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
+                marsh_vol2 = ddym2*Ahf(j)
+            endif
+        endif
+        vol1 = vol1 + marsh_vol1
+        vol2 = vol2 + marsh_vol2
 
 !      Tempw(j,2) = ((Tempw(j,1)*As(j,1)*dddy - QTMPsum*dt)
 !     &   / (As(j,1)*dddy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt) ) + DTempw2
