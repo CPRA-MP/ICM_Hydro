@@ -143,7 +143,8 @@
 ! low high pass filter
         if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
 !      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
-        if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax
+!        if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax  !temperature instable
+        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
 
         if(isNan(Tempw(j,2))) then      ! YW
           write(*,*) 'j:',j
