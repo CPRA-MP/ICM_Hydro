@@ -25,17 +25,38 @@
 !                  CTMPface = 0.0
 !                  diffus = 0.0
 !              endif
-!          else    
           if(Q(iab,2) >= 0.0) then
               CTMPface=Tempw(jus(iab),1)
           else
               CTMPface=Tempw(jds(iab),1)
           endif    
           diffus = EAOL(iab)
-!          endif
+          Qlink = Q(iab,2)
 
-          QTMPSum=QTMPSum + sicc(j,k)*(Q(iab,2))*CTMPface
-     &			    +fe*diffus*(Tempw(j,1)-Tempw(jnb,1))
+! exclude marsh link flow contribution to openwater temperature
+          if ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
+              CTMPface = 0.0
+              diffus = 0.0
+          endif
+
+! ridge link distribute water to OW & marsh proportionally based on area 
+! no diffusion associated with ridge links unless submerged         
+          if(linkt(iab)==9) then
+              Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
+              d1 = Es(j,1)-Latr1(iab) 
+              d2 = Es(jnb,1)-Latr1(iab) 
+              if((d1<0) .or. (d2<0)) then
+                  diffus = 0.0
+              endif
+          endif
+
+! pump link has no diffusion
+          if (linkt(iab) == 7) then
+              diffus = 0.0
+          endif
+
+          QTMPSum=QTMPSum + sicc(j,k)*Qlink*CTMPface
+     &            +fe*diffus*(Tempw(j,1)-Tempw(jnb,1))
                   
           TL(iab,1)=CTMPface
               
