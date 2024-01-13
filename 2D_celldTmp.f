@@ -24,15 +24,20 @@
             dddy = ddy1
         endif
       
-        ake=5.0
+!        ake=5.0
+        ake=26.5  !zw - 1/12/2024 based on MP2012 Ke averages
         cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
-        aktmp=ake/rhoj/CSHEAT/dddy !JAM Oct 2010 temperature heat conduction  *** will need calibration
+        if(ddy1 <= dry_threshold) then
+            aktmp=0
+        else
+            aktmp=ake/rhoj/CSHEAT/dddy !JAM Oct 2010 temperature heat conduction  *** will need calibration
+        endif
 
         QTMPsum=0
 
 !>> update  mass flux (QTMPsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
         do kdiv=1,Ndiv
-	      QTMPsum=QTMPsum - Qdiv(kdiv,kday)*TempMR(kday)*
+            QTMPsum=QTMPsum - Qdiv(kdiv,kday)*TempMR(kday)*
      &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
         enddo
 
@@ -40,7 +45,7 @@
         do ktrib=1,Ntrib
 !>> If Qtrib is negative, flow is leaving system via tributary, use compartment temp if this is the case
             if (Qtrib(ktrib,kday) > 0.0) then
-		    QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
+                QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
      &			            Qmult(j,ktrib)
             else
                 QTMPsum = QTMPsum-Qtrib(ktrib,kday)*TempW(j,1)*
@@ -57,11 +62,11 @@
 !>> update mass flux (QTMPsum) for link flows into/out of compartment            
         do k=1,nlink2cell(j)
             if(icc(j,k) /= 0.0) then
-		      if(icc(j,k) < 0.0)then
-		          jnb=jus(abs(icc(j,k)))
-                  else 
-		          jnb=jds(abs(icc(j,k)))
-                  endif
+                if(icc(j,k) < 0.0)then
+                    jnb=jus(abs(icc(j,k)))
+                else 
+                    jnb=jds(abs(icc(j,k)))
+                endif
             endif  
             iab=abs(icc(j,k))
 !          call Temperature(mm,iab,jnb,j,k,QTMPsum)	!Temperature change computations
@@ -108,7 +113,7 @@
         if(vol2 > 0) then
             Tempw(j,2) = (Tempw(j,1)*vol1 - QTMPsum*dt)/vol2 + DTempw2
         else
-	      Tempw(j,2) = ta(kday)
+            Tempw(j,2) = ta(kday)
         endif
 !	Tempw(j,2)=Tempw(j,1)+DTempw1+DTempw2
 	
@@ -145,5 +150,5 @@
 !	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
 
         return 
-	  end
+        end
 !***********************End Subroutine for Change in Cell Temperature*******JAM Oct 2010********
