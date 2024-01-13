@@ -38,16 +38,30 @@
 !                  diffus = 0.0
 !              endif  
 !          else    
-              if(Q(iab,2) >= 0.0) then
-				Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
-     &				+fb(iab)*S(jds(iab),1)))
-              else
-				Csalface= ((fa(iab)*S(jds(iab),1)+
-     &					fb(iab)*S(jus(iab),1)))
-			endif
-              diffus = EAOL(iab)              
+          if(Q(iab,2) >= 0.0) then
+              Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
+     &                  +fb(iab)*S(jds(iab),1)))
+          else
+              Csalface= ((fa(iab)*S(jds(iab),1)
+     &                  +fb(iab)*S(jus(iab),1)))
+          endif
+          diffus = EAOL(iab)              
    		!endif
    
+! pump link has no diffusion
+          if (linkt(iab) == 7) then
+              diffus = 0.0
+          endif
+
+! no diffusion associated with ridge links unless submerged         
+          if(linkt(iab)==9) then
+              d1 = Es(j,1)-Latr1(iab) 
+              d2 = Es(jnb,1)-Latr1(iab) 
+              if((d1<0) .or. (d2<0)) then
+                  diffus = 0.0
+              endif
+          endif
+
           QSalSum=QSalSum + sicc(j,k)*(Q(iab,2))*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
 
