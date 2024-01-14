@@ -1283,6 +1283,28 @@
                   sn = 0.0
                   volavailable = 0.0
               endif
+          elseif((linkt(i) == 2) .or. (linkt(i) == 9)) then
+!>> Determine level where stage will be equal in conecting compartment or weir crest elevation
+              Elevel = (As(jus(i),1)*Es(jus(i),2)
+     &                 +As(jds(i),2)*Es(jds(i),2))/(As(jus(i),1)+As(jds(i),2))
+              if ( ES(jus(i),2) > ES(jds(i),2) ) then
+                  sn = 1.0
+                  volavailable = Max(Es(jus(i),2)-max(Elevel,Latr1(i)),0.0)*As(jus(i),1)
+              elseif ( ES(jus(i),2) < ES(jds(i),2) ) then
+                  sn = -1.0
+                  volavailable = Max(Es(jds(i),2)-max(Elevel,Latr1(i)),0.0)*As(jds(i),1)
+              else
+                  sn = 0.0
+                  volavailable = 0.0
+              endif
+          elseif(linkt(i) == 7) then
+              if ( ES(jus(i),2) > Latr2(i) ) then
+                  sn = 1.0
+                  volavailable = Max(Es(jus(i),2)-max(Latr2(i),Bed(jus(i))),0.0)*As(jus(i),1)
+              else
+                  sn = 0.0
+                  volavailable = 0.0
+              endif
           elseif(linkt(i) > 0) then
 !>> Determine level where stage will be equal in conecting compartment
               Elevel = (As(jus(i),1)*Es(jus(i),2)
@@ -1291,21 +1313,19 @@
               if ( ES(jus(i),2) > ES(jds(i),2) ) then
                   sn = 1.0
 !                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jus(i),1)
-!                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*
-!     &                        As(jus(i),1)
+!                  volavailable = Max(Es(jus(i),2)-Bed(jus(i)),0.01)*As(jus(i),1)
                   volavailable = Max(Es(jus(i),2)-Elevel,0.0)*As(jus(i),1)
               elseif ( ES(jus(i),2) < ES(jds(i),2) ) then
                   sn = -1.0
 !                  volavailable = abs(Es(jus(i),2)-Es(jds(i),2))*As(jds(i),1)
-!                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*
-!     &                        As(jds(i),1)
+!                  volavailable = Max(Es(jds(i),2)-Bed(jds(i)),0.01)*As(jds(i),1)
                   volavailable = Max(Es(jds(i),2)-Elevel,0.0)*As(jds(i),1)
-		      else
-		          sn = 0.0
+              else
+                  sn = 0.0
                   volavailable = 0.0
               endif
-		  else
-		      volavailable = 0.0
+          else
+              volavailable = 0.0
           endif
 
 !>> Determine flowrate required to exchange all available water during timestep
