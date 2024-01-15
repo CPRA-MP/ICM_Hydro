@@ -1300,7 +1300,8 @@
           elseif(linkt(i) == 7) then
               if ( ES(jus(i),2) > Latr2(i) ) then
                   sn = 1.0
-                  volavailable = Max(Es(jus(i),2)-max(Latr2(i),Bed(jus(i))),0.0)*As(jus(i),1)
+                  volavailable = Min(Es(jus(i),2)-max(Latr2(i),Bed(jus(i))),
+     &                           Latr1(i)-Latr2(i))*As(jus(i),1)
               else
                   sn = 0.0
                   volavailable = 0.0
