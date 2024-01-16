@@ -101,13 +101,13 @@
 !     openwater volume
         vol1 = 0.0
         vol2 = 0.0
-        if( As(j,1) > 0 ) then                           ! check if there is openwater area
-            if ( ddy1 > dry_threshold ) then               ! check if openwater was dry in previous timestep
-                vol1 = ddy1*As(j,1)
-            endif
-            if ( ddy2 > dry_threshold ) then               ! check if openwater was dry in current timestep
-                vol2 = ddy2*As(j,1)
-            endif
+        if ( ddy1 > dry_threshold ) then               ! check if openwater was dry in previous timestep
+            vol1 = max(ddy1*As(j,1),0.0)
+            vol2 = max(ddy2*As(j,1),0.0)
+        
+        elseif ( ddy2 > dry_threshold ) then               ! check if openwater was dry in current timestep
+            vol1 = max(ddy1*As(j,1),0.0)
+            vol2 = max(ddy2*As(j,1),0.0)
         endif
 
 ! ZW-1/13/2024 adding marsh water volume
@@ -116,13 +116,13 @@
 
         marsh_vol1 = 0.0
         marsh_vol2 = 0.0
-        if( Ahf(j) > 0 ) then                           ! check if there is marsh area
-            if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
-                marsh_vol1 = ddym1*Ahf(j)
-            endif
-            if ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
-                marsh_vol2 = ddym2*Ahf(j)
-            endif
+        if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
+            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+            marsh_vol2 = max(ddym2*Ahf(j),0.0)
+        
+        elseif ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
+            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+            marsh_vol2 = max(ddym2*Ahf(j),0.0)
         endif
         vol1 = vol1 + marsh_vol1
         vol2 = vol2 + marsh_vol2

@@ -197,23 +197,27 @@
 !      else
 !          marsh_vol1 = 0.0
 !          marsh_vol2 = 0.0
-!1/15/2024          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
-              marsh_vol1 = ddym1*Ahf(j)
-!1/15/2024          endif
-!1/15/2024          if ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
-              marsh_vol2 = ddym2*Ahf(j)
-!1/15/2024          endif
+          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+              marsh_vol1 = max(ddym1*Ahf(j),0.0)
+              marsh_vol2 = max(ddym2*Ahf(j),0.0)
+          
+          elseif ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
+              marsh_vol1 = max(ddym1*Ahf(j),0.0)
+              marsh_vol2 = max(ddym2*Ahf(j),0.0)
+          endif
       endif
 
 !     openwater volume
       vol1 = 0.0
       vol2 = 0.0
-!1/15/2024      if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
-          vol1 = ddy1*As(j,1)
-!1/15/2024      endif
-!1/15/2024      if ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
-          vol2 = ddy2*As(j,1)
-!1/15/2024      endif
+      if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
+          vol1 = max(ddy1*As(j,1),0.0)
+          vol2 = max(ddy2*As(j,1),0.0)
+      
+      elseif ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
+          vol1 = max(ddy1*As(j,1),0.0)
+          vol2 = max(ddy2*As(j,1),0.0)
+      endif
 
 !      vol1 = ddy1*As(j,1) + marsh_vol1
 !      vol2 = ddy2*As(j,1) + marsh_vol2
