@@ -197,25 +197,23 @@
 !      else
 !          marsh_vol1 = 0.0
 !          marsh_vol2 = 0.0
-          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+!1/15/2024          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
               marsh_vol1 = ddym1*Ahf(j)
-          endif
-          if ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
+!1/15/2024          endif
+!1/15/2024          if ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
               marsh_vol2 = ddym2*Ahf(j)
-          endif
+!1/15/2024          endif
       endif
 
 !     openwater volume
       vol1 = 0.0
       vol2 = 0.0
-      if( As(j,1) > 0 ) then                           ! check if there is openwater area
-          if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
-              vol1 = ddy1*As(j,1)
-          endif
-          if ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
-              vol2 = ddy2*As(j,1)
-          endif
-      endif
+!1/15/2024      if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
+          vol1 = ddy1*As(j,1)
+!1/15/2024      endif
+!1/15/2024      if ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
+          vol2 = ddy2*As(j,1)
+!1/15/2024      endif
 
 !      vol1 = ddy1*As(j,1) + marsh_vol1
 !      vol2 = ddy2*As(j,1) + marsh_vol2
@@ -223,8 +221,8 @@
       vol2 = vol2 + marsh_vol2
 
 
-!      if(ddy2 > dry_depth) then
-      if(vol2 > 0) then
+      if(ddy2 > dry_depth) then
+!1/15/2024      if(vol2 > 0) then
 !          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
           S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2   
           ds = S(j,2) - S(j,1)
@@ -273,7 +271,7 @@
 !      
 !     S(j,2)=S(j,1)+DSal
          
-      if (S(j,2) <= 0) then
+      if (S(j,2) < 0) then
           write(1,*)'comp = ',j
           write(1,*) 'As =',As(j,1)
           write(1,*)'sal(t-1) = ',S(j,1)
