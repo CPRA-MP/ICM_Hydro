@@ -178,7 +178,7 @@
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
 !                  call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
-                  call TSSOLIDS(iab,jnb,j,k,sedclass)
+                  if(abs(Q(iab,2)>0)) call TSSOLIDS(iab,jnb,j,k,sedclass)
                   !if (j == 115) then
                   !    write(*,*) sedclass,iab,jnb,j,QSsum(sedclass)
                   !end if
