@@ -16,15 +16,13 @@
 
       use params
       
-      integer :: marsh_link_flow,Qsalsum_b4link
-      real :: Saltrib
+!      implicit none
+      integer :: j, kday, ktrib, kdiv, marsh_link_flow, k, iab, jnb
+      real :: QSalsum, Saltrib, Qsalsum_b4link
       real :: dry_depth, dry_salinity
-      real :: vol1, vol2
-      real :: marsh_vol1, marsh_vol2
-      real :: ddy1, ddy2 
-      real :: ddym1, ddym2
-      real :: salmaxcon
-      !real :: DSal, maxDSal
+      real :: vol1, vol2, marsh_vol1, marsh_vol2
+      real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
+      real :: salmaxcon, ds, Qlink, Csalface
       
       !cden=1./1000./24./3600.		! mm/d to m/s conversion
 
@@ -99,7 +97,7 @@
           Qsalsum_b4link = Qsalsum
 
 !          call salinity(mm,iab,jnb,j,k,Qsalsum)
-          call salinity(iab,jnb,j,k,Qsalsum)
+          if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
           
 !>> check if current link has flow during timestep
           if (Q(iab,2) .ne. 0.0) then
@@ -254,16 +252,10 @@
 !                  endif
 !              endif
 !          endif
-                  
-                      
-          
       else
           S(j,2) = dry_salinity
 !          write(*,'(A,I,A,F,A,F,A,I)') 'dry sal in comp: ',j,' vol:',vol2,' m_vol: ',marsh_vol2,' marsh_flow: ',marsh_link_flow
-
       endif
-
-      
       
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
@@ -275,9 +267,10 @@
 !      
 !     S(j,2)=S(j,1)+DSal
          
-      if (S(j,2) < 0) then
+! for code debugging
+      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
           write(1,*)'comp = ',j
-          write(1,*) 'As =',As(j,1)
+          write(1,*)'As =',As(j,1)
           write(1,*)'sal(t-1) = ',S(j,1)
           write(1,*)'sal(t) = ',S(j,2)
           write(1,*)'depth(t-1) = ',Es(j,1)-Bed(j)
@@ -296,7 +289,7 @@
                   endif  
               endif
               Qlink = sicc(j,k)*Q(iab,2)
-!              if(abs(Qlink)>0) then
+              if(abs(Qlink)>0) then
                   write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
                   if(Q(iab,2) >= 0.0) then
                       Csalface= ((fa(iab)*S(jus(iab),1)
@@ -309,7 +302,7 @@
      &                      'S(jds)=',S(jds(iab),1), 'Csalface=',Csalface
                   write(1,*)'QSALadvec=',sicc(j,k)*(Q(iab,2))*Csalface
                   write(1,*)'QSALdiffu=',fe*EAOL(iab)*(S(j,1)-S(jnb,1))
-!              endif
+              endif
           enddo
           stop
       endif
@@ -319,12 +312,12 @@
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
           S(j,2) = 0.0
-      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
-          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
-              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
-                  S(j,2) = salmaxcon
-              endif
-          endif
+!      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+!          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
+!              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+!                  S(j,2) = salmaxcon
+!              endif
+!          endif
 !      elseif (S(j,2) > 36.) then
 !          S(j,2)=36.
       elseif (S(j,2) > salmax) then
@@ -333,7 +326,6 @@
 
 !>> Set marsh salinity equal to open water salinity
       Sh(j,2)=S(j,2)  
-
 
 !!>> Calculate daily average values reported out to output files ! moved to hydro
 !     if(daystep == 1) then
