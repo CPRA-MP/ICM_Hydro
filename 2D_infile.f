@@ -16,7 +16,7 @@
       integer :: gridbedcount,gridmarcount,gridplcount
       integer :: windstartrun,tidestartrun
       integer :: ETzero,Rzero
-      integer :: node,lnkid,nlockobs_links,nlockobs,jmds,k,jk
+      integer :: node,lnkid,jmds,k,jk
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
 
@@ -1931,7 +1931,7 @@
       do jkk=1,mds
 	      jj=KBC(jkk)
 		  S(jj,1) = SBC(jj)
-		  Tempw(jj,1)=TempwBC(jkk,kday)
+		  Tempw(jj,1)=TempwBC(jkk,1)
           do i=1,4
               !Css(jj,2,i)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(i)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
               Css(jj,1,i)=BCTSS(jj)*BCSedRatio(i)         !BUG wd not defined zw 04/07/2020
