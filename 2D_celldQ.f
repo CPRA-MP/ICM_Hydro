@@ -13,8 +13,8 @@
 !      implicit none
       real(sp) :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
-      real :: Qsum,Qsumh,cden,dday,fpc,Qhhf,Ahmf,Qupld,Qupld
-      real :: Dz,sndz,Dzh,sndzh
+      real :: Qsum,Qsumh,dday,fpc,Qhhf,Ahmf,Qupld
+      real :: sndz,Dzh,sndzh
 
       Qsum=0.0						!JAM Oct 2010
       Qsumh=0.0
