@@ -398,6 +398,7 @@
 !              if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=0.01)) then	   !zw 3/16/2015
               if ((htup <= 0.0).OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then	   !zw 3/16/2015
                   Q(i,2) = 0.0
+                  EAOL(i) = 0.0
           !>> otherwise, if water is above weir crest calculate flow
               else
               !>> check if downstream water is below ridge elevation - if so, set downstream height to 0
@@ -447,10 +448,17 @@
                       write(*,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
+                  EAOL(i)=Exy(i)*htup*Latr4(i)/10.
+
+                  !>> calculate channel velocity
+                  Ach = htup*Latr4(i)
+                  if (Ach > 0.0) then
+                      link_vel(i) = Q(i,2)/Ach
+                  end if
 				  
               endif
               ! Assume flow length through weir is 10 m for EAOL calculations
-              if (htup > 0.0) then
+!              if (htup > 0.0) then
 !                 move the following attribute checks to infile.f to avoid repeating every time step - ZW 12/14/2023
 !                  !if(Exy(i) > -9990.0) then
 !                  if(Exy(i) < 0) then	!zw 3/14/2015 revised
@@ -467,21 +475,21 @@
 !                      endif
 !                      Exy(i) = 100.0
 !                  endif
-                  EAOL(i)=Exy(i)*htup*Latr4(i)/10.
-                  
-                  !>> calculate channel velocity
-                  Ach = htup*Latr4(i)
-                  if (Ach > 0.0) then
-                      link_vel(i) = Q(i,2)/Ach
-                  end if
-                  
-          !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-          !        if (abs(Q(i,2)/(htup*Latr4(i))) >= upwind_vel) then
-          !            fa(i) = 1.0
-          !        endif
-              else
-                  EAOL(i) = 0.0
-              endif
+!                  EAOL(i)=Exy(i)*htup*Latr4(i)/10.
+!                  
+!                  !>> calculate channel velocity
+!                  Ach = htup*Latr4(i)
+!                  if (Ach > 0.0) then
+!                      link_vel(i) = Q(i,2)/Ach
+!                  end if
+!                  
+!          !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
+!          !        if (abs(Q(i,2)/(htup*Latr4(i))) >= upwind_vel) then
+!          !            fa(i) = 1.0
+!          !        endif
+!              else
+!                  EAOL(i) = 0.0
+!              endif
 
 !>> Link type 3 = rectangular channels with a lock control structure
           elseif (linkt(i) == 3) then
@@ -722,6 +730,16 @@
                   Q(i,2)=sqrt(abs(Deta))*Resist*sn*dkd*Latr11(i)
 !!!ZW 12/15/2023  should Latr11 be applied to diffusion EAOL???
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd*Latr11(i)  !zw 3/14/2015 add *dkd for no flow condition under lock control rules
+!>> calculate channel velocity
+                  if (Ach > 0.0) then
+                      link_vel(i) = Q(i,2)/Ach
+                  end if        
+                  
+!>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
+                  if (abs(link_vel(i)) >= upwind_vel) then
+                      fa(i) = 1.0
+                  endif
+
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Type3 Lock Link',i,' flow is NaN'
                       write(*,*) 'Latr11(i)=', Latr11(i)
@@ -739,18 +757,6 @@
                       stop !pause
                   endif
               endif
-              
-                            
-              !>> calculate channel velocity
-              if (Ach > 0.0) then
-                  link_vel(i) = Q(i,2)/Ach
-              end if        
-                  
-          !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-              if (abs(link_vel(i)) >= upwind_vel) then
-                  fa(i) = 1.0
-              endif
-
 
 !>> Link type 4 = tide gate, orifice flow in only one direction
 !>> Link type 5 = orifice flow in two directions
@@ -862,7 +868,6 @@
                   link_vel(i) = Q(i,2)/Ach
               end if        
             
-            
 ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
 !             if (abs(Q(i,2)/Ach) >= upwind_vel) then
 !                  fa(i) = 1.0
@@ -900,6 +905,8 @@
               endif
 
               if (pumpon == 0) then
+                  Q(i,2) = 0.0
+              elseif ((Es((jus(i),2))-Bed(jus(i)))<=dry_threshold) then
                   Q(i,2) = 0.0
               else
                   cden=1/1000./24/3600.		!JAM Oct 2010 mm/d to m/s
@@ -1019,7 +1026,7 @@
                      stop ! pause
                   endif
 
-                  endif
+               endif
           ! update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
           !    if (abs(Q(i,2)/Ach) >= upwind_vel) then
           !        fa(i) = 1.0
@@ -1082,7 +1089,7 @@
               htup = ES(upN,2) - Latr1(i)
 
 !>> check if upstream water elevation is above ridge elevation - set flow to zero if it is lower than ridge
-              if (htup <= 0.0) then
+              if ((htup <= 0.0) .OR.((Es(upN,2)-Bed(upN))<=dry_threshold)) then
                   Q(i,2) = 0.0
 				  Ach = 0.0    !zw 3/14/2015 add to ensure diffusion is zero for no flow condtion
 !>> otherwise, calculate flow across ridge
@@ -1195,7 +1202,9 @@
               reg_fs = 1.587*Latr10(i)**(1./2.)
               reg_r = 0.468*(Latr9(i)/reg_fs)**(1./3.)
               reg_s = 0.000316*reg_fs**(5./3.)/Latr9(i)**(1./6.)
-              sn = Q(Latr2(i),2)/abs(Q(Latr2(i),2))
+!              sn = Q(Latr2(i),2)/abs(Q(Latr2(i),2))
+              sn=1.0
+              if (Q(Latr2(i),2)<0) sn=-1.0
               Q(i,2) = sn*reg_p*reg_r**(5./3.)*reg_s**(1./2.)/Latr5(i)
 
               if(isNan(Q(i,2))) then
@@ -1225,15 +1234,13 @@
               !>> calculate channel velocity - not used for regime channels - keep set to zero
               link_vel(i) = 0.0
 
-
               EAOL(i)=EAOL(Latr2(i))
           else
 		      write(1,*)'Warning - Link ',i, 'is not a defined link type (1-12)!!!'
               Q(i,2) = 0
 			  EAOL(i) = 0
-!>> end flowrate calculations based on linktype
           endif
-
+!>> end flowrate calculations based on linktype
 
 
 !>> Calculate volume of water in upstream compartment available for exchange during timestep
@@ -1336,22 +1343,23 @@
               if (Qmax < abs(Q(i,2))) then
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
-                      if (daystep == lastdaystep) then
-                          Write(1,*) 'Max flowrate reached. Link:',i
-                          Write(*,*) 'Max flowrate reached. Link:',i
-                      endif
+                      !if (daystep == lastdaystep) then
+                          Write(1,*) 'Max flowrate reached. Link:',i,'at time step:',mm
+                          Write(*,*) 'Max flowrate reached. Link:',i,'at time step:',mm
+                      !endif
                   endif
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Link',i,'flow is NaN after Qmax filter'
                       write(*,*) 'Qmax=',Qmax
+                      write (1,*) 'Link',i,'flow is NaN after Qmax filter'
+                      write(1,*) 'Qmax=',Qmax
                       stop !pause
                   endif
               endif
           endif
-
       
-!>> End link updates of Q
       enddo
+!>> End link updates of Q
 
 !>> update upwind & downwind factors for dispersion based on current timestep's upwind factor
       do i = 1,M
@@ -1527,21 +1535,19 @@
               sDetah = -1.0
           endif
 
-
           !>> Stage differential between open water and marsh (with sign, negative is marsh-to-open water flow direction)
 		  Detah=sDetah*max(0.0,abs(Es(j,2)-Eh(j,2)))							!driving head into marsh
 		
           !added ZW 05/25/2020 dealing with dry marsh (Eh-BedM<=0.01) but Es<Eh
           if(sDetah<0) then
-!              if((Eh(j,2)-BedM(j))<=0.01) then
               if((Eh(j,2)-BedM(j))<=KKdepth(j)) then
-                  Detah = 0.0;
+                  Detah = 0.0
               endif
+              if((Eh(j,2)-BedM(j))<=dry_threshold) Detah = 0.0
           else
               if((Es(j,2)-Bed(j))<=dry_threshold) then
-                  Detah = 0.0;
+                  Detah = 0.0
               endif
-		  
           endif
 
 !          !>> Depth in marsh, used in Kadlec-Knight equation - minimum allowed is input parameter to each compartment
