@@ -7,7 +7,7 @@
         use params
 
 !      implicit none
-        real :: QRain,CSHEAT,rhoj,ddy1,ddy2,dddy,ake,cden,aktmp,DTempw2,QTMPsum
+        real :: QRain,CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
         real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2,Qlink,CTMPface
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
 
