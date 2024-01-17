@@ -20,7 +20,7 @@
       integer :: j, kday, ktrib, kdiv, marsh_link_flow, k, iab, jnb
       real :: QSalsum, Saltrib, Qsalsum_b4link
       real :: dry_depth, dry_salinity
-      real :: vol1, vol2, marsh_vol1, marsh_vol2
+      real :: vol1, vol2, marsh_vol1, marsh_vol2, vow2m
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
       real :: salmaxcon, Qlink, Csalface
       
@@ -175,6 +175,7 @@
 !>> if so, then include volume of shallow water over marsh surface in total volume
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
+      vow2m = 0.0
       if( Ahf(j) > 0 ) then                           ! check if there is marsh area
 !          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
 !              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
@@ -202,6 +203,8 @@
           elseif ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
               marsh_vol1 = max(ddym1*Ahf(j),0.0)
               marsh_vol2 = max(ddym2*Ahf(j),0.0)
+          else
+              if(Qmarsh(j,2)>0) vow2m = Qmarsh(j,2)*dt
           endif
       endif
 
@@ -217,10 +220,13 @@
           vol2 = max(ddy2*As(j,1),0.0)
       endif
 
-!      vol1 = ddy1*As(j,1) + marsh_vol1
-!      vol2 = ddy2*As(j,1) + marsh_vol2
+      marsh_vol1 = max(ddym1*Ahf(j),0.0)
+      marsh_vol2 = max(ddym2*Ahf(j),0.0)
+      vol1 = max(ddy1*As(j,1),0.0)
+      vol2 = max(ddy2*As(j,1),0.0)
+
       vol1 = vol1 + marsh_vol1
-      vol2 = vol2 + marsh_vol2
+      vol2 = vol2 + marsh_vol2 !+ vow2m
 
 
       if(ddy2 > dry_depth) then
@@ -275,7 +281,7 @@
           write(1,*)'sal(t) = ',S(j,2)
           write(1,*)'depth(t-1) = ',Es(j,1)-Bed(j)
           write(1,*)'depth(t) =', Es(j,2)-Bed(j)
-          write(1,*)'Dz =',Es(j,2)-Es(j,1)
+          write(1,*)'Dz =',Es(j,2)-Es(j,1),'Qmarsh=',vow2m
           write(1,*)'vol(t-1) =', vol1,marsh_vol1
           write(1,*)'vol(t) =', vol2,marsh_vol2
           write(1,*)'qsalsum =',qsalsum

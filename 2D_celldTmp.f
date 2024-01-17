@@ -126,6 +126,12 @@
             marsh_vol1 = max(ddym1*Ahf(j),0.0)
             marsh_vol2 = max(ddym2*Ahf(j),0.0)
         endif
+
+        marsh_vol1 = max(ddym1*Ahf(j),0.0)
+        marsh_vol2 = max(ddym2*Ahf(j),0.0)
+        vol1 = max(ddy1*As(j,1),0.0)
+        vol2 = max(ddy2*As(j,1),0.0)
+
         vol1 = vol1 + marsh_vol1
         vol2 = vol2 + marsh_vol2
 
