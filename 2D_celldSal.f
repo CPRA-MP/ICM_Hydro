@@ -22,7 +22,7 @@
       real :: dry_depth, dry_salinity
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
-      real :: salmaxcon, ds, Qlink, Csalface
+      real :: salmaxcon, Qlink, Csalface
       
       !cden=1./1000./24./3600.		! mm/d to m/s conversion
 
