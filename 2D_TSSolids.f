@@ -5,13 +5,17 @@
 
       use params
       
+      implicit none
+      integer :: iab,jnb,j,k,sedclass
+      real :: Cssface,diffus,Qlink,d1,d2
  
 !>> Check if link is marsh overland flow link, if so use CSS in marsh and add sediment to marsh cumulative sediment flux term
       if (linkt(iab) == 8) then
 !>> Only calculate marsh sediment exchange if depth in marsh is greater than 0.0 (or set to 0.3 m for assumed surge conditions)
           if (sedclass == 1) then
 !>> Overland marsh links do not transport sand          
-              QSsumh(sedclass) = 0.0 ! do not transport sand across marsh links
+!              QSsumh(sedclass) = 0.0 ! do not transport sand across marsh links
+              QSsumh(sedclass) = QSsumh(sedclass) + 0.0 ! do not transport sand across marsh links
           else          
 !              if (Eh(j,1)-Bedm(j) > 0.0) then !0.3) then
 !>> calculate average concentration at interface between marshes (directionality of flow is needed to apply upwind factor correctly)
@@ -45,14 +49,20 @@
           diffus = EAOL(iab)              
           Qlink = Q(iab,2)
 
+! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
+! no diffusion associated with weir links unless submerged         
+          if(linkt(iab)==2) then
+              d1 = Es(j,1)-Latr1(iab) 
+              d2 = Es(jnb,1)-Latr1(iab) 
+              if((d1<0) .or. (d2<0)) then
+                  diffus = 0.0
+              endif
 ! pump link has no diffusion
-          if (linkt(iab) == 7) then
+          elseif (linkt(iab) == 7) then
               diffus = 0.0
-          endif
-
 ! ridge link distribute water to OW & marsh proportionally based on area 
 ! no diffusion associated with ridge links unless submerged         
-          if(linkt(iab)==9) then
+          elseif(linkt(iab)==9) then
               Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
               Qlink2 = Q(iab,2)*Ahf(j)/(As(j,1)+Ahf(j))
               d1 = Es(j,1)-Latr1(iab) 
@@ -62,11 +72,11 @@
               endif
 !>> add sediment flux from ridge link to the cumulative sediment flux for marsh in this comparment (QSsumh)
               if(sedclass/=1) then
-			      QSSumh(sedclass) = QSsumh(sedclass)
+                  QSSumh(sedclass) = QSsumh(sedclass)
      &            + sicc(j,k)*Qlink2*Cssface
      &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))			!Diffusion
               endif
-		  endif
+          endif
           
           !! update cssface for Atchafalya diversion links to have a SWR of 0.5 of sand - MP project # 03b.DI.04
           !if (iab == 3859) then
@@ -84,7 +94,7 @@
               
 !          else
 !>> add sediment flux from this link to the cumulative sediment flux for the compartment (QSsum)			    
-              QSSum(sedclass) = QSSum(sedclass) 
+          QSSum(sedclass) = QSSum(sedclass) 
      &            + sicc(j,k)*Qlink*Cssface				!face exchange
      &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))			!Diffusion
               
@@ -94,6 +104,6 @@
       
 	
       return
-	  end
+      end
 
 !c***********************End Subroutine for TSS SOLIDS*******************************************
