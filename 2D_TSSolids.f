@@ -5,7 +5,7 @@
 
       use params
       
-!      implicit none
+      implicit none
       integer :: iab,jnb,j,k,sedclass
       real :: Cssface,diffus,Qlink,Qlink2,d1,d2
  

@@ -18,13 +18,14 @@
       
 	  use params      
       
-      
-      real :: ddy_1,ddy_2,ddh_1,ddh_2
+      implicit none
+      integer :: j,kday,k,sedclass,jn,jnt,it,jit,iab,jnb
+      real :: ddy_1,ddy_2,ddh_1,ddh_2,rhow,tribflow,QStrib_avail,divflow,QSdiv_avail
       real :: sed_avail_h,depo_avail_h,depo_settling_h
-      real :: marshface,MEErho,e,insta_retreat,MEEvol,MEEom,MEheight
+      real :: marshface,MEErho,e,insta_retreat,MEEvol,MEEom,MEheight,QSmarsh_avail
       real :: dSacch_int,dSacch_edge
       real :: dry_depth
-    
+      
       !>> Define depth, in meters, for dry cells that will turn off TSS change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
 !      dry_depth = 0.05
@@ -271,7 +272,8 @@
 !>> if marsh depth is greater than threshold, deposit silt on interior (unless all marsh is edge)                      
                       else
                           if(ar_int(j) /= 0.0) then
-                              dSachh_int = dSacch_int
+! BUG zw 1/17/2024                             dSachh_int = dSacch_int
+                              dSacch_int = dSacch_int
      &                             + SedAccumRate_h(k)*(dt/ar_int(j))
                           else
                               dSacch_edge = dSacch_edge

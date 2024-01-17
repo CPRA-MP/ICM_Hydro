@@ -1343,10 +1343,10 @@
               if (Qmax < abs(Q(i,2))) then
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
-                      !if (daystep == lastdaystep) then
+                      if (daystep == lastdaystep) then
                           Write(1,*) 'Max flowrate reached. Link:',i,'at time step:',mm
                           Write(*,*) 'Max flowrate reached. Link:',i,'at time step:',mm
-                      !endif
+                      endif
                   endif
                   if(isNan(Q(i,2))) then
                       write (*,*) 'Link',i,'flow is NaN after Qmax filter'

@@ -16,7 +16,7 @@
 
       use params
       
-!      implicit none
+      implicit none
       integer :: j, kday, ktrib, kdiv, marsh_link_flow, k, iab, jnb
       real :: QSalsum, Saltrib, Qsalsum_b4link
       real :: dry_depth, dry_salinity

@@ -10,11 +10,11 @@
       
       use params      
 
-!      implicit none
-      real(sp) :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
+      implicit none
+      real :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
-      real :: Qsum,Qsumh,dday,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
-      real :: sndz,Dzh,sndzh
+      real :: Qsum,Qsumh,dday,fcrop,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
+      real :: Qow,sndz,Dzh,sndzh
 
       Qsum=0.0						!JAM Oct 2010
       Qsumh=0.0
