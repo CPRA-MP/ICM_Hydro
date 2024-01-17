@@ -13,7 +13,7 @@
 !      implicit none
       real(sp) :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
-      real :: Qsum,Qsumh,dday,fpc,Qhhf,Ahmf,Qupld
+      real :: Qsum,Qsumh,dday,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
       real :: sndz,Dzh,sndzh
 
       Qsum=0.0						!JAM Oct 2010
@@ -26,6 +26,9 @@
       Qsum_abs(j) = 0.0
 !      Qsum_out_link(j) = 0.0
 
+      ddy1=max(Es(j,1)-Bed(j),0.0)
+      ddym1=max(Eh(j,1)-BedM(j),0.0)
+
 !>> Update cumulative open water flow rates in compartment from input boundary tributary flows      
 !>> sign convention on open water flow = positive is flow out of compartment
       do jn = 1,ntrib
@@ -33,6 +36,7 @@
 !              Qmult(j,jn) = 0.0
 !          endif
           flo_trib = Qtrib(jn,kday)*Qmult(j,jn)
+          if((ddy1==0) .and. (flo_trib<0)) flo_trib = 0   !no outflow when compartment is dry in previous time step
           Qsum = Qsum - flo_trib
           Qsum_abs(j) = Qsum_abs(j) + abs(flo_trib)
           if (flo_trib >= 0.0) then
@@ -46,6 +50,7 @@
 !>> sign convention on open water flow = positive is flow out of compartment
       do jjn=1,Ndiv
           flo_div = Qdiv(jjn,kday)*Qmultdiv(j,jjn)
+          if((ddy1==0) .and. (flo_div<0)) flo_div = 0    !no outflow when compartment is dry in previous time step
           Qsum = Qsum - flo_div
           Qsum_abs(j) = Qsum_abs(j) + abs(flo_div)
           if (flo_div >= 0.0) then
@@ -68,8 +73,10 @@
 !      rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
 
 !>> Excess rainfall runoff on marsh
-      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))!*Max(1.,rhh*rhh))	!JAM Oct 2010
+      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))*cden ! in m^3/s !*Max(1.,rhh*rhh))	!JAM Oct 2010
 !      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*fpc)	!include fpc for marsh area PET - ZW 12/18/2023
+      Qavail=ddym1*Ahf(j)/dt
+      Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
 
 !>> !YW! ignore PET at low marsh water level to avoid Eh too low
 !      if((Eh(j,1)-BedM(j))>0.1) then
@@ -82,13 +89,15 @@
       Ahmf=Ahydro(j)-Ahf(j)
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-      Qupld=(Qhhf+max(0.0,(Rain(kday,jrain(j))
+      Qupld=Qhhf+(max(0.0,(Rain(kday,jrain(j))
      &     -PET(kday,Jet(j))*fpc))*Ahmf)*cden	 
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
-      Qsum=Qsum-(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
+      Qow=(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
      &     -fpet*PET(kday,Jet(j)))*As(j,1)*cden
+      Qavail=ddy1*As(j,1)/dt
+      Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
 
 !      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          
