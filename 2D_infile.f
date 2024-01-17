@@ -182,6 +182,7 @@
               Apctmarsh(j) = 0.0
               ar_ed(j) = 0.0
               Apctupland(j) = 0.0
+              BedM(j) = Bed(j)    !change marsh elev to bed elevation if converted entire marsh area to water
 !>> Otherwise, determine amount of upland and marsh needed to be converted to water to meet minimum requirement
           else
               if (Apctwater(j) <= Athresh) then
@@ -269,6 +270,7 @@
                   Apctwater(j) = Apctwater(j) + Apctmarsh(j)
                   Apctmarsh(j) = 0.0
                   ar_ed(j) = 0.0
+                  BedM(j) = Bed(j)    !change marsh elev to bed elevation if converted entire marsh area to water
                   write(1,923) 'Compartment',j,'had less than 1% marsh.
      & All marsh converted to open water.'
                   write(*,923) 'Compartment',j,'had less than 1% marsh.
@@ -366,49 +368,33 @@
 ! check if upstream is now water
               if (Ahf(jus(lnkid)) == 0.0) then
                   Latr2(lnkid) = Bed(jus(lnkid))
-
                   write(1,924) 'Overland link',lnkid,'no longer connects
      & to marsh upstream. Compartment',jus(lnkid),'is now all water.'
                   write(*,924) 'Overland link',lnkid,'no longer connects
      & to marsh in upstream. Compartment',jus(lnkid),'is now all water.'
-
+              endif
 ! check if downstream is now water
 ! this condition is met if BOTH us/ds are now water
-                  if (Ahf(jds(lnkid)) == 0.0) then
-                      Latr10(lnkid) = Bed(jds(lnkid))
-! since both us/ds are now water, link elevation from input data must be over-written
-                      Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))
-
-                      write(1,924) 'Overland link',lnkid,'no longer connects
+              if (Ahf(jds(lnkid)) == 0.0) then
+                  Latr10(lnkid) = Bed(jds(lnkid))
+                  write(1,924) 'Overland link',lnkid,'no longer connects
      & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
-                      write(*,924) 'Overland link',lnkid,'no longer connects
+                  write(*,924) 'Overland link',lnkid,'no longer connects
      & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
-
-! both ends are water, update roughness value to low (water) value of 0.03
-                      Latr5(lnkid) = 0.03
-
-                      write(1,925) 'Overland link',lnkid,'no longer connects
-     & to marsh at either end. Roughness is set to 0.03.'
-                      write(*,925) 'Overland link',lnkid,'no longer connects
-     & to marsh at either end. Roughness is set to 0.03.'
-                  endif
-! if upstream is still marsh, now check for downstream
-              else
-                  if (Ahf(jds(lnkid)) == 0.0) then
-                      Latr10(lnkid) = Bed(jds(lnkid))
-
-                      write(1,924) 'Overland link',lnkid,'no longer connects
-     & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
-                      write(*,924) 'Overland link',lnkid,'no longer connects
-     & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
-
-                  endif
               endif
 !>> Set the elevation of the marsh overland link to be the maximum of the input link elevation, and the us and downstream marsh elevations (that may or may not have been updated for non-marsh areas)
 ! if both us/ds are now water, Latr1 was reset, otherwise the input value for latr1 will still be used in comparison of marsh elev
 !              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
 !              Latr1(lnkid) = maxmarel
               Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
+! both ends are water, update roughness value to low (water) value of 0.03
+              if((Ahf(jus(lnkid)) == 0.0) .and. (Ahf(jds(lnkid)) == 0.0)) then 
+                      Latr5(lnkid) = 0.03
+                      write(1,925) 'Overland link',lnkid,'no longer connects
+     & to marsh at either end. Roughness is set to 0.03.'
+                      write(*,925) 'Overland link',lnkid,'no longer connects
+     & to marsh at either end. Roughness is set to 0.03.'
+              endif
           endif
 
           if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 6) .or.
