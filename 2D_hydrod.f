@@ -906,7 +906,7 @@
 
               if (pumpon == 0) then
                   Q(i,2) = 0.0
-              elseif ((Es((jus(i),2))-Bed(jus(i)))<=dry_threshold) then
+              elseif ((Es(jus(i),2)-Bed(jus(i)))<=dry_threshold) then
                   Q(i,2) = 0.0
               else
                   cden=1/1000./24/3600.		!JAM Oct 2010 mm/d to m/s
