@@ -4,6 +4,11 @@
       Subroutine salinity(iab,jnb,j,k,Qsalsum)		!face densities from node densities
 
       use params
+	  
+      implicit none
+      integer :: iab,jnb,j,k
+      real :: Qsalsum,Csalface,diffus,Qlink,d1,d2
+
 !>@par General Structure of Subroutine Logic:
 !>>
 !      if(iab /= 0.0)then
@@ -20,8 +25,10 @@
 !    
 !          SL(iab,2)=Csalface
 !      endif
-
-      if(iab /= 0.0)then											!ne = 0 there no link available go to 22
+      
+      if(abs(Q(iab,2)) == 0.0) then
+          SL(iab,2)=0
+      else
 !	    if (linkt(iab) == 8) then
 !              if(Ahf(j) == 0) then
 !!              if (Eh(j,1) - Bedm(j) > 0.3) then
@@ -46,15 +53,28 @@
      &                  +fb(iab)*S(jus(iab),1)))
           endif
           diffus = EAOL(iab)              
+          Qlink = Q(iab,2)
    		!endif
    
+! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
+! no diffusion associated with weir links unless submerged         
+          if(linkt(iab)==2) then
+              d1 = Es(j,1)-Latr1(iab) 
+              d2 = Es(jnb,1)-Latr1(iab) 
+              if((d1<0) .or. (d2<0)) then
+                  diffus = 0.0
+              endif
 ! pump link has no diffusion
-          if (linkt(iab) == 7) then
+          elseif (linkt(iab) == 7) then
               diffus = 0.0
-          endif
-
+! exclude marsh link flow contribution to openwater temperature
+!ZW 1/13/24          elseif ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
+!              CTMPface = 0.0
+!              diffus = 0.0
+! ridge link distribute water to OW & marsh proportionally based on area 
 ! no diffusion associated with ridge links unless submerged         
-          if(linkt(iab)==9) then
+          elseif(linkt(iab)==9) then
+!ZW 1/13/24              Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
               d1 = Es(j,1)-Latr1(iab) 
               d2 = Es(jnb,1)-Latr1(iab) 
               if((d1<0) .or. (d2<0)) then
@@ -62,7 +82,7 @@
               endif
           endif
 
-          QSalSum=QSalSum + sicc(j,k)*(Q(iab,2))*Csalface
+          QSalSum=QSalSum + sicc(j,k)*Qlink*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
 
           SL(iab,2)=Csalface

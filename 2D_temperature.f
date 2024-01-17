@@ -10,9 +10,14 @@
 !cc      TL(200,3) Link water Temperature
 
       use params
+	  
+      implicit none
+      integer :: iab,jnb,j,k
+      real :: QTMPsum,CTMPface,diffus,Qlink,d1,d2
 
-
-      if(iab /= 0) then
+      if(abs(Q(iab,2)) == 0.0) then
+          TL(iab,1)=0
+      else
 !          if (linkt(iab) == 8) then
 !              if (Eh(j,1) - Bedm(j) > 0.3) then
 !                  if(Q(iab,1) >= 0.0) then    
@@ -33,26 +38,30 @@
           diffus = EAOL(iab)
           Qlink = Q(iab,2)
 
+! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
+! no diffusion associated with weir links unless submerged         
+          if(linkt(iab)==2) then
+              d1 = Es(j,1)-Latr1(iab) 
+              d2 = Es(jnb,1)-Latr1(iab) 
+              if((d1<0) .or. (d2<0)) then
+                  diffus = 0.0
+              endif
+! pump link has no diffusion
+          elseif (linkt(iab) == 7) then
+              diffus = 0.0
 ! exclude marsh link flow contribution to openwater temperature
-!ZW 1/13/24          if ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
+!ZW 1/13/24          elseif ((linkt(iab) == 8) .and. (Ahf(j) > 0)) then
 !              CTMPface = 0.0
 !              diffus = 0.0
-!          endif
-
 ! ridge link distribute water to OW & marsh proportionally based on area 
 ! no diffusion associated with ridge links unless submerged         
-          if(linkt(iab)==9) then
+          elseif(linkt(iab)==9) then
 !ZW 1/13/24              Qlink = Q(iab,2)*As(j,1)/(As(j,1)+Ahf(j))
               d1 = Es(j,1)-Latr1(iab) 
               d2 = Es(jnb,1)-Latr1(iab) 
               if((d1<0) .or. (d2<0)) then
                   diffus = 0.0
               endif
-          endif
-
-! pump link has no diffusion
-          if (linkt(iab) == 7) then
-              diffus = 0.0
           endif
 
           QTMPSum=QTMPSum + sicc(j,k)*Qlink*CTMPface

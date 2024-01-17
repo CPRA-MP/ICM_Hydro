@@ -27,7 +27,7 @@
                   
 ! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
 ! no diffusion associated with weir links unless submerged         
-          if(linkt(iab)==4) then
+          if(linkt(iab)==2) then
               d1 = Es(j,1)-Latr1(iab) 
               d2 = Es(jnb,1)-Latr1(iab) 
               if((d1<0) .or. (d2<0)) then
