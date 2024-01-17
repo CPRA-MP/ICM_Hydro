@@ -9,14 +9,17 @@
       Subroutine infile
 
       use params
-!      implicit none
+
+      implicit none
       integer :: i,ichem,ichem2,it,itrib,j,jj,jjn,jn,jt,jkk,mk,kd,kt,etg,rg
       integer :: bedcount,marshcount,sedclass
       integer :: gridbedcount,gridmarcount,gridplcount
       integer :: windstartrun,tidestartrun
       integer :: ETzero,Rzero
-      real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel
-      integer :: node,lnkid
+      integer :: node,lnkid,nlockobs_links,nlockobs,jmds,k,jk
+      real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
+      real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
+
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
       write(1,*) '----------------------------------------------------'
@@ -44,7 +47,6 @@
 
 !>> Loop over compartments and save attributes in appropriate arrays.
 ! change array(j,*)=array(node,*) to ensure the compartment atributes are assigned correctly if the records in cells.csv are not in ascending order - zw 12/11/2023 
-!      do 91 j=1,N                                    !change structure of DO loop
       read(32,*)                  ! dump header row of compartment input file
       do j=1,N
           READ(32,*) node,        !	node number - not saved - just a placeholder so input file can have ID as first column
@@ -55,7 +57,7 @@
      &        Apctmarsh(node),        ! portion of cell that is marsh (0-1)
 !     &	      Ahf(node),			  !	marsh area of cells (m2)
      &        ar_ed(node),            ! marsh edge area of cell (m2)
-     &        Eso(node),			  !	initial stage of storage cells	(m)     !BUG! Eso(node) is not used !BUG! using values from hotstar_in.dat
+     &        dump_float,			  !	initial stage of storage cells	(m)     !BUG! Eso(node) is not used !BUG! using values from hotstar_in.dat
      &	      Bed(node),			  !	bed elevation of storage cells	(m)
      &	      erBedDepth(node),       !	depth of erodible bed in open water area (m)
      &	      erBedBD(node),		  !	bulk density of erodible bed in open water area	(g/cm3)
@@ -64,7 +66,7 @@
 !     &	      dAdz(node),			  !	change in As with depth	(m)
 !     &	      CSS(node,1,1),		  !	sediment concentration	- sand only (mg/L)  !BUG! CSS(node,1,1) is not used, using values from hotstar_in.dat
      &	      adaption_coeff(node),	  !	non-equilibrium adaption coefficient for sand resuspension/deposition terms  
-     &	      S(node,1),			  !	initial salinity (TDS) (ppt)       !BUG! S(node,1) is not used, using values from hotstar_in.dat
+     &	      dump_float,			  !	initial salinity (TDS) (ppt)       !BUG! S(node,1) is not used, using values from hotstar_in.dat
 !     &	      acss(node),			  !	resuspension parameters
 !     &	      bcss(node),			  !	resuspension parameters
 !     &	      Vss(node),			  !	deposition velocity     (m/d)
@@ -310,13 +312,7 @@
 
 923   Format(7x,a,x,I0,x,a)
 
-
-!   91    continue    !replaced with enddo
-
 !      clams=40.			!	clam grow rate			(g/m2/yr) !it is not used anywhere
-
-! percent marsh now part of cells input file
-!	read(124,*) (Pmsh(j),j=1,N)
 
 ! input link geometry	and properties of OPEN WATER
 
@@ -361,8 +357,18 @@
               elseif (linkt(lnkid) == 9) then
                   linkt(lnkid) = -9
               endif
+          write(1,*)
+          write(1,*) '       Overland flow links turned off.'
+          write(1,*)
+          write(*,*)
+          write(*,*) '       Overland flow links turned off.'
+          write(*,*)
           endif
+      enddo
+	  close(33)
 
+!============ check link attributes & assign default values if missing or violeting possible ranges 
+      do lnkid=1,M
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
           if (linkt(lnkid) == 8) then
 ! check if upstream is now water
@@ -565,7 +571,7 @@
 ! Latr11 is for type 3 Lock Links, not in the attribute inputs.  Used in hydrod.f		  
           Latr11(lnkid) = 0.0            
       enddo
-	  close(33)
+!================end link attribute checks
 	  
 924   Format(7x,a,x,I0,x,a,x,I0,x,a)
 925   Format(7x,a,x,I0,x,a)
@@ -577,16 +583,6 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) 'Reading various model configuration settings:'
       write(*,*) '----------------------------------------------------'
-      if (modeloverland  == 0) then
-          write(1,*)
-          write(1,*) '       Overland flow links turned off.'
-          write(1,*)
-          write(*,*)
-          write(*,*) '       Overland flow links turned off.'
-          write(*,*)
-      endif
-
-
 
 !>> Dump header row of LinksClosedHours file
       hourclosed(:,:)=0
@@ -676,8 +672,8 @@
       linkswrite(:)=0	 !zw added 04/06/2020
 	  if (nlinksw>0) then
 	      read(126,*)
-	      do kk = 1,nlinksw
-	          read(126,*) linkswrite(kk)
+	      do i = 1,nlinksw
+	          read(126,*) linkswrite(i)
 	      enddo
           close(126)
 	
@@ -691,8 +687,8 @@
       stghrwrite(:)=0	!zw added 04/06/2020
 	  if (nstghr>0) then
 	      read(127,*)
-	      do kk = 1,nstghr
-	          read(127,*) stghrwrite(kk)
+	      do i = 1,nstghr
+	          read(127,*) stghrwrite(i)
 	      enddo
 	      close(127)
 
@@ -817,7 +813,7 @@
       decay(:,:)=0  !zw added 04/06/2020
       if (iWQ >0) then
           do ichem = 1,14
-		     READ(85,*) (decay(ichem,ne),ne=1,14)		  !zw 4/28/2015 decay unit=1/day
+		     READ(85,*) (decay(ichem,i),i=1,14)		  !zw 4/28/2015 decay unit=1/day
 	      enddo
 		  close(85)
 
@@ -1194,10 +1190,10 @@
       do kt=1,simdays
       !>> Read each row of tributary fines data, then divide by three to partition into silt, clay, and floc
 		  READ(555,*) (cssFines(jtrib(jt)), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
-          do jtt = 1, Ntrib
-              cssT(jtt,kt,2) = cssFines(jtt)/3.0
-              cssT(jtt,kt,3) = cssFines(jtt)/3.0
-              cssT(jtt,kt,4) = cssFines(jtt)/3.0
+          do jt = 1, Ntrib
+              cssT(jt,kt,2) = cssFines(jt)/3.0
+              cssT(jt,kt,3) = cssFines(jt)/3.0
+              cssT(jt,kt,4) = cssFines(jt)/3.0
           enddo
 	  enddo
       close(555)
@@ -1383,12 +1379,12 @@
 
 !>> Calculate average annual ET (mm/day) at ET gage
       ! this is only used if fpet flag is set to 0,
-      do kk=1,etgages
-          ETA(kk) = 0.0
+      do etg=1,etgages
+          ETA(etg) = 0.0
           do kt=1,simdays
-		     ETA(kk)=ETA(kk)+PET(kt,kk)
+		     ETA(etg)=ETA(etg)+PET(kt,etg)
 	      enddo
-	      ETA(kk)=ETA(kk)/simdays
+	      ETA(etg)=ETA(etg)/simdays
       enddo
 
 !>> Skip header row of wind vector input files (both X & Y vectors)
@@ -1425,15 +1421,15 @@
       close(125)
 	!zw added 04/07/2020 to determine whether a cell is offbc or not
 	  flag_offbc(:)=0
-	  do jjk=1,mds
-	      jj=KBC(jjk)
+	  do i=1,mds
+	      jj=KBC(i)
 	      flag_offbc(jj)=1
       enddo    
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
       read(48,*)
-      do kn = 1,tidegages
+      do i = 1,tidegages
           read(48,*)dump_int,transposed_tide(dump_int,1),transposed_tide(dump_int,2)
       enddo
       close(48)
@@ -1469,12 +1465,12 @@
 !>> Read in data to weight (by distance) the nearest observed water level timeseries to off-shore boundary compartments that do not have an observed WSEL timeseries
       weighted_tide(:,:)=0  !zw added 04/06/2020
       read(49,*)
-      do kn = 1,(mds-tidegages)
-          read(49,*) weighted_tide(kn,1), ! compartment ICM ID number for BC comparments WITHOUT observed water level timeseries
-     &            weighted_tide(kn,2),    ! distance weighting factor for nearest BC comparment WITH observed water level timeseries to the East
-     &            weighted_tide(kn,3),    ! nearest BC compartment WITH observed water level timeseries to the East
-     &            weighted_tide(kn,4),    ! distance weighting factor for nearest BC comparment WITH observed water level timeseries to the West
-     &            weighted_tide(kn,5)     ! nearest BC comparment WITH observed water level timeseries to the West
+      do i = 1,(mds-tidegages)
+          read(49,*) weighted_tide(i,1), ! compartment ICM ID number for BC comparments WITHOUT observed water level timeseries
+     &            weighted_tide(i,2),    ! distance weighting factor for nearest BC comparment WITH observed water level timeseries to the East
+     &            weighted_tide(i,3),    ! nearest BC compartment WITH observed water level timeseries to the East
+     &            weighted_tide(i,4),    ! distance weighting factor for nearest BC comparment WITH observed water level timeseries to the West
+     &            weighted_tide(i,5)     ! nearest BC comparment WITH observed water level timeseries to the West
       enddo
       close(49)
 
@@ -1565,8 +1561,8 @@
       BCage(:)=0
 
 
-	  do jjk=1,mds   !AMc Oct 8 2013
-!	      jj=kbc(jjk)   !AMc Oct 8 2013
+	  do i=1,mds   !AMc Oct 8 2013
+!	      jj=kbc(i)   !AMc Oct 8 2013
 		  READ(56,*) jmds,SBC(jmds),BCTSS(jmds),BCNO3(jmds),BCNH4(jmds),
      &			BCON(jmds),BCTP(jmds),BCDO(jmds),BCTOC(jmds),BCLA(jmds),
      &			BCDA(jmds),BCage(jmds)									!added age
@@ -1593,9 +1589,9 @@
           READ(101,*)(TempwBC(jj,kt), jj=1,mds)
 
 !>> If compartment has a boundary condition, replace temperature values with downstream boundary conditions that were just read in for BC locations
-	      do jjk=1,mds   !AMc Oct 8 2013
-              jj=kbc(jjk)   !AMc Oct 8 2013
-              Tempe(jj,kt)=TempwBC(jjk,kt)
+	      do jkk=1,mds   !AMc Oct 8 2013
+              jj=kbc(jkk)   !AMc Oct 8 2013
+              Tempe(jj,kt)=TempwBC(jkk,kt)
 
 	      enddo
       enddo
@@ -1606,9 +1602,9 @@
 	  flag_apply(:)=0
       if (nlinklimiter>0) then
           read(500,*)
-          do kk = 1,nlinklimiter
-              read(500,*) linkslimiter(kk)
-              flag_apply(linkslimiter(kk))=1
+          do i = 1,nlinklimiter
+              read(500,*) linkslimiter(i)
+              flag_apply(linkslimiter(i))=1
           enddo
           close(500)
 	  endif
@@ -1626,7 +1622,6 @@
       write(*,*)
 
       do  j=1,N
-!          do k=1,13
           nlink2cell(j) = 0
           do k=1,maxconnect
               icc(j,k) = 0
@@ -1662,20 +1657,16 @@
 1122  format(7x,A,x,I0,x,A,x,I0,x,A)
       enddo
 
-	do j=1,N					!chg JAM Aug 10, 2009  sicc is the sign of the link k connecting node j
-!          do k=1,13
+      do j=1,N					!chg JAM Aug 10, 2009  sicc is the sign of the link k connecting node j
           do k=1,maxconnect
-			if(icc(j,k).ne.0) then
-!				sic=float(icc(j,k))/float(abs(icc(j,k)))
-!			    if(sic.lt.0.0)sicc(j,k)=-1.0
-!			    if(sic.gt.0.0)sicc(j,k)=1.0
-			    if(icc(j,k).lt.0.0)sicc(j,k)=-1.0
-			    if(icc(j,k).gt.0.0)sicc(j,k)=1.0
-			else
-				sicc(j,k)=0.0
-			endif
-		enddo
-	enddo
+            if(icc(j,k).ne.0) then
+                if(icc(j,k).lt.0.0)sicc(j,k)=-1.0
+                if(icc(j,k).gt.0.0)sicc(j,k)=1.0
+            else
+                sicc(j,k)=0.0
+            endif
+          enddo
+      enddo
 
 !>> Lookup each corresponding hydro compartment and links for interpolating data to each 500 m grid cell
 !>> Input grid lookup tables MUST have 22 columns - Col1= gridID, Col2=compartmentID,Col3-Col22=links with -9999 for no connections
@@ -1937,13 +1928,13 @@
       BCSedRatio(2) = 1./2.
       BCSedRatio(3) = 1./4.
       BCSedRatio(4) = 1./4.
-      do jjk=1,mds
-	      jj=KBC(jjk)
+      do jkk=1,mds
+	      jj=KBC(jkk)
 		  S(jj,1) = SBC(jj)
-		  Tempw(jj,1)=TempwBC(jjk,kday)
-          do kk=1,4
-              !Css(jj,2,kk)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(kk)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
-              Css(jj,1,kk)=BCTSS(jj)*BCSedRatio(kk)         !BUG wd not defined zw 04/07/2020
+		  Tempw(jj,1)=TempwBC(jkk,kday)
+          do i=1,4
+              !Css(jj,2,i)=BCTSS(jj)*(1.+ 0.5*sin(pi*wd(kday)/180.))*BCSedRatio(i)         !BCSedRatio(k) is multipler on BCTss that separates into different classes
+              Css(jj,1,i)=BCTSS(jj)*BCSedRatio(i)         !BUG wd not defined zw 04/07/2020
 	      enddo
           Chem(jj,1,1) = BCNO3(jj) !YW removing dividing by 1000. assuming input in mg/l
           Chem(jj,2,1) = BCNH4(jj)

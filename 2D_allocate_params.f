@@ -1,8 +1,9 @@
       subroutine allocate_params
 
       use params
-      integer :: windsteps,tidesteps,maxconnectuse
 
+      implicit none
+      integer :: windsteps,tidesteps,maxconnectuse
 
       cells=N
       links=M

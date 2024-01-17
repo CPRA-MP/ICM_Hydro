@@ -206,10 +206,12 @@
 
       use params
       use common_array_R  ! 1D-ICM coupling
-      !implicit none       ! 1D-ICM coupling
-      
+
+      implicit none
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
-      integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
+      integer :: n_1d, iir,ndt_ICM            !new iterators used in conjunction with 1D code
+      integer :: NNN,ichem,me,mm,kt,k,kk,kj
+      real :: dday,ddayhr
       Character*100 header
       
      
@@ -435,27 +437,27 @@
       
 !>> Set initial conditions for constants and model parameters that are not included in input text files
 !   Initial Conditions
-     g=9.81					 ! Gravity (m/s2)
-     pi=4.0*atan(1.0)
-     TemI = 15.				 ! Initial Water Temperature
-     KnN= 20.				 ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-     KnP= 3.				 ! (ug/L) P Michaelis Constant
-     KnSS= 50.				 ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-     KnSal=4.				 ! (ppt) Salinity  Michaelis Constant
+      g=9.81					 ! Gravity (m/s2)
+      pi=4.0*atan(1.0)
+!      TemI = 15.				 ! Initial Water Temperature
+      KnN= 20.				 ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
+      KnP= 3.				 ! (ug/L) P Michaelis Constant
+      KnSS= 50.				 ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
+      KnSal=4.				 ! (ppt) Salinity  Michaelis Constant
     
-     ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
-     ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
-     PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
-     ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
-     Pardpmr= 0.05
-     PPMR=1.-ParPMR-Pardpmr
-     ParSand=0.05			 ! sand/TSS in Tribs and MR typical
-     ParCLa=0.03			 ! Partition LivA --> ChlA
+      ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
+      ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
+      PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
+      ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
+      Pardpmr= 0.05
+      PPMR=1.-ParPMR-Pardpmr
+      ParSand=0.05			 ! sand/TSS in Tribs and MR typical
+      ParCLa=0.03			 ! Partition LivA --> ChlA
     
-     consd=24*3600			 ! sec to days
-     conv=0.001*consd		 ! (mg/L)*(m3/s) --> kg/d
-     floodf(:)=0.0
-     nuo=0.000001			 ! DEFAULT Viscosity
+      consd=24*3600			 ! sec to days
+      conv=0.001*consd		 ! (mg/L)*(m3/s) --> kg/d
+      floodf(:)=0.0
+!      nuo=0.000001			 ! DEFAULT Viscosity
 
 !>> Generate array for Day of Year value for the first day of each month
       month_DOY(1) = 1
