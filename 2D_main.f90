@@ -209,9 +209,9 @@
 
       implicit none
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
-      integer :: n_1d, iir,ndt_ICM            !new iterators used in conjunction with 1D code
-      integer :: NNN,ichem,me,mm,kt,k,kk,kj
-      real :: dday,ddayhr
+      integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
+      integer :: NNN,ichem,me,mm,kt,k,kk,kj,kl
+      real :: dday,ddayhr,Pardpmr
       Character*100 header
       
      
