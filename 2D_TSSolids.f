@@ -5,9 +5,9 @@
 
       use params
       
-      implicit none
+!      implicit none
       integer :: iab,jnb,j,k,sedclass
-      real :: Cssface,diffus,Qlink,d1,d2
+      real :: Cssface,diffus,Qlink,Qlink2,d1,d2
  
 !>> Check if link is marsh overland flow link, if so use CSS in marsh and add sediment to marsh cumulative sediment flux term
       if (linkt(iab) == 8) then
