@@ -92,6 +92,7 @@
             Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
         endif
         QRain = Qhhf+Qupld+Qow     
+! end revision 1/18/2024
 
 !        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
         QTMPsum=QTMPsum-QRain*Tempw(j,1)            !ZW 1/13/2024 
@@ -135,28 +136,29 @@
 !     openwater volume
         vol1 = 0.0
         vol2 = 0.0
-        if ( ddy1 > dry_threshold ) then               ! check if openwater was dry in previous timestep
-            vol1 = max(ddy1*As(j,1),0.0)
-            vol2 = max(ddy2*As(j,1),0.0)
-        
-        elseif ( ddy2 > dry_threshold ) then               ! check if openwater was dry in current timestep
-            vol1 = max(ddy1*As(j,1),0.0)
-            vol2 = max(ddy2*As(j,1),0.0)
-        endif
-
-! ZW-1/13/2024 adding marsh water volume
-
         marsh_vol1 = 0.0
         marsh_vol2 = 0.0
-        if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
-            marsh_vol1 = max(ddym1*Ahf(j),0.0)
-            marsh_vol2 = max(ddym2*Ahf(j),0.0)
-        
-        elseif ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
-            marsh_vol1 = max(ddym1*Ahf(j),0.0)
-            marsh_vol2 = max(ddym2*Ahf(j),0.0)
-        endif
 
+!ZW 1/17/2024 total vol based on dry-depth
+!        if ( ddy1 > dry_threshold ) then               ! check if openwater was dry in previous timestep
+!            vol1 = max(ddy1*As(j,1),0.0)
+!            vol2 = max(ddy2*As(j,1),0.0)
+!        elseif ( ddy2 > dry_threshold ) then               ! check if openwater was dry in current timestep
+!            vol1 = max(ddy1*As(j,1),0.0)
+!            vol2 = max(ddy2*As(j,1),0.0)
+!        endif
+!
+!! ZW-1/13/2024 adding marsh water volume
+!
+!        if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
+!            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!            marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!        elseif ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
+!            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!            marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!        endif
+
+!ZW 1/17/2024 total vol w/o depth limitation
         marsh_vol1 = max(ddym1*Ahf(j),0.0)
         marsh_vol2 = max(ddym2*Ahf(j),0.0)
         vol1 = max(ddy1*As(j,1),0.0)
@@ -178,7 +180,7 @@
       
 
 ! for code debugging
-        if(((Tempw(j,2))<0) .or. ((Tempw(j,2))>40)) then
+        if(((Tempw(j,2))<0) .or. ((Tempw(j,2))>tmpmax)) then
           write(1,*) 'j:',j
           write(1,*) 'As(j,1):',As(j,1)
           write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
@@ -223,8 +225,8 @@
 !		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
         if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
 !      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
-!        if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax  !temperature instable
-        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
+        if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax
+!zw 1/18/2024        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
 
 
 !	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
