@@ -1,7 +1,7 @@
 !	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
 !	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-	  Subroutine CelldTmp(j,kday)
+	  Subroutine CelldTmp(j,kday,fcrop)
 !JAM     c Salinity  computations ****************************
 	
         use params
@@ -9,6 +9,7 @@
         implicit none
         real :: QRain,CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
         real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2,Qlink,CTMPface
+        real :: Qhhf,Qupld,Qow,fcrop,fpc,Ahmf,Qavail,PETuse,ETmin,Het,fET
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
 
         CSHEAT=4182.					!Specific heat
@@ -17,6 +18,8 @@
 !>> Set minimum depth value (avoids div-by-zero errors)
         ddy1 = Es(j,1)-Bed(j)
         ddy2 = Es(j,2)-Bed(j)
+        ddym1 = Eh(j,1)-BedM(j)
+        ddym2 = Eh(j,2)-BedM(j)
 	
 !      if(ddy1 <= 0.1) then
 !          dddy = 0.1
@@ -56,11 +59,40 @@
         enddo
 
 !>> temperature source term from rainfall
-  !ZW 1/13/2024 adding marsh area rainfall
-        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-     &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
+!        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
 !     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
-     
+!ZW 1/13/2024 adding marsh area rainfall
+!        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
+!     &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
+
+!ZW 1/18/2024 adding upland and treating evap as in celldQ
+        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
+        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
+!>> Excess rainfall runoff on marsh
+        ETmin=0.20                 !minimum ET reduction factor
+        Het=0.25                   !depth below which ET is reduced
+        fET=max(ETmin,min(1,ddym1/Het)) !reduction factor for reduced sunlight through marsh
+        if (ddym1<=dry_threshold) then
+            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
+        else
+            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
+            Qavail=ddym1*Ahf(j)/dt
+            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
+        endif
+!>> Update cumulative flow rate based on excess rainfall runoff on upland area
+        Ahmf=Ahydro(j)-Ahf(j)
+        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
+
+!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
+        if (ddy1<=dry_threshold) then
+            Qow=Rain(kday,jrain(j))*As(j,1)*cden
+        else
+            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
+            Qavail=ddy1*As(j,1)/dt
+            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
+        endif
+        QRain = Qhhf+Qupld+Qow     
+
 !        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
         QTMPsum=QTMPsum-QRain*Tempw(j,1)            !ZW 1/13/2024 
       
@@ -113,8 +145,6 @@
         endif
 
 ! ZW-1/13/2024 adding marsh water volume
-        ddym1 = Eh(j,1)-BedM(j)
-        ddym2 = Eh(j,2)-BedM(j)
 
         marsh_vol1 = 0.0
         marsh_vol2 = 0.0
