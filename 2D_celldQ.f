@@ -73,11 +73,14 @@
 !      rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
 
 !>> Excess rainfall runoff on marsh
-      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))*cden ! in m^3/s !*Max(1.,rhh*rhh))	!JAM Oct 2010
 !      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*fpc)	!include fpc for marsh area PET - ZW 12/18/2023
-      Qavail=ddym1*Ahf(j)/dt
-      Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
-
+      if (ddym1<=dry_threshold) then
+          Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
+      else
+          Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))*cden ! in m^3/s !*Max(1.,rhh*rhh))	!JAM Oct 2010
+          Qavail=ddym1*Ahf(j)/dt
+          Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
+      endif
 !>> !YW! ignore PET at low marsh water level to avoid Eh too low
 !      if((Eh(j,1)-BedM(j))>0.1) then
 !          Qhhf=Ahf(j)*(Rain(kday,jrain(j))
@@ -94,10 +97,14 @@
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
-      Qow=(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
+      if (ddy1<=dry_threshold) then
+          Qow=Rain(kday,jrain(j))*As(j,1)*cden
+      else
+          Qow=(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
      &     -fpet*PET(kday,Jet(j)))*As(j,1)*cden
-      Qavail=ddy1*As(j,1)/dt
-      Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
+          Qavail=ddy1*As(j,1)/dt
+          Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
+      endif
 
 !      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          
