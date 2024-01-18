@@ -14,7 +14,7 @@
       real :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
       real :: Qsum,Qsumh,dday,fcrop,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
-      real :: Qow,sndz,Dzh,sndzh
+      real :: Qow,sndz,Dzh,sndzh,PETuse,ETmin,Het,fET
 
       Qsum=0.0						!JAM Oct 2010
       Qsumh=0.0
@@ -72,12 +72,17 @@
 !      shh   = max(0.0001, Eh(j,1)-BedM(j))				!JAM Oct 2010
 !      rhh   = max(0.0001, shh/soilm)			            !JAM Oct 2010
 
+      PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
 !>> Excess rainfall runoff on marsh
 !      Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j))*fpc)	!include fpc for marsh area PET - ZW 12/18/2023
+!zw 1/18/2024 add ET correction in marsh area following MP2012 AA code
+      ETmin=0.20                 !minimum ET reduction factor
+      Het=0.25                   !depth below which ET is reduced
+      fET=max(ETmin,min(1,ddym1/Het)) !reduction factor for reduced sunlight through marsh
       if (ddym1<=dry_threshold) then
           Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
       else
-          Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PET(kday,Jet(j)))*cden ! in m^3/s !*Max(1.,rhh*rhh))	!JAM Oct 2010
+          Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s !*Max(1.,rhh*rhh))	!JAM Oct 2010
           Qavail=ddym1*Ahf(j)/dt
           Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
       endif
@@ -92,16 +97,14 @@
       Ahmf=Ahydro(j)-Ahf(j)
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-      Qupld=Qhhf+(max(0.0,(Rain(kday,jrain(j))
-     &     -PET(kday,Jet(j))*fpc))*Ahmf)*cden	 
+      Qupld=Qhhf+(max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf)*cden	 
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
       if (ddy1<=dry_threshold) then
           Qow=Rain(kday,jrain(j))*As(j,1)*cden
       else
-          Qow=(Rain(kday,jrain(j))-(1-fpet)*ETA(Jet(j))		!openwater As 
-     &     -fpet*PET(kday,Jet(j)))*As(j,1)*cden
+          Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
           Qavail=ddy1*As(j,1)/dt
           Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
       endif
