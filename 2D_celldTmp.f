@@ -71,7 +71,7 @@
 !>> Excess rainfall runoff on marsh
         ETmin=0.20                 !minimum ET reduction factor
         Het=0.25                   !depth below which ET is reduced
-        fET=max(ETmin,min(1,ddym1/Het)) !reduction factor for reduced sunlight through marsh
+        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
         if (ddym1<=dry_threshold) then
             Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
         else
