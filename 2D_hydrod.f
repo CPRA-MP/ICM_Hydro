@@ -501,7 +501,7 @@
                       ! if Latr9 = 2, Latr2 = -9999
                       ! if Latr9 = 3, Latr2 = -9999
                       ! if Latr9 = 4, Latr2 = -9999
-                      ! if Latr9 = 5, Latr2 = d/s salinty (ppt)
+                      ! if Latr9 = 5/10/11, Latr2 = d/s salinty (ppt)
                       ! if Latr9 = 6, Latr2 = -9999
                       ! if Latr9 = 7, Latr2 = control link number
                       ! if Latr9 = 8, Latr2 = -9999
@@ -1344,8 +1344,8 @@
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
                       if (daystep == lastdaystep) then
-                          Write(1,*) 'Max flowrate reached. Link:',i,'at time step:',mm
-                          Write(*,*) 'Max flowrate reached. Link:',i,'at time step:',mm
+                          Write(1,*) 'Max flowrate reached. Link:',i
+                          Write(*,*) 'Max flowrate reached. Link:',i
                       endif
                   endif
                   if(isNan(Q(i,2))) then
