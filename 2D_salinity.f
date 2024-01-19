@@ -82,6 +82,12 @@
               endif
           endif
 
+!check EAOL
+          if (isNan(diffus)) then
+              write(1,*)'EAOL missing in link: ',iab
+              diffus=0.0
+          endif       
+
           QSalSum=QSalSum + sicc(j,k)*Qlink*Csalface
      &                +fe*diffus*(S(j,1)-S(jnb,1))
 
