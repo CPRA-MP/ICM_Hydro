@@ -369,66 +369,116 @@
 
 !============ check link attributes & assign default values if missing or violeting possible ranges 
       do lnkid=1,M
-!>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
-          if (linkt(lnkid) == 8) then
-! check if upstream is now water
-              if (Ahf(jus(lnkid)) == 0.0) then
-                  Latr2(lnkid) = Bed(jus(lnkid))
-                  write(1,924) 'Overland link',lnkid,'no longer connects
-     & to marsh upstream. Compartment',jus(lnkid),'is now all water.'
-                  write(*,924) 'Overland link',lnkid,'no longer connects
-     & to marsh in upstream. Compartment',jus(lnkid),'is now all water.'
-              endif
-! check if downstream is now water
-! this condition is met if BOTH us/ds are now water
-              if (Ahf(jds(lnkid)) == 0.0) then
-                  Latr10(lnkid) = Bed(jds(lnkid))
-                  write(1,924) 'Overland link',lnkid,'no longer connects
-     & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
-                  write(*,924) 'Overland link',lnkid,'no longer connects
-     & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
-              endif
-!>> Set the elevation of the marsh overland link to be the maximum of the input link elevation, and the us and downstream marsh elevations (that may or may not have been updated for non-marsh areas)
-! if both us/ds are now water, Latr1 was reset, otherwise the input value for latr1 will still be used in comparison of marsh elev
-!              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
-!              Latr1(lnkid) = maxmarel
-              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
-! both ends are water, update roughness value to low (water) value of 0.03
-              if((Ahf(jus(lnkid)) == 0.0) .and. (Ahf(jds(lnkid)) == 0.0)) then 
-                      Latr5(lnkid) = 0.03
-                      write(1,925) 'Overland link',lnkid,'no longer connects
-     & to marsh at either end. Roughness is set to 0.03.'
-                      write(*,925) 'Overland link',lnkid,'no longer connects
-     & to marsh at either end. Roughness is set to 0.03.'
-              endif
-          endif
 
-          if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 6) .or.
-     &              (linkt(lnkid) == 11) .or. (linkt(lnkid) == 12) .or. 
-     &              (linkt(lnkid) == 3) .or. (linkt(lnkid) == 8) .or.
-     &              (linkt(lnkid) == 10)) then
-          !>> Check for missing roughness attribute values and reassign to default values if missing
-              if (Latr5(lnkid) < 0.0) then
-                  Latr5(lnkid) = def_n
-              elseif (Latr5(lnkid) >= 1 .and. Latr5(lnkid) < 999.) then
-                  Latr5(lnkid) = def_n
+!>> channel/culvert link attribute checks
+          if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 3) 
+     &        .or. (linkt(lnkid) == 6) .or. (linkt(lnkid) == 11)  
+     &        .or. (linkt(lnkid) == 12)) then
+
+              if((linkt(lnkid)==6) .and. (Latr2(lnkid)<=Latr1(lnkid)))then
+                  write(1,925) 'Culvert link',lnkid,'has crown elevation lower than 
+     & invert elevation'
+                  write(*,925) 'Culvert link',lnkid,'has crown elevation lower than 
+     & invert elevation'
+                  Latr2(lnkid)=Latr1(lnkid)+3.0
+                  write(1,*) 'Crown elevation is set to be 3m 
+     & above crest elevation: ',Latr2(lnkid)
+                  write(*,*) 'Crown elevation is set to be 3m 
+     & above crest elevation: ',Latr2(lnkid)
               endif
+
+              if(linkt(lnkid)==3)then
+                  if (Latr9(lnkid)<=0) then
+                      write(1,925)'Lock control scheme of link',lnkid,'is missing'
+                      write(*,925)'Lock control scheme of link',lnkid,'is missing'
+                      stop
+                  endif
+                  
+                  if(Latr2(lnkid)<0) then
+                      if((Latr9(lnkid)==5) .or. (Latr9(lnkid)==10)
+     &                    .or. (Latr9(lnkid)==11)) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing salinity (Latr2)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing salinity (Latr2)'
+                          stop
+                      elseif (Latr9(lnkid)==7) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing control link number (Latr2)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing control link number (Latr2)'
+                          stop
+                      endif
+                  endif
+  
+                  if(Latr10(lnkid)<0) then
+                      if((Latr9(lnkid)==1) .or. (Latr9(lnkid)==3)
+     &                    .or. (Latr9(lnkid)==5) .or. (Latr9(lnkid)==8)
+     &                    .or. (Latr9(lnkid)==9) .or. (Latr9(lnkid)==10)
+     &                    .or. (Latr9(lnkid)==11)) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing stage (Latr10)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing stage (Latr10)'
+                          stop
+                      elseif(Latr9(lnkid)==4) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing salinity (Latr10)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing salinity (Latr10)'
+                          stop
+                      elseif (Latr9(lnkid)==6) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing corresponding column in LockControlObservedData.csv (Latr10)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing corresponding column in LockControlObservedData.csv (Latr10)'
+                          stop
+                      elseif (Latr9(lnkid)==7) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing discharge (Latr10)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing discharge (Latr10)'
+                          stop
+                      endif
+                  endif
+              endif
+
           !>> Set channel length to default value if missing
               if (Latr3(lnkid) <= 0.0) then
                   write(1,*)'Length (Latr3) for link',lnkid,'is missing'
-                  write(1,*) 'Default value of 1000 is assigned
+                  write(1,*) 'Default value of 1000m is assigned
      & but this should be fixed in the input file.'
 
                   write(*,*)'Length (Latr3) for link',lnkid,'is missing'
-                  write(*,*) 'Default value of 1000 is assigned
+                  write(*,*) 'Default value of 1000m is assigned
      & but this should be fixed in the input file.'
                   Latr3(lnkid) = 1000.0
               endif
-	      
-		  endif
+
+              if (Latr4(lnkid) <= 0.0) then
+                  write(1,*)'Width (Latr4) for link',lnkid,'is missing'
+                  write(1,*) 'Default value of 3m is assigned
+     & but this should be fixed in the input file.'
+
+                  write(*,*)'Width (Latr4) for link',lnkid,'is missing'
+                  write(*,*) 'Default value of 3m is assigned
+     & but this should be fixed in the input file.'
+                  Latr4(lnkid) = 3.0
+              endif
+
+          !>> Check for missing roughness attribute values and reassign to default values if missing
+              if (Latr5(lnkid) <= 0.0) then
+                  Latr5(lnkid) = def_n
+              elseif (Latr5(lnkid) >= 1) then
+                  Latr5(lnkid) = def_n
+              endif
+
+              Latr6(lnkid)=max(Latr6(lnkid),0.0)
+              Latr7(lnkid)=max(Latr7(lnkid),0.0)
+              Latr8(lnkid)=max(Latr8(lnkid),0.0)
 
 !>> weir link attribute checks
-          if(linkt(lnkid) == 2) then
+          elseif(linkt(lnkid) == 2) then
 !>> set weir coefficient to default value if outside of standard range
               if (Latr8(lnkid) < 0.55) then
                   Latr8(lnkid) = 0.62
@@ -445,99 +495,215 @@
 			  Latr2(lnkid)=bed(jus(lnkid))
 			  Latr3(lnkid)=bed(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
-              if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr3(lnkid)>=Latr1(lnkid)))then
+              if(Latr1(lnkid)<=max(Latr2(lnkid),Latr3(lnkid)))then
                   write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
                   write(*,925) 'Weir link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
-	              stop
+	              Latr1(lnkid)=max(Latr2(lnkid),Latr3(lnkid))+0.5
+                  write(1,*) 'Weir crest elevation is set to be 0.5m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+                  write(*,*) 'Weir crest elevation is set to be 0.5m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
 			  endif
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Weir link',lnkid,'has crest length lower than 0'
                   write(*,925) 'Weir link',lnkid,'has crest length lower than 0'
-	              stop
+	              Latr4(lnkid)=10.0
+                  write(1,*) 'Weir crest length is set to be 10m'
+                  write(*,*) 'Weir crest length is set to be 10m'
 			  endif
 
 !!!ZW 12/15/2023 upwind factor for weir link should always be 1???
               !fa_mult(lnkid) = 1.0  
-          endif
 
 !>> Tidal gate/orifice link attribute checks
-          if((linkt(lnkid) == 4) .or. (linkt(lnkid) == 5)) then
+          elseif((linkt(lnkid) == 4) .or. (linkt(lnkid) == 5)) then
 !   orifice upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
 			  Latr3(lnkid)=bed(jus(lnkid))
 			  Latr5(lnkid)=bed(jds(lnkid))
+
+!   orifice upstream & downstream ground elevation can not be higher than structure invert elevation
+              if(Latr1(lnkid)<=max(Latr3(lnkid),Latr5(lnkid)))then
+                  write(1,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
+     & bed elevation of connecting compartments'
+                  write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
+     & bed elevation of connecting compartments'
+                  Latr1(lnkid)=max(Latr3(lnkid),Latr5(lnkid))+0.5
+                  write(1,*) 'Invert elevation is set to be 0.5m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+                  write(*,*) 'Invert elevation is set to be 0.5m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+			  endif
 
               if(Latr2(lnkid)<=Latr1(lnkid))then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
      & invert elevation'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has crown elevation lower than 
      & invert elevation'
-	              stop
+	              Latr2(lnkid)=Latr1(lnkid)+1.0
+                  write(1,*) 'Crown elevation is set to be 1m 
+     & above crest elevation: ',Latr2(lnkid)
+                  write(*,*) 'Crown elevation is set to be 1m 
+     & above crest elevation: ',Latr2(lnkid)
 			  endif
-!   orifice upstream & downstream ground elevation can not be higher than structure invert elevation
-              if((Latr3(lnkid)>=Latr1(lnkid)) .or. (Latr5(lnkid)>=Latr1(lnkid)))then
-                  write(1,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
-     & bed elevation of connecting compartments'
-                  write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
-     & bed elevation of connecting compartments'
-	              stop
-			  endif
+
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
-	              stop
+	              Latr4(lnkid)=5.0
+                  write(1,*) 'Tidegate/Orifice width is set to be 5m'
+                  write(*,*) 'Tidegate/Orifice width is set to be 5m'
 			  endif
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
               !fa_mult(lnkid) = 1.0  
-          endif
 
 !>> pump link attribute checks
-          if(linkt(lnkid) == 7) then
+          elseif(linkt(lnkid) == 7) then
 !   pump upstream stage threshold can not be lower than bed/marsh elevation
-              if((Latr1(lnkid)<bed(jus(lnkid))) .or. (Latr2(lnkid)<bed(jus(lnkid))))then
-                  write(1,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
-     & bed elevation'
-                  write(*,925) 'Pump link',lnkid,'has upstream stage threshold lower than 
-     & bed elevation'
+              if(Latr1(lnkid)<=bed(jus(lnkid)))then
+                  write(1,925) 'Pump link',lnkid,'has upstream pumpon 
+     & stage threshold lower than bed elevation'
+                  write(*,925) 'Pump link',lnkid,'has upstream pumpon 
+     & stage threshold lower than bed elevation'
+                  Latr1(lnkid)=bed(jus(lnkid))+dry_threshold
+			  endif
+              if(Latr2(lnkid)<=bed(jus(lnkid)))then
+                  write(1,925) 'Pump link',lnkid,'has upstream pumpoff 
+     & stage threshold lower than bed elevation'
+                  write(*,925) 'Pump link',lnkid,'has upstream pumpoff 
+     & stage threshold lower than bed elevation'
+                  Latr2(lnkid)=bed(jus(lnkid))+dry_threshold
+			  endif
+              if(Latr1(lnkid)<Latr2(lnkid))then
+                  write(1,925) 'Pump link',lnkid,'has pumpon stage 
+     & threshold lower than pumpoff stage threshold'
+                  write(*,925) 'Pump link',lnkid,'has pumpon stage 
+     & threshold lower than pumpoff stage threshold'
+                  Latr1(lnkid)=Latr2(lnkid)
 			  endif
               if(Latr9(lnkid) <=0)then
                   write(1,925) 'pump link',lnkid,'has pump capacity lower than 0'
                   write(*,925) 'pump link',lnkid,'has pump capacity lower than 0'
+                  Latr9(lnkid) = 20.0
+                  write(1,*) 'Pump capacity is set to 20 m3/s'
 			  endif
 
-!!!ZW 12/15/2023 upwind factor for weir link should always be 1???
-              !fa_mult(lnkid) = 1.0  
-          endif
+!!!ZW 12/15/2023 upwind factor for weir link should always be 1 & no diffusion term
+              fa_mult(lnkid) = 1.0  
+              Exy(lnkid) = 0.0
+
+!>> Marsh link attribute checks
+          elseif (linkt(lnkid) == 8) then
+              Latr2(lnkid)=bedm(jus(lnkid))
+              Latr10(lnkid)=bedm(jds(lnkid))
+
+!>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
+! check if upstream is now water
+              if (Ahf(jus(lnkid)) == 0.0) then
+                  Latr2(lnkid) = Bed(jus(lnkid))
+                  write(1,924) 'Overland link',lnkid,'no longer connects
+     & to marsh upstream. Compartment',jus(lnkid),'is now all water.'
+                  write(*,924) 'Overland link',lnkid,'no longer connects
+     & to marsh in upstream. Compartment',jus(lnkid),'is now all water.'
+              endif
+
+! check if downstream is now water
+! this condition is met if BOTH us/ds are now water
+              if (Ahf(jds(lnkid)) == 0.0) then
+                  Latr10(lnkid) = Bed(jds(lnkid))
+                  write(1,924) 'Overland link',lnkid,'no longer connects
+     & to marsh downstream. Compartment',jds(lnkid),'is now all water.'
+                  write(*,924) 'Overland link',lnkid,'no longer connects
+     & to marsh in downstream. Compartment',jds(lnkid),'is now all water.'
+              endif
+! Set the elevation of the marsh overland link to be the maximum of the input link elevation, and the us and downstream marsh elevations (that may or may not have been updated for non-marsh areas)
+! if both us/ds are now water, Latr1 was reset, otherwise the input value for latr1 will still be used in comparison of marsh elev
+!              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
+!              Latr1(lnkid) = maxmarel
+              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
+
+! both ends are water, update roughness value to low (water) value of 0.03
+              if((Ahf(jus(lnkid)) == 0.0) .and. (Ahf(jds(lnkid)) == 0.0)) then 
+                      Latr5(lnkid) = 0.03
+                      write(1,925) 'Overland link',lnkid,'no longer connects
+     & to marsh at either end. Roughness is set to 0.03.'
+                      write(*,925) 'Overland link',lnkid,'no longer connects
+     & to marsh at either end. Roughness is set to 0.03.'
+              endif
+
+              if(Latr3(lnkid) <=0)then
+                  write(1,925) 'Marsh link',lnkid,'has length lower than 0'
+                  write(*,925) 'Marsh link',lnkid,'has length lower than 0'
+	              Latr3(lnkid) = 1000.0
+                  write(1,*) 'Marsh link length is set to be 1000m'
+                  write(*,*) 'Marsh link length is set to be 1000m'
+			  endif
+
+              if(Latr4(lnkid) <=0)then
+                  write(1,925) 'Marsh link',lnkid,'has width lower than 0'
+                  write(*,925) 'Marsh link',lnkid,'has width lower than 0'
+	              Latr4(lnkid) = 1000.0
+                  write(1,*) 'Marsh link width is set to be 1000m'
+                  write(*,*) 'Marsh link width is set to be 1000m'
+			  endif
+
+              if (Latr5(lnkid) <= 0.0) then
+                  Latr5(lnkid) = 0.05
+              elseif (Latr5(lnkid) >= 1) then
+                  Latr5(lnkid) = 0.05
+              endif
 
 !>> ridge link attribute checks
-          if(linkt(lnkid) == 9) then
+          elseif(linkt(lnkid) == 9) then
 !   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
 			  Latr2(lnkid)=bed(jus(lnkid))
 			  Latr10(lnkid)=bed(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
-              if((Latr2(lnkid)>=Latr1(lnkid)) .or. (Latr10(lnkid)>=Latr1(lnkid)))then
+              if(Latr1(lnkid)<=max(Latr2(lnkid),Latr10(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
                   write(*,925) 'Ridge link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
-	              stop
+	              Latr1(lnkid)=max(Latr2(lnkid),Latr10(lnkid))+1.0
+                  write(1,*) 'Ridge crest elevation is set to be 1m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+                  write(*,*) 'Ridge crest elevation is set to be 1m 
+     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
 			  endif
-              if(Latr4(lnkid) <=0)then
-                  write(1,925) 'Ridge link',lnkid,'has crest length lower than 0'
-                  write(*,925) 'Ridge link',lnkid,'has crest length lower than 0'
-	              stop
-			  endif
+
               if(Latr3(lnkid) <=0)then
-                  write(1,925) 'Ridge link',lnkid,'has crest width lower than 0'
-                  write(*,925) 'Ridge link',lnkid,'has crest width lower than 0'
+                  write(1,925) 'Ridge link',lnkid,'has crest width 
+     & (parallel to flow) lower than 0'
+                  write(*,925) 'Ridge link',lnkid,'has crest width 
+     & (parallel to flow) lower than 0'
 	              Latr3(lnkid) = 10.0  !default 10m ridge crest width
+                  write(1,*) 'Ridge link crest width is set to be 10m'
+                  write(*,*) 'Ridge link crest width is set to be 10m'
 			  endif
               if(Latr3(lnkid) >30)then
-                  write(1,925) 'Ridge link',lnkid,'has crest width longer than 30'
-                  write(*,925) 'Ridge link',lnkid,'has crest width longer than 30'
+                  write(1,925) 'Ridge link',lnkid,'has crest width longer than 30m'
+                  write(*,925) 'Ridge link',lnkid,'has crest width longer than 30m'
 	              Latr3(lnkid) = 10.0  !default 10m ridge crest width
+                  write(1,*) 'Ridge link crest width is set to be 10m'
+                  write(*,*) 'Ridge link crest width is set to be 10m'
 			  endif
+
+              if(Latr4(lnkid) <=0)then
+                  write(1,925) 'Ridge link',lnkid,'has crest length 
+     & (perpendicular to flow) lower than 0'
+                  write(*,925) 'Ridge link',lnkid,'has crest length 
+     & (perpendicular to flow) lower than 0'
+	              Latr4(lnkid)=100.0
+                  write(1,*) 'Ridge link crest length is set to be 100m'
+                  write(*,*) 'Ridge link crest length is set to be 100m'
+			  endif
+
+              if (Latr5(lnkid) <= 0.0) then
+                  Latr5(lnkid) = 0.1
+              elseif (Latr5(lnkid) >= 1) then
+                  Latr5(lnkid) = 0.1
+              endif
 
 	          Latr8(lnkid) = 0.37  !default for long broad-crested weir
 !!!ZW 12/15/2023 upwind factor for weir link should always be 1???
