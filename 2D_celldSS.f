@@ -186,7 +186,7 @@
               enddo
           endif
       enddo
-      ave_vel(j) = ave_vel_sum(j)/ave_vel_cnt(j)
+      if(ave_vel_cnt(j)>0) ave_vel(j) = ave_vel_sum(j)/ave_vel_cnt(j)
 
 !>> Call sediment resuspension and deposition subroutine - this calculates the net sediment accumulation rate (g/sec)      
       call vanRijnSediment(j,kday)
