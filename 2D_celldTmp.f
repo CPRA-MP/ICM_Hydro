@@ -181,45 +181,46 @@
 
 !=== for code debugging
 !        if(((Tempw(j,2))<0) .or. ((Tempw(j,2))>tmpmax)) then
-!          write(1,*) 'j:',j
-!          write(1,*) 'As(j,1):',As(j,1)
-!          write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
-!          write(1,*) 'depth(t) =', Es(j,2)-Bed(j)
-!          write(1,*) 'Dz =',Es(j,2)-Es(j,1)
-!          write(1,*) 'vol(t-1) =', vol1,marsh_vol1
-!          write(1,*) 'vol(t) =', vol2,marsh_vol2
-!          write(1,*) 'Tempw(j,1):',Tempw(j,1)
-!          write(1,*) 'Tempw(j,2):',Tempw(j,2)
-!          write(1,*) 'QTMPsum:',QTMPsum
-!          write(1,*) 'QRain:',QRain
-!          write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
-!          write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
-!          write(1,*) 'Air Temp:',ta(kday)   
-!          do k=1,nlink2cell(j)
-!              iab=abs(icc(j,k))
-!              if(icc(j,k) /= 0) then
-!                  if(icc(j,k) < 0) then
-!                      jnb=jus(iab)
-!                  elseif(icc(j,k) > 0) then
-!                      jnb=jds(iab)
-!                  endif  
-!              endif
-!              Qlink = sicc(j,k)*Q(iab,2)
-!              if(abs(Qlink)>0) then
-!                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
-!                  if(Q(iab,2) >= 0.0) then
-!                      CTMPface=Tempw(jus(iab),1)
-!                  else
-!                      CTMPface=Tempw(jds(iab),1)
-!                  endif
-!                  write(1,*)'Tempw(jus)=',Tempw(jus(iab),1),
-!     &                      'Tempw(jds)=',Tempw(jds(iab),1), 'CTMPface=',CTMPface
-!                  write(1,*)'QTEMPadvec=',sicc(j,k)*(Q(iab,2))*CTMPface
-!                  write(1,*)'QTEMPdiffu=',fe*EAOL(iab)*(Tempw(j,1)-Tempw(jnb,1))
-!              endif
-!          enddo
-!          stop
-!        endif
+        if(isNan(Tempw(j,2))) then
+          write(1,*) 'j:',j
+          write(1,*) 'As(j,1):',As(j,1)
+          write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
+          write(1,*) 'depth(t) =', Es(j,2)-Bed(j)
+          write(1,*) 'Dz =',Es(j,2)-Es(j,1)
+          write(1,*) 'vol(t-1) =', vol1,marsh_vol1
+          write(1,*) 'vol(t) =', vol2,marsh_vol2
+          write(1,*) 'Tempw(j,1):',Tempw(j,1)
+          write(1,*) 'Tempw(j,2):',Tempw(j,2)
+          write(1,*) 'QTMPsum:',QTMPsum
+          write(1,*) 'QRain:',QRain
+          write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
+          write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
+          write(1,*) 'Air Temp:',ta(kday)   
+          do k=1,nlink2cell(j)
+              iab=abs(icc(j,k))
+              if(icc(j,k) /= 0) then
+                  if(icc(j,k) < 0) then
+                      jnb=jus(iab)
+                  elseif(icc(j,k) > 0) then
+                      jnb=jds(iab)
+                  endif  
+              endif
+              Qlink = sicc(j,k)*Q(iab,2)
+              if(abs(Qlink)>0) then
+                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
+                  if(Q(iab,2) >= 0.0) then
+                      CTMPface=Tempw(jus(iab),1)
+                  else
+                      CTMPface=Tempw(jds(iab),1)
+                  endif
+                  write(1,*)'Tempw(jus)=',Tempw(jus(iab),1),
+     &                      'Tempw(jds)=',Tempw(jds(iab),1), 'CTMPface=',CTMPface
+                  write(1,*)'QTEMPadvec=',sicc(j,k)*(Q(iab,2))*CTMPface
+                  write(1,*)'QTEMPdiffu=',fe*EAOL(iab)*(Tempw(j,1)-Tempw(jnb,1))
+              endif
+          enddo
+          stop
+        endif
 
 ! low high pass filter
 !		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
