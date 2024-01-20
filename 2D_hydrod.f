@@ -14,7 +14,7 @@
       real :: thourj
       real :: tt0,tt1,tt2,tt3,tt4,tt5,tt6,agulf3,Sseason
       real :: shour,sday,f1,f2,f3,t1,t2,t3,tlag,aset
-      real :: fcrop,Tres,Vettl,dref,CSSTRIBj,Saltribj,dmon,dmod
+      real :: fcrop,Tres,Vettl,dref,CSSTRIBj,Saltribj,dmon,fmod
       real :: akL,akns
       real :: QSalSum,QTmpSum,QMarshKK
       real :: rca,rna,rnd,rcd,rcn
@@ -56,7 +56,7 @@
       dhr = thour -int(thour)     !decimal portion of hour , dhr - 0.0 at XX:00
 
       dmon=kmon-int(tmon)
-      dmod=tmon-int(tmon)
+      fmod=tmon-int(tmon)
 
 ! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
@@ -189,7 +189,8 @@
 
 !>> initialize velocity in each link to zero at start of loop - this will be filled with link flow velocities for each type of link flow
           link_vel(i) = 0.0
-
+          Q(i,2) = 0.0
+          EAOL(i) = 0.0
 !>> Link type < 0 = dummy link that is not active in current run
           if (linkt(i) <= 0) then
               Q(i,2) = 0.0
@@ -321,18 +322,18 @@
                   endif
 
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Link',i, 'of Type', linkt(i),' flow is NaN'
-                      write(*,*) 'Deta=', Deta
-                      write(*,*) 'Res=',Res
-                      write(*,*) 'Resist=',Resist
-                      write(*,*) 'dkd=',dkd
-                      write(*,*) 'ruf=',ruf
-                      write(*,*) 'AK=',AK
-                      write(*,*) 'Ach=',Ach
-                      write(*,*) 'linkdepth=',linkdepth
-                      write(*,*) 'invert=',latr1(i)
-                      write(*,*) 'Es(jus)=',Es(jus(i),2)
-                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      write(1,*) 'Link',i, 'of Type', linkt(i),' flow is NaN'
+                      write(1,*) 'Deta=', Deta
+                      write(1,*) 'Res=',Res
+                      write(1,*) 'Resist=',Resist
+                      write(1,*) 'dkd=',dkd
+                      write(1,*) 'ruf=',ruf
+                      write(1,*) 'AK=',AK
+                      write(1,*) 'Ach=',Ach
+                      write(1,*) 'linkdepth=',linkdepth
+                      write(1,*) 'invert=',latr1(i)
+                      write(1,*) 'Es(jus)=',Es(jus(i),2)
+                      write(1,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
                   EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow case
@@ -434,18 +435,18 @@
                       Q(i,2) = sn*w_k*Latr4(i)*sqrt(2*g)*htup**1.5
                   endif
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Type2 Weir Link',i,' flow is NaN'
-                      write(*,*) 'Weir crest elev=',Latr1(i)
-                      write(*,*) 'invert elevation upstream of weir=',Latr2(i) 
-                      write(*,*) 'invert elevation downstream of weir=',Latr3(i) 
-                      write(*,*) 'Weir width=', Latr4(i)
-                      write(*,*) 'Weir Coeff=',Latr8(i)
-                      write(*,*) 'htup=',htup
-                      write(*,*) 'htdn=',htdn
-                      write(*,*) 'invup=',invup
-                      write(*,*) 'p=',p
-                      write(*,*) 'Es(jus)=',Es(jus(i),2)
-                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      write(1,*) 'Type2 Weir Link',i,' flow is NaN'
+                      write(1,*) 'Weir crest elev=',Latr1(i)
+                      write(1,*) 'invert elevation upstream of weir=',Latr2(i) 
+                      write(1,*) 'invert elevation downstream of weir=',Latr3(i) 
+                      write(1,*) 'Weir width=', Latr4(i)
+                      write(1,*) 'Weir Coeff=',Latr8(i)
+                      write(1,*) 'htup=',htup
+                      write(1,*) 'htdn=',htdn
+                      write(1,*) 'invup=',invup
+                      write(1,*) 'p=',p
+                      write(1,*) 'Es(jus)=',Es(jus(i),2)
+                      write(1,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
                   EAOL(i)=Exy(i)*htup*Latr4(i)/10.
@@ -741,19 +742,19 @@
                   endif
 
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Type3 Lock Link',i,' flow is NaN'
-                      write(*,*) 'Latr11(i)=', Latr11(i)
-                      write(*,*) 'Deta=', Deta
-                      write(*,*) 'Res=',Res
-                      write(*,*) 'Resist=',Resist
-                      write(*,*) 'dkd=',dkd
-                      write(*,*) 'ruf=',ruf
-                      write(*,*) 'AK=',AK
-                      write(*,*) 'Ach=',Ach
-                      write(*,*) 'linkdepth=',linkdepth
-                      write(*,*) 'invert=',latr1(i)
-                      write(*,*) 'Es(jus)=',Es(jus(i),2)
-                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      write(1,*) 'Type3 Lock Link',i,' flow is NaN'
+                      write(1,*) 'Latr11(i)=', Latr11(i)
+                      write(1,*) 'Deta=', Deta
+                      write(1,*) 'Res=',Res
+                      write(1,*) 'Resist=',Resist
+                      write(1,*) 'dkd=',dkd
+                      write(1,*) 'ruf=',ruf
+                      write(1,*) 'AK=',AK
+                      write(1,*) 'Ach=',Ach
+                      write(1,*) 'linkdepth=',linkdepth
+                      write(1,*) 'invert=',latr1(i)
+                      write(1,*) 'Es(jus)=',Es(jus(i),2)
+                      write(1,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
               endif
@@ -846,20 +847,20 @@
                   Ach = orarea
 			  endif
               if(isNan(Q(i,2))) then
-                  write (*,*) 'Type',linkt(i), ' Link',i,' flow is NaN'
-                  write(*,*) 'Invert elevation=',Latr1(i)
-                  write(*,*) 'Crown elevation=',Latr2(i) 
-			      write(*,*) 'Ground elevation upstream=',Latr3(i) 
-                  write(*,*) 'average width=', Latr4(i)
-			      write(*,*) 'Ground elevation downstream=',Latr5(i) 
-                  write(*,*) 'orifice coefficient=',Latr8(i)
-                  write(*,*) 'invup=',invup
-                  write(*,*) 'htup=',htup
-                  write(*,*) 'htdn=',htdn
-                  write(*,*) 'p=',Latr1(i) - invup
-                  write(*,*) 'beta=',Es(upN,2)-invup
-                  write(*,*) 'Es(jus)=',Es(jus(i),2)
-                  write(*,*) 'Es(jds)=',Es(jds(i),2)
+                  write(1,*) 'Type',linkt(i), ' Link',i,' flow is NaN'
+                  write(1,*) 'Invert elevation=',Latr1(i)
+                  write(1,*) 'Crown elevation=',Latr2(i) 
+			      write(1,*) 'Ground elevation upstream=',Latr3(i) 
+                  write(1,*) 'average width=', Latr4(i)
+			      write(1,*) 'Ground elevation downstream=',Latr5(i) 
+                  write(1,*) 'orifice coefficient=',Latr8(i)
+                  write(1,*) 'invup=',invup
+                  write(1,*) 'htup=',htup
+                  write(1,*) 'htdn=',htdn
+                  write(1,*) 'p=',Latr1(i) - invup
+                  write(1,*) 'beta=',Es(upN,2)-invup
+                  write(1,*) 'Es(jus)=',Es(jus(i),2)
+                  write(1,*) 'Es(jds)=',Es(jds(i),2)
                   stop !pause
               endif
               
@@ -997,10 +998,10 @@
           !>> calculate channel width as a function of water depth and marsh DEM standard deviation.
           !>> link width equals the total defined width when (water level - marsh elevation) = 2 x marsh DEM standard deviation.
           !>> link width is calculated proportionally when (water level - marsh elevation) < 2 x marsh DEM standard deviation.
-                  if (Ahf(upN) > 0) then
+                  if ((Ahf(upN) > 0) .and. (BedMSD(upN)>0)) then
                       cwidth = min((EH(upN,2)-BedM(upN))
      &                      /(2*BedMSD(upN)),1.0)*Latr4(i)                      
-                  elseif (Ahf(downN) > 0) then
+                  elseif ((Ahf(downN) > 0) .and. (BedMSD(downN)>0)) then
                       cwidth = min((EH(downN,2)-BedM(downN))
      &                      /(2*BedMSD(downN)),1.0)*Latr4(i)                  
                   else
@@ -1013,16 +1014,16 @@
               ! set flow area for EAOL calculation
                   Ach = avdep*cwidth   !avdep*latr4(i)
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Type8 Marsh Link',i,' flow is NaN after Q calculation'
-                      write(*,*) 'dkd=',dkd
-                      write(*,*) 'avdep=',avdep
-                      write(*,*) 'delh=',delh
-                      write(*,*) 'linkwidth=',Latr4(i)
-                      write(*,*) 'linklength=',Latr3(i)
-                      write(*,*) 'Manning n=',Latr5(i)
-                      write(*,*) 'invert=',latr1(i)
-                      write(*,*) 'Eh(jus)=',Eh(jus(i),2)
-                      write(*,*) 'Eh(jds)=',Eh(jds(i),2)
+                      write(1,*) 'Type8 Marsh Link',i,' flow is NaN after Q calculation'
+                      write(1,*) 'dkd=',dkd
+                      write(1,*) 'avdep=',avdep
+                      write(1,*) 'delh=',delh
+                      write(1,*) 'linkwidth=',Latr4(i)
+                      write(1,*) 'linklength=',Latr3(i)
+                      write(1,*) 'Manning n=',Latr5(i)
+                      write(1,*) 'invert=',latr1(i)
+                      write(1,*) 'Eh(jus)=',Eh(jus(i),2)
+                      write(1,*) 'Eh(jds)=',Eh(jds(i),2)
                      stop ! pause
                   endif
 
@@ -1040,9 +1041,9 @@
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-              if (abs(link_vel(i)) >= upwind_vel) then
+               if (abs(link_vel(i)) >= upwind_vel) then
                   fa(i) = 1.0
-              endif
+               endif
 
 !>> Link type 9 = ridges/levees
           elseif( linkt(i) == 9) then
@@ -1140,20 +1141,20 @@
                   endif
 
                   if(isNan(Q(i,2))) then
-                      write (*,*) 'Type9 Ridge Link',i,' flow is NaN'
-                      write(*,*) 'ridge crest elevation=',Latr1(i)
-                      write(*,*) 'invert elevation upstream=',Latr2(i) 
-                      write(*,*) 'invert elevation downstream=',Latr10(i) 
-                      write(*,*) 'length of ridge crest=', Latr3(i)
-                      write(*,*) 'width of ridge crest=', Latr4(i)
-                      write(*,*) 'Manning n=',Latr5(i)
-                      write(*,*) 'htup=',htup
-                      write(*,*) 'htdn=',htdn
-                      write(*,*) 'invup=',invup
-                      write(*,*) 'p=',p
-                      write(*,*) 'htupf=',htupf
-                      write(*,*) 'Es(jus)=',Es(jus(i),2)
-                      write(*,*) 'Es(jds)=',Es(jds(i),2)
+                      write(*,*) 'Type9 Ridge Link',i,' flow is NaN'
+                      write(1,*) 'ridge crest elevation=',Latr1(i)
+                      write(1,*) 'invert elevation upstream=',Latr2(i) 
+                      write(1,*) 'invert elevation downstream=',Latr10(i) 
+                      write(1,*) 'length of ridge crest=', Latr3(i)
+                      write(1,*) 'width of ridge crest=', Latr4(i)
+                      write(1,*) 'Manning n=',Latr5(i)
+                      write(1,*) 'htup=',htup
+                      write(1,*) 'htdn=',htdn
+                      write(1,*) 'invup=',invup
+                      write(1,*) 'p=',p
+                      write(1,*) 'htupf=',htupf
+                      write(1,*) 'Es(jus)=',Es(jus(i),2)
+                      write(1,*) 'Es(jds)=',Es(jds(i),2)
                       stop !pause
                   endif
               endif
@@ -1307,8 +1308,7 @@
           elseif(linkt(i) == 7) then
               if ( ES(jus(i),2) > Latr2(i) ) then
                   sn = 1.0
-                  volavailable = Min(Es(jus(i),2)-max(Latr2(i),Bed(jus(i))),
-     &                           Latr1(i)-Latr2(i))*As(jus(i),1)
+                  volavailable = (Es(jus(i),2)-max(Latr2(i),Bed(jus(i))))*As(jus(i),1)
               else
                   sn = 0.0
                   volavailable = 0.0
@@ -1339,13 +1339,13 @@
 !>> Determine flowrate required to exchange all available water during timestep
           Qmax = volavailable/dt
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to this max rate
-          if (linkt(i) > 0.0) then
+          if (linkt(i) > 0) then
               if (Qmax < abs(Q(i,2))) then
                   Q(i,2) = Qmax*sn
                   if (Qmax /= 0.0) then
                       if (daystep == lastdaystep) then
-                          Write(1,*) 'Max flowrate reached. Link:',i
-                          Write(*,*) 'Max flowrate reached. Link:',i
+                          Write(1,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
+                          Write(*,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
                       endif
                   endif
                   if(isNan(Q(i,2))) then
@@ -1749,11 +1749,11 @@
           endif
       enddo										!j do loop
 
-      dmod=thour-int(thour)
+      fmod=thour-int(thour)
 
-      if (dmod == 0) then
+      if (fmod == 0) then
 		  khr=int(thour)
-		  dmod=khr-3*int(float(khr)/3.)
+		  fmod=khr-3*int(float(khr)/3.)
 
 	  endif
 
