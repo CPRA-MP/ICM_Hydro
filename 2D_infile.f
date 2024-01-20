@@ -114,8 +114,8 @@
           !>> Check for missing or negative roughness attribute values (here using the KKa input value for compartment and reassign to default values if missing
           if (KKa(node) < 0.0) then
               KKa(node) = def_n
-          elseif ((KKa(node) >= 1) .and. (KKa(node) < 999.) ) then
-                  KKa(node) = def_n
+          elseif ((KKa(node) > 1)) then
+              KKa(node) = def_n
           endif
 
       enddo
@@ -555,6 +555,7 @@
                   write(1,*) 'Tidegate/Orifice width is set to be 5m'
                   write(*,*) 'Tidegate/Orifice width is set to be 5m'
 			  endif
+              if (Latr8(lnkid)<=0) Latr8(lnkid)=0.4
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
               !fa_mult(lnkid) = 1.0  
 
