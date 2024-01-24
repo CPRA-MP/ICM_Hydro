@@ -7,7 +7,7 @@
 	  
       implicit none
       integer :: iab,jnb,j,k
-      real :: Qsalsum,Csalface,diffus,Qlink,d1,d2
+      real :: Qsalsum,Csalface,diffus,Qlink,d1,d2,cfacemax
 
 !>@par General Structure of Subroutine Logic:
 !>>
@@ -28,6 +28,7 @@
       
       if(abs(Q(iab,2)) == 0.0) then
           SL(iab,2)=0
+          QSalSum=QSalSum+0.0
       else
 !	    if (linkt(iab) == 8) then
 !              if(Ahf(j) == 0) then
@@ -45,15 +46,21 @@
 !                  diffus = 0.0
 !              endif  
 !          else    
-          if(Q(iab,2) >= 0.0) then
+          diffus = EAOL(iab)              
+          Qlink = Q(iab,2)
+          if(Q(iab,2) > 0.0) then
               Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
      &                  +fb(iab)*S(jds(iab),1)))
+              cfacemax=(As(jus(iab),1)*(Es(jus(iab),1)-Bed(jus(iab)))
+     &                  *S(jus(iab),1))/(Qlink*dt)
+              Csalface=min(Csalface,cfacemax)
           else
               Csalface= ((fa(iab)*S(jds(iab),1)
      &                  +fb(iab)*S(jus(iab),1)))
+              cfacemax=(As(jds(iab),1)*(Es(jds(iab),1)-Bed(jds(iab)))
+     &                  *S(jds(iab),1))/(Qlink*dt)
+              Csalface=min(Csalface,cfacemax)
           endif
-          diffus = EAOL(iab)              
-          Qlink = Q(iab,2)
    		!endif
    
 ! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
