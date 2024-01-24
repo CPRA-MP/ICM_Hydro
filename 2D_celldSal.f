@@ -274,8 +274,8 @@
 !     S(j,2)=S(j,1)+DSal
          
 !== for code debugging
-!      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
-      if (isNan(S(j,2))) then
+      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
+!      if (isNan(S(j,2))) then
           write(1,*)'comp = ',j
           write(1,*)'As =',As(j,1)
           write(1,*)'sal(t-1) = ',S(j,1)
