@@ -301,9 +301,15 @@
                   if(Q(iab,2) >= 0.0) then
                       Csalface= ((fa(iab)*S(jus(iab),1)
      &                  +fb(iab)*S(jds(iab),1)))
+                      cfacemax=(As(jus(iab),1)*(Es(jus(iab),1)
+     &                  -Bed(jus(iab)))*S(jus(iab),1))/(abs(Qlink)*dt)
+                      Csalface=min(Csalface,cfacemax)
                   else
                       Csalface= ((fa(iab)*S(jds(iab),1)
      &                  +fb(iab)*S(jus(iab),1)))
+                      cfacemax=(As(jds(iab),1)*(Es(jds(iab),1)
+     &                  -Bed(jds(iab)))*S(jds(iab),1))/(abs(Qlink)*dt)
+                      Csalface=min(Csalface,cfacemax)
                   endif
                   write(1,*)'S(jus)=',S(jus(iab),1),
      &                      'S(jds)=',S(jds(iab),1), 'Csalface=',Csalface
