@@ -49,17 +49,15 @@
           diffus = EAOL(iab)              
           Qlink = Q(iab,2)
           if(Q(iab,2) > 0.0) then
-              Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
-     &                  +fb(iab)*S(jds(iab),1)))
-              cfacemax=(As(jus(iab),1)*(Es(jus(iab),1)-Bed(jus(iab)))
-     &                  *S(jus(iab),1))/(abs(Qlink)*dt)
-              Csalface=min(Csalface,cfacemax)
+!              Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
+!     &                  +fb(iab)*S(jds(iab),1)))
+              Csalface= ((0.75*S(jus(iab),1)				!cell face values
+     &                  +0.25*S(jds(iab),1)))
           else
-              Csalface= ((fa(iab)*S(jds(iab),1)
-     &                  +fb(iab)*S(jus(iab),1)))
-              cfacemax=(As(jds(iab),1)*(Es(jds(iab),1)-Bed(jds(iab)))
-     &                  *S(jds(iab),1))/(abs(Qlink)*dt)
-              Csalface=min(Csalface,cfacemax)
+!              Csalface= ((fa(iab)*S(jds(iab),1)
+!     &                  +fb(iab)*S(jus(iab),1)))
+              Csalface= (0.75*S(jds(iab),1)
+     &                  +0.25*S(jus(iab),1)))
           endif
    		!endif
    
