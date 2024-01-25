@@ -486,14 +486,14 @@
                   Latr8(lnkid) = 0.65
               endif
 !>> check for missing weir invert attributes and assign to compartment bed elev
-!              if (Latr2(lnkid) < -9990.) then
-!                  Latr2(lnkid) = Latr3(lnkid)
-!              elseif (Latr2(lnkid) > 100.) then
-!                  Latr2(lnkid) = Latr3(lnkid)
-!              endif
+              if (Latr2(lnkid) < -9990.) then
+                  Latr2(lnkid) = Latr3(lnkid)
+              elseif (Latr2(lnkid) > 100.) then
+                  Latr2(lnkid) = Latr3(lnkid)
+              endif
 !   weir upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr2(lnkid)=bed(jus(lnkid))
-			  Latr3(lnkid)=bed(jds(lnkid))
+!			  Latr2(lnkid)=bed(jus(lnkid))
+!			  Latr3(lnkid)=bed(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr3(lnkid)))then
                   write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
@@ -520,8 +520,8 @@
 !>> Tidal gate/orifice link attribute checks
           elseif((linkt(lnkid) == 4) .or. (linkt(lnkid) == 5)) then
 !   orifice upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr3(lnkid)=bed(jus(lnkid))
-			  Latr5(lnkid)=bed(jds(lnkid))
+!			  Latr3(lnkid)=bed(jus(lnkid))
+!			  Latr5(lnkid)=bed(jds(lnkid))
 
 !   orifice upstream & downstream ground elevation can not be higher than structure invert elevation
               if(Latr1(lnkid)<=max(Latr3(lnkid),Latr5(lnkid)))then
@@ -555,7 +555,7 @@
                   write(1,*) 'Tidegate/Orifice width is set to be 5m'
                   write(*,*) 'Tidegate/Orifice width is set to be 5m'
 			  endif
-              if (Latr8(lnkid)<=0) Latr8(lnkid)=0.4
+              if (Latr8(lnkid)<0) Latr8(lnkid)=0.4
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
               !fa_mult(lnkid) = 1.0  
 
@@ -596,8 +596,8 @@
 
 !>> Marsh link attribute checks
           elseif (linkt(lnkid) == 8) then
-              Latr2(lnkid)=bedm(jus(lnkid))
-              Latr10(lnkid)=bedm(jds(lnkid))
+!              Latr2(lnkid)=bedm(jus(lnkid))
+!              Latr10(lnkid)=bedm(jds(lnkid))
 
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
 ! check if upstream is now water
@@ -620,18 +620,19 @@
               endif
 ! Set the elevation of the marsh overland link to be the maximum of the input link elevation, and the us and downstream marsh elevations (that may or may not have been updated for non-marsh areas)
 ! if both us/ds are now water, Latr1 was reset, otherwise the input value for latr1 will still be used in comparison of marsh elev
-!              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
-!              Latr1(lnkid) = maxmarel
-              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
 
 ! both ends are water, update roughness value to low (water) value of 0.03
               if((Ahf(jus(lnkid)) == 0.0) .and. (Ahf(jds(lnkid)) == 0.0)) then 
+                      Latr1(i) = max(Latr2(i),Latr10(i))
                       Latr5(lnkid) = 0.03
                       write(1,925) 'Overland link',lnkid,'no longer connects
      & to marsh at either end. Roughness is set to 0.03.'
                       write(*,925) 'Overland link',lnkid,'no longer connects
      & to marsh at either end. Roughness is set to 0.03.'
               endif
+              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
+              Latr1(lnkid) = maxmarel
+!              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
 
               if(Latr3(lnkid) <=0)then
                   write(1,925) 'Marsh link',lnkid,'has length lower than 0'
@@ -658,8 +659,8 @@
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
 !   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr2(lnkid)=bed(jus(lnkid))
-			  Latr10(lnkid)=bed(jds(lnkid))
+!			  Latr2(lnkid)=bed(jus(lnkid))
+!			  Latr10(lnkid)=bed(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr10(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
@@ -682,13 +683,13 @@
                   write(1,*) 'Ridge link crest width is set to be 10m'
                   write(*,*) 'Ridge link crest width is set to be 10m'
 			  endif
-              if(Latr3(lnkid) >30)then
-                  write(1,925) 'Ridge link',lnkid,'has crest width longer than 30m'
-                  write(*,925) 'Ridge link',lnkid,'has crest width longer than 30m'
-	              Latr3(lnkid) = 10.0  !default 10m ridge crest width
-                  write(1,*) 'Ridge link crest width is set to be 10m'
-                  write(*,*) 'Ridge link crest width is set to be 10m'
-			  endif
+!              if(Latr3(lnkid) >30)then
+!                  write(1,925) 'Ridge link',lnkid,'has crest width longer than 30m'
+!                  write(*,925) 'Ridge link',lnkid,'has crest width longer than 30m'
+!	              Latr3(lnkid) = 10.0  !default 10m ridge crest width
+!                  write(1,*) 'Ridge link crest width is set to be 10m'
+!                  write(*,*) 'Ridge link crest width is set to be 10m'
+!			  endif
 
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Ridge link',lnkid,'has crest length 
@@ -706,7 +707,7 @@
                   Latr5(lnkid) = 0.1
               endif
 
-	          Latr8(lnkid) = 0.37  !default for long broad-crested weir
+	          if(Latr8(lnkid)<0) Latr8(lnkid) = 0.37  !default for long broad-crested weir
 !!!ZW 12/15/2023 upwind factor for weir link should always be 1???
               !fa_mult(lnkid) = 1.0  
           endif
@@ -732,7 +733,7 @@
               write(*,925)'fa value for link',lnkid,'is missing.'
               write(*,*) 'Default value of 0.5 is assigned'
 
-              fa_mult(lnkid) = 0.5
+              fa_mult(lnkid) = 0.56
           endif
 
 ! Latr11 is for type 3 Lock Links, not in the attribute inputs.  Used in hydrod.f		  
