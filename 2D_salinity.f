@@ -51,13 +51,13 @@
           if(Q(iab,2) > 0.0) then
 !              Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
 !     &                  +fb(iab)*S(jds(iab),1)))
-              Csalface= ((0.75*S(jus(iab),1)				!cell face values
-     &                  +0.25*S(jds(iab),1)))
+              Csalface= (0.75*S(jus(iab),1)				!cell face values
+     &                  +0.25*S(jds(iab),1))
           else
 !              Csalface= ((fa(iab)*S(jds(iab),1)
 !     &                  +fb(iab)*S(jus(iab),1)))
               Csalface= (0.75*S(jds(iab),1)
-     &                  +0.25*S(jus(iab),1)))
+     &                  +0.25*S(jus(iab),1))
           endif
    		!endif
    
