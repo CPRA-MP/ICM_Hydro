@@ -274,8 +274,8 @@
 !     S(j,2)=S(j,1)+DSal
          
 !== for code debugging
-!      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
-      if (isNan(S(j,2))) then
+      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
+!      if (isNan(S(j,2))) then
           write(1,*)'comp = ',j
           write(1,*)'As =',As(j,1)
           write(1,*)'sal(t-1) = ',S(j,1)
@@ -301,15 +301,11 @@
                   if(Q(iab,2) >= 0.0) then
                       Csalface= ((fa(iab)*S(jus(iab),1)
      &                  +fb(iab)*S(jds(iab),1)))
-                      cfacemax=(As(jus(iab),1)*(Es(jus(iab),1)
-     &                  -Bed(jus(iab)))*S(jus(iab),1))/(abs(Qlink)*dt)
-                      Csalface=min(Csalface,cfacemax)
+                      Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
                   else
                       Csalface= ((fa(iab)*S(jds(iab),1)
      &                  +fb(iab)*S(jus(iab),1)))
-                      cfacemax=(As(jds(iab),1)*(Es(jds(iab),1)
-     &                  -Bed(jds(iab)))*S(jds(iab),1))/(abs(Qlink)*dt)
-                      Csalface=min(Csalface,cfacemax)
+                      Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
                   endif
                   write(1,*)'S(jus)=',S(jus(iab),1),
      &                      'S(jds)=',S(jds(iab),1), 'Csalface=',Csalface
