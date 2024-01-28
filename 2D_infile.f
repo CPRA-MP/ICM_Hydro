@@ -375,6 +375,8 @@
           if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 3) 
      &        .or. (linkt(lnkid) == 6) .or. (linkt(lnkid) == 11)  
      &        .or. (linkt(lnkid) == 12)) then
+              
+              Latr1(lnkid)=max(Bed(jus(lnkid)),Bed(jds(lnkid)))
 
               if((linkt(lnkid)==6) .and. (Latr2(lnkid)<=Latr1(lnkid)))then
                   write(1,925) 'Culvert link',lnkid,'has crown elevation lower than 
