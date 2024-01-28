@@ -19,6 +19,7 @@
       integer :: node,lnkid,jmds,k,jk
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
+      integer,dimension(:),allocatable :: jqtrib
 
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
@@ -715,14 +716,14 @@
 !>> Exy check
           if(Exy(lnkid) < 0) then	!zw 3/14/2015 revised
               write(1,925)'Exy value for link',lnkid,'is missing.'
-              write(1,*) 'Default value of 100 is assigned
+              write(1,*) 'Default value of 10 is assigned
      &    but this should be fixed in the input file.'
 
               write(*,925)'Exy value for link',lnkid,'is missing.'
-              write(*,*) 'Default value of 100 is assigned
+              write(*,*) 'Default value of 10 is assigned
      &    but this should be fixed in the input file.'
 
-              Exy(lnkid) = 100.0
+              Exy(lnkid) = 10.0
           endif
 
 !>> fa check
@@ -890,6 +891,13 @@
       jtrib(:)=0
 !>> Read Tributary and Diversion Numbers from header row of input file
       READ(39,*) (jtrib(jt), jt=1,Ntrib)
+      do jt=1,Ntrib
+          if((jtrib(jt)>Ntrib) .or. (jtrib(jt)<1))then
+              write(*,*)'The tributary number of column in TribQ ',jt,
+     &             'is ',jtrib(jt), '. It should be between 1 & ',Ntrib
+              stop
+          endif
+      enddo
 
 !>> Skip Tributary and Diversion Flows that occur in years prior to current model year
       do kt=1,startrun
@@ -1012,7 +1020,8 @@
       cChem(:,:,:)=0  !zw added 04/06/2020
       QChem(:,:,:)=0  !zw added 12/05/2023
       if (iWQ>0) then
-	      READ(80,*) (jtrib(jt), jt=1,Ntrib)
+          allocate(jqtrib(Ntrib))
+	      READ(80,*) (jqtrib(jt), jt=1,Ntrib) !changed in case trib number sequence different from TribQ
           READ(81,*)
 	      READ(82,*)
           READ(83,*)
@@ -1043,10 +1052,10 @@
 !			 enddo
 !		     enddo
 
-             READ(80,*) (cChem(jtrib(jt),1,kt),jt=1,Ntrib)			!NO3 (mg/L) daily values	!JAM June 2008
-		     READ(81,*) (cChem(jtrib(jt),2,kt),jt=1,Ntrib)			!NH4	! JAM June 2008
-		     READ(82,*) (cChem(jtrib(jt),4,kt),jt=1,Ntrib)			!ON		! JAM June 2008
-		     READ(83,*) (cChem(jtrib(jt),5,kt),jt=1,Ntrib)			!TP		! JAM June 2008
+             READ(80,*) (cChem(jqtrib(jt),1,kt),jt=1,Ntrib)			!NO3 (mg/L) daily values	!JAM June 2008
+		     READ(81,*) (cChem(jqtrib(jt),2,kt),jt=1,Ntrib)			!NH4	! JAM June 2008
+		     READ(82,*) (cChem(jqtrib(jt),4,kt),jt=1,Ntrib)			!ON		! JAM June 2008
+		     READ(83,*) (cChem(jqtrib(jt),5,kt),jt=1,Ntrib)			!TP		! JAM June 2008
 
              CtoN=5.7
 
@@ -1116,6 +1125,7 @@
           close(81)
           close(82)
           close(83)
+          deallocate(jqtrib)
       endif
 !>> Read in anthropogenic N-NO3 loads to compartments (in kg/d) - loads from farms and MWWTPs
       AnthL(:)=0  !zw added 04/06/2020
@@ -1261,7 +1271,7 @@
           close(87)
        endif
 !>> Change units of WQ chemicals from kg/day to kg/s  ===/consd=24*3600
-	   do mk = 1,14
+	   do mk = 1,numChem
           do kt=1,simdays
 !         do kt=1,365.25*Nyear                            !-EDW replaced with loop over simdays
 			QAtm(1,mk,kt) = QAtm(1,mk,kt)/consd
@@ -1327,7 +1337,8 @@
       cssFines(:)=0
 
 !>> Read Tributary Numbers from header row of Tributary sand concentration input file
-      READ(55,*) (jtrib(jt), jt=1,Ntrib)
+      allocate(jqtrib(Ntrib))
+      READ(55,*) (jqtrib(jt), jt=1,Ntrib)  !changed in case trib number sequence different from TribQ
 !>> Skip Tributary Sediment data for years prior to current model year
       do kt=1,startrun
           read(55,*)
@@ -1340,11 +1351,11 @@
       enddo
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
-		  READ(55,*) (cssT(jtrib(jt),kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+		  READ(55,*) (cssT(jqtrib(jt),kt,1), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
 	  enddo
       close(55)
 
-      read(555,*)(jtrib(jt), jt=1,Ntrib)
+      read(555,*)(jqtrib(jt), jt=1,Ntrib)
       do kt=1,startrun
           read(555,*)
           if (kt == startrun) then
@@ -1357,7 +1368,7 @@
 !>> Read Tributary Sediment data for current model year (in mg/L)
       do kt=1,simdays
       !>> Read each row of tributary fines data, then divide by three to partition into silt, clay, and floc
-		  READ(555,*) (cssFines(jtrib(jt)), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
+		  READ(555,*) (cssFines(jqtrib(jt)), jt=1,Ntrib)	!READ in tributary sediment conc cssT	!JAM correction April 8, 2007
           do jt = 1, Ntrib
               cssT(jt,kt,2) = cssFines(jt)/3.0
               cssT(jt,kt,3) = cssFines(jt)/3.0
@@ -1365,6 +1376,7 @@
           enddo
 	  enddo
       close(555)
+      deallocate(jqtrib)
 
 
 !>> Create tributary sediment concentrations and convert loads to kg/d
