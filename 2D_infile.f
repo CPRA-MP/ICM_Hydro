@@ -487,14 +487,14 @@
                   Latr8(lnkid) = 0.65
               endif
 !>> check for missing weir invert attributes and assign to compartment bed elev
-              if (Latr2(lnkid) < -9990.) then
-                  Latr2(lnkid) = Latr3(lnkid)
-              elseif (Latr2(lnkid) > 100.) then
-                  Latr2(lnkid) = Latr3(lnkid)
-              endif
+!              if (Latr2(lnkid) < -9990.) then
+!                  Latr2(lnkid) = Latr3(lnkid)
+!              elseif (Latr2(lnkid) > 100.) then
+!                  Latr2(lnkid) = Latr3(lnkid)
+!              endif
 !   weir upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-!			  Latr2(lnkid)=bed(jus(lnkid))
-!			  Latr3(lnkid)=bed(jds(lnkid))
+			  Latr2(lnkid)=Bed(jus(lnkid))
+			  Latr3(lnkid)=Bed(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr3(lnkid)))then
                   write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
@@ -597,8 +597,8 @@
 
 !>> Marsh link attribute checks
           elseif (linkt(lnkid) == 8) then
-!              Latr2(lnkid)=bedm(jus(lnkid))
-!              Latr10(lnkid)=bedm(jds(lnkid))
+              Latr2(lnkid)=BedM(jus(lnkid))
+              Latr10(lnkid)=BedM(jds(lnkid))
 
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
 ! check if upstream is now water
@@ -631,9 +631,9 @@
                       write(*,925) 'Overland link',lnkid,'no longer connects
      & to marsh at either end. Roughness is set to 0.03.'
               endif
-              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
-              Latr1(lnkid) = maxmarel
-!              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
+!              maxmarel = max(Latr1(lnkid),Latr2(lnkid),Latr10(lnkid))
+!              Latr1(lnkid) = maxmarel
+              Latr1(lnkid) = max(Latr2(lnkid),Latr10(lnkid))  !ZW 12/12/2023 marsh link invert should not higher than us & ds marsh/bed elevations
 
               if(Latr3(lnkid) <=0)then
                   write(1,925) 'Marsh link',lnkid,'has length lower than 0'
@@ -660,8 +660,8 @@
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
 !   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-!			  Latr2(lnkid)=bed(jus(lnkid))
-!			  Latr10(lnkid)=bed(jds(lnkid))
+			  Latr2(lnkid)=BedM(jus(lnkid))
+			  Latr10(lnkid)=BedM(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr10(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
