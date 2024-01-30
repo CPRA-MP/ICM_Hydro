@@ -22,8 +22,9 @@
       real :: dry_depth, dry_salinity
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
-      real :: salmaxcon, Qlink, Csalface,cfacemax,QSal_in,Q_in
-      real :: fcrop,fbc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
+      real :: salmaxcon, Qlink, Csalface,cfacemax
+	  real :: QSal_in,Q_in,QRain
+      real :: fcrop,fpc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
       integer:: iSWMM
 
       cden=1./1000./24./3600.		! mm/d to m/s conversion
