@@ -51,11 +51,11 @@
           if(Q(iab,2) > 0.0) then
               Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
      &                  +fb(iab)*S(jds(iab),1)))
-              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
+!              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
           else
               Csalface= ((fa(iab)*S(jds(iab),1)
      &                  +fb(iab)*S(jus(iab),1)))
-              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
+!              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
           endif
    		!endif
    
