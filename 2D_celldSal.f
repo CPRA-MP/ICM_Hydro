@@ -22,9 +22,12 @@
       real :: dry_depth, dry_salinity
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
-      real :: salmaxcon, Qlink, Csalface,cfacemax
-      
-      !cden=1./1000./24./3600.		! mm/d to m/s conversion
+      real :: salmaxcon, Qlink, Csalface,cfacemax,QSal_in,Q_in
+      real :: fcrop,fbc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
+      integer:: iSWMM
+
+      cden=1./1000./24./3600.		! mm/d to m/s conversion
+      fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
@@ -58,7 +61,15 @@
       
       QSalsum = 0
       salmaxcon = 0.0      
-          
+
+!ZW 1/30/2024 adding Qsal_in & Q_in for use of SWMM5 method
+! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
+      iSWMM=1
+      if(iSWMM>0)then
+          Qsal_in = 0.0  !Qsal_in>0 
+          Q_in=0.0       !Q_in>0         
+      endif
+
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
 !>> set salinity in tributary to default freshwater salinity value (0.1 ppt)
@@ -66,6 +77,10 @@
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
+          else
+              if(iSWMM>0) Qsal_in = Qsal_in+Qtrib(ktrib,kday)
+     &                              *Saltrib*Qmult(j,ktrib)            !ZW 1/30/2024 for use of SWMM method
+              if(iSWMM>0) Q_in = Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
@@ -77,7 +92,42 @@
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
           QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore since Ndiv is always set to 0
+          if(iSWMM>0) QSal_in = QSal_in+Qdiv(kdiv,kday)
+     &                          *0.15*Qmultdiv(j,kdiv)                !ZW 1/30/2024 for use of SWMM method
+          if(iSWMM>0) Q_in = Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
       enddo
+
+!===ZW 1/30/2024 for use of SWMM method
+      if(iSWMM>0) then
+        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
+        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
+!>> Excess rainfall runoff on marsh
+        ETmin=0.20                 !minimum ET reduction factor
+        Het=0.25                   !depth below which ET is reduced
+        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
+        if (ddym1<=dry_threshold) then
+            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
+        else
+            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
+            Qavail=ddym1*Ahf(j)/dt
+            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
+        endif
+!>> Update cumulative flow rate based on excess rainfall runoff on upland area
+        Ahmf=Ahydro(j)-Ahf(j)
+        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
+
+!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
+        if (ddy1<=dry_threshold) then
+            Qow=Rain(kday,jrain(j))*As(j,1)*cden
+        else
+            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
+            Qavail=ddy1*As(j,1)/dt
+            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
+        endif
+        QRain = Qhhf+Qupld+Qow     
+        Q_in=Q_in+QRain
+      endif
+!== end revision 1/30/2024
 
 !>> flag that will be set if overland marsh links have flow
       marsh_link_flow = 0          
@@ -93,6 +143,17 @@
                   jnb=jds(iab)
               endif  
           endif
+
+!===ZW 1/30/2024 for use of SWMM method
+          if(iSWMM>0)then
+              Qlink = 0
+              if(iab > 0) Qlink = sicc(j,k)*Q(iab,2)
+              if (Qlink < 0.0) then
+                  Q_in = Q_in + abs(Qlink)
+                  Qsal_in = Qsal_in+abs(Qlink)*S(jnb,1)
+              endif
+          endif
+!===end 1/30/2024
 
           Qsalsum_b4link = Qsalsum
 
@@ -232,7 +293,11 @@
       if(ddy2 > dry_depth) then
 !1/15/2024      if(vol2 > 0) then
 !          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2   
+          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
+
+          !===ZW 1/30/2024 for use of SWMM method
+          if(iSWMM>0) S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
+         
           ds = S(j,2) - S(j,1)
           
           !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 
@@ -275,6 +340,7 @@
          
 !== for code debugging
       if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
+!      if ((S(j,2) > salmax)) then
 !      if (isNan(S(j,2))) then
           write(1,*)'comp = ',j
           write(1,*)'As =',As(j,1)
@@ -320,8 +386,9 @@
 !      if(S(j,2) < 0.10) then
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
-          S(j,2) = 0.0
-!ZW 1/17/2024      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+!          S(j,2) = 0.0
+          S(j,2) = 0.5*S(j,1) !ZW 1/30/2024 following negative concentration treatment in WASP model
+!!ZW 1/17/2024      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
 !          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
 !              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
 !                  S(j,2) = salmaxcon
