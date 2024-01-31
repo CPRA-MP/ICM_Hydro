@@ -372,6 +372,7 @@
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
       READ(30,*) dry_threshold   ! 105      dry water depth threshold
+      READ(30,*) iSWMM           ! 106      option to use SWMM5 numerical scheme in salinity transport (1-Yes, 0-NO)
       close(30)
 
       fa_def=1 !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
