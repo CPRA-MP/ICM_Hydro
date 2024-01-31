@@ -16,6 +16,7 @@
       integer :: windgages,raingages,etgages,tidegages 
       integer :: writehourly,modeloverland
       integer :: iSed,iSal,iTemp,iWQ
+	  integer :: iSWMM    !zw 1/30/2024 added for option of using SWMM5 numerical scheme in salinity transport 
       
 ! hardcoded specific salinity and stage trigger flags      
       integer :: SalLockTriggerHNC,SalLockStatusHNC
