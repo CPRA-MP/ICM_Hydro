@@ -454,6 +454,7 @@
       allocate(resuspension(cells,4))     !sediment array - 4 columns for 4 sediment classes
       allocate(deposition(cells,4))     !sediment array - 4 columns for 4 sediment classes
       allocate(CSSvRs(cells,2))
+      allocate(QRain(cells))            !ZW 1/31/2024 save total runoff volume (m3/s) at each time step 
 
 
       ! !EDW Tempw() used to be used to read in the boundary condition water temps, and then also used as the cell values of temperature at each timestep
