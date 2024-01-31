@@ -1,15 +1,16 @@
 !	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
 !	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-	  Subroutine CelldTmp(j,kday,fcrop)
+	  Subroutine CelldTmp(j,kday)
 !JAM     c Salinity  computations ****************************
 	
         use params
 
         implicit none
-        real :: QRain,CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
-        real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2,Qlink,CTMPface
-        real :: Qhhf,Qupld,Qow,fcrop,fpc,Ahmf,Qavail,PETuse,ETmin,Het,fET
+        real :: CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
+        real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2
+		real :: Qlink,QTMPsum_link
+!        real :: Qhhf,Qupld,Qow,fcrop,fpc,Ahmf,Qavail,PETuse,ETmin,Het,fET,,QRain
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
 
         CSHEAT=4182.					!Specific heat
@@ -31,7 +32,7 @@
       
 !        ake=5.0
         ake=26.5  !zw - 1/12/2024 based on MP2012 Ke averages
-        cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
+!        cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
         if(ddy1 <= dry_threshold) then
             aktmp=0
         else
@@ -66,36 +67,36 @@
 !     &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
 
 !ZW 1/18/2024 adding upland and treating evap as in celldQ
-        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
-        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
-!>> Excess rainfall runoff on marsh
-        ETmin=0.20                 !minimum ET reduction factor
-        Het=0.25                   !depth below which ET is reduced
-        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
-        if (ddym1<=dry_threshold) then
-            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
-        else
-            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
-            Qavail=ddym1*Ahf(j)/dt
-            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
-        endif
-!>> Update cumulative flow rate based on excess rainfall runoff on upland area
-        Ahmf=Ahydro(j)-Ahf(j)
-        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
-
-!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
-        if (ddy1<=dry_threshold) then
-            Qow=Rain(kday,jrain(j))*As(j,1)*cden
-        else
-            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
-            Qavail=ddy1*As(j,1)/dt
-            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
-        endif
-        QRain = Qhhf+Qupld+Qow     
+!        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
+!        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
+!!>> Excess rainfall runoff on marsh
+!        ETmin=0.20                 !minimum ET reduction factor
+!        Het=0.25                   !depth below which ET is reduced
+!        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
+!        if (ddym1<=dry_threshold) then
+!            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
+!        else
+!            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
+!            Qavail=ddym1*Ahf(j)/dt
+!            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
+!        endif
+!!>> Update cumulative flow rate based on excess rainfall runoff on upland area
+!        Ahmf=Ahydro(j)-Ahf(j)
+!        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
+!
+!!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
+!        if (ddy1<=dry_threshold) then
+!            Qow=Rain(kday,jrain(j))*As(j,1)*cden
+!        else
+!            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
+!            Qavail=ddy1*As(j,1)/dt
+!            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
+!        endif
+!        QRain = Qhhf+Qupld+Qow     
 ! end revision 1/18/2024
 
 !        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
-        QTMPsum=QTMPsum-QRain*Tempw(j,1)            !ZW 1/13/2024 
+        QTMPsum=QTMPsum-QRain(j)*Tempw(j,1)        !ZW 1/31/2024 
       
 !>> update mass flux (QTMPsum) for link flows into/out of compartment            
         do k=1,nlink2cell(j)
@@ -192,7 +193,7 @@
           write(1,*) 'Tempw(j,1):',Tempw(j,1)
           write(1,*) 'Tempw(j,2):',Tempw(j,2)
           write(1,*) 'QTMPsum:',QTMPsum
-          write(1,*) 'QRain:',QRain
+          write(1,*) 'QRain:',QRain(j)
           write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
           write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
           write(1,*) 'Air Temp:',ta(kday)   
@@ -205,18 +206,14 @@
                       jnb=jds(iab)
                   endif  
               endif
+              QTMPsum_link=0.0
+              if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum_link)
               Qlink = sicc(j,k)*Q(iab,2)
               if(abs(Qlink)>0) then
                   write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
-                  if(Q(iab,2) >= 0.0) then
-                      CTMPface=Tempw(jus(iab),1)
-                  else
-                      CTMPface=Tempw(jds(iab),1)
-                  endif
                   write(1,*)'Tempw(jus)=',Tempw(jus(iab),1),
-     &                      'Tempw(jds)=',Tempw(jds(iab),1), 'CTMPface=',CTMPface
-                  write(1,*)'QTEMPadvec=',sicc(j,k)*(Q(iab,2))*CTMPface
-                  write(1,*)'QTEMPdiffu=',fe*EAOL(iab)*(Tempw(j,1)-Tempw(jnb,1))
+     &                      'Tempw(jds)=',Tempw(jds(iab),1)
+                  write(1,*)'QTMP_adv+diff=',QTMPsum_link
               endif
           enddo
           stop
