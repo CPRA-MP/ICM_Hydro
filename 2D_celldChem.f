@@ -6,7 +6,7 @@
       integer :: j,kday,ichem,k,ktrib,kdiv,iab,jnb,mex
       real :: ddy1,ddy2,ddym1,ddym2
       real :: vol1, vol2, marsh_vol1, marsh_vol2
-      real :: QRain,DChemSUM
+      real :: DChemSUM
       
       QChemSUM(ichem) = 0.0
       QChemSUManth(ichem) = 0.0
