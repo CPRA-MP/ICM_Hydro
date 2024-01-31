@@ -537,6 +537,7 @@
       real(sp), dimension(:,:), allocatable :: Rain
 !      real(sp), dimension(:,:), allocatable :: uplandNP
       real(sp), dimension(:,:), allocatable :: Tcoef
+      real(sp), dimension(:,:), allocatable :: QRain  !ZW 1/31/2024 save total runoff volume (m3/s) at each time step
       
       real(sp), dimension(:,:,:), allocatable :: cChemdiv
       real(sp), dimension(:,:,:), allocatable :: QAtm
