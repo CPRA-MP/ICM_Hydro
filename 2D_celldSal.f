@@ -22,7 +22,7 @@
       real :: dry_depth, dry_salinity
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
-      real :: salmaxcon, Qlink
+      real :: salmaxcon, Qlink,Qsalsum_link
 	  real :: QSal_in,Q_in,QRain
       real :: fcrop,fpc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
 !      integer:: iSWMM  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
@@ -363,13 +363,13 @@
                       jnb=jds(iab)
                   endif  
               endif
-              Qsalnum=0.0
-              if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
+              Qsalsum_link=0.0
+              if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum_link)
               Qlink = sicc(j,k)*Q(iab,2)
               if(abs(Qlink)>0) then
                   write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
                   write(1,*)'S(jus)=',S(jus(iab),1),'S(jds)=',S(jds(iab),1)
-                  write(1,*)'QSAL_adv+diff=',Qsalnum
+                  write(1,*)'QSAL_adv+diff=',Qsalsum_link
               endif
           enddo
           stop
