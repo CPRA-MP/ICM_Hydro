@@ -22,7 +22,7 @@
       real :: dry_depth, dry_salinity
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
-      real :: salmaxcon, Qlink, Csalface,cfacemax
+      real :: salmaxcon, Qlink
 	  real :: QSal_in,Q_in,QRain
       real :: fcrop,fpc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
 !      integer:: iSWMM  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
@@ -341,8 +341,8 @@
 !     S(j,2)=S(j,1)+DSal
          
 !== for code debugging
-      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
-!      if ((S(j,2) > salmax)) then
+!      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
+      if ((S(j,2) > salmax)) then
 !      if (isNan(S(j,2))) then
           write(1,*)'comp = ',j
           write(1,*)'As =',As(j,1)
@@ -363,22 +363,13 @@
                       jnb=jds(iab)
                   endif  
               endif
+              Qsalnum=0.0
+              if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
               Qlink = sicc(j,k)*Q(iab,2)
               if(abs(Qlink)>0) then
                   write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
-                  if(Q(iab,2) >= 0.0) then
-                      Csalface= ((fa(iab)*S(jus(iab),1)
-     &                  +fb(iab)*S(jds(iab),1)))
-                      Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
-                  else
-                      Csalface= ((fa(iab)*S(jds(iab),1)
-     &                  +fb(iab)*S(jus(iab),1)))
-                      Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
-                  endif
-                  write(1,*)'S(jus)=',S(jus(iab),1),
-     &                      'S(jds)=',S(jds(iab),1), 'Csalface=',Csalface
-                  write(1,*)'QSALadvec=',sicc(j,k)*(Q(iab,2))*Csalface
-                  write(1,*)'QSALdiffu=',fe*EAOL(iab)*(S(j,1)-S(jnb,1))
+                  write(1,*)'S(jus)=',S(jus(iab),1),'S(jds)=',S(jds(iab),1)
+                  write(1,*)'QSAL_adv+diff=',Qsalnum
               endif
           enddo
           stop
