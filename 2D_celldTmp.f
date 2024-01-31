@@ -10,7 +10,6 @@
         real :: CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
         real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2
 		real :: Qlink,QTMPsum_link
-!        real :: Qhhf,Qupld,Qow,fcrop,fpc,Ahmf,Qavail,PETuse,ETmin,Het,fET,,QRain
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
 
         CSHEAT=4182.					!Specific heat
@@ -62,41 +61,9 @@
 !>> temperature source term from rainfall
 !        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
 !     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
-!ZW 1/13/2024 adding marsh area rainfall
-!        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-!     &        -fpet*PET(kday,Jet(j)))*(As(j,1)+Ahf(j))*cden
-
-!ZW 1/18/2024 adding upland and treating evap as in celldQ
-!        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
-!        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
-!!>> Excess rainfall runoff on marsh
-!        ETmin=0.20                 !minimum ET reduction factor
-!        Het=0.25                   !depth below which ET is reduced
-!        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
-!        if (ddym1<=dry_threshold) then
-!            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
-!        else
-!            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
-!            Qavail=ddym1*Ahf(j)/dt
-!            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
-!        endif
-!!>> Update cumulative flow rate based on excess rainfall runoff on upland area
-!        Ahmf=Ahydro(j)-Ahf(j)
-!        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
-!
-!!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
-!        if (ddy1<=dry_threshold) then
-!            Qow=Rain(kday,jrain(j))*As(j,1)*cden
-!        else
-!            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
-!            Qavail=ddy1*As(j,1)/dt
-!            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
-!        endif
-!        QRain = Qhhf+Qupld+Qow     
-! end revision 1/18/2024
 
 !        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
-        QTMPsum=QTMPsum-QRain(j)*Tempw(j,1)        !ZW 1/31/2024 
+        QTMPsum=QTMPsum-QRain(j)*Tempw(j,1)        !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
       
 !>> update mass flux (QTMPsum) for link flows into/out of compartment            
         do k=1,nlink2cell(j)

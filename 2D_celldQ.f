@@ -108,7 +108,7 @@
           Qavail=ddy1*As(j,1)/dt
           Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
       endif
-      QRain(j)=Qupld+Qow  !zw 1/31/2024
+      QRain(j)=Qupld+Qow  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j
 
 !      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          

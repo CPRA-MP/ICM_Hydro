@@ -24,8 +24,9 @@
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
       real :: salmaxcon, Qlink,Qsalsum_link
 	  real :: QSal_in,Q_in
-!      real :: fcrop,fpc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail,QRain      
 !      integer:: iSWMM  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+
+!     cden=1./1000./24./3600.		! mm/d to m/s conversion
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
@@ -64,8 +65,6 @@
 ! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
 !      iSWMM=1  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
       if(iSWMM>0)then
-!          cden=1./1000./24./3600.		! mm/d to m/s conversion
-!          fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
           Qsal_in = 0.0  !Qsal_in>0 
           Q_in=0.0       !Q_in>0         
       endif
@@ -99,33 +98,7 @@
 
 !===ZW 1/30/2024 for use of SWMM method
       if(iSWMM>0) then
-!        fpc= percent(j)*(1.-fcrop)/100.+fcrop               ! multiplier on PET for marsh areas ; if percent(j)=10 and fcrop=0.5, then the marsh area will evaporate 0.55*PET for the day
-!        PETuse=(1-fpet)*ETA(Jet(j))-fpet*PET(kday,Jet(j))
-!!>> Excess rainfall runoff on marsh
-!        ETmin=0.20                 !minimum ET reduction factor
-!        Het=0.25                   !depth below which ET is reduced
-!        fET=max(ETmin,min(1.0,ddym1/Het)) !reduction factor for reduced sunlight through marsh
-!        if (ddym1<=dry_threshold) then
-!            Qhhf=Ahf(j)*Rain(kday,jrain(j))*cden 
-!        else
-!            Qhhf=Ahf(j)*(Rain(kday,jrain(j))-PETuse*fET)*cden ! in m^3/s 
-!            Qavail=ddym1*Ahf(j)/dt
-!            Qhhf=max(Qhhf,-Qavail)                            !prevent excessive evap over marsh
-!        endif
-!!>> Update cumulative flow rate based on excess rainfall runoff on upland area
-!        Ahmf=Ahydro(j)-Ahf(j)
-!        Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden	 
-!
-!!>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
-!        if (ddy1<=dry_threshold) then
-!            Qow=Rain(kday,jrain(j))*As(j,1)*cden
-!        else
-!            Qow=(Rain(kday,jrain(j))-PETuse)*As(j,1)*cden
-!            Qavail=ddy1*As(j,1)/dt
-!            Qow=max(Qow,-Qavail)                      !prevent excessive evap over openwater
-!        endif
-!        QRain = Qhhf+Qupld+Qow     
-        Q_in=Q_in+QRain(j)
+        Q_in=Q_in+QRain(j)  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
       endif
 !== end revision 1/30/2024
 
