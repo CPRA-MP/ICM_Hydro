@@ -1661,7 +1661,7 @@
 
               if (iTemp == 1) then
 !                  call CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-                  call CelldTmp(j,kday,fcrop)
+                  call CelldTmp(j,kday)
               endif
 
               if (iWQ == 1) then
