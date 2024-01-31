@@ -25,10 +25,7 @@
       real :: salmaxcon, Qlink, Csalface,cfacemax
 	  real :: QSal_in,Q_in,QRain
       real :: fcrop,fpc,PETuse,ETmin,Het,fET,Qhhf,Qupld,Qow,Ahmf,Qavail      
-      integer:: iSWMM
-
-      cden=1./1000./24./3600.		! mm/d to m/s conversion
-      fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
+!      integer:: iSWMM  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
@@ -61,12 +58,14 @@
       endif
       
       QSalsum = 0
-      salmaxcon = 0.0      
+!      salmaxcon = 0.0      
 
 !ZW 1/30/2024 adding Qsal_in & Q_in for use of SWMM5 method
 ! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
-      iSWMM=1
+!      iSWMM=1  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
       if(iSWMM>0)then
+          cden=1./1000./24./3600.		! mm/d to m/s conversion
+          fcrop = 0.5          !0.1  !0.59                        !potential ET crop coef
           Qsal_in = 0.0  !Qsal_in>0 
           Q_in=0.0       !Q_in>0         
       endif
@@ -86,9 +85,9 @@
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
       
-      if (Qsalsum .ne. 0) then
-          salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries if there was any tributary flow
-      endif
+!      if (Qsalsum .ne. 0) then
+!          salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries if there was any tributary flow
+!      endif
       
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
@@ -131,8 +130,8 @@
 !== end revision 1/30/2024
 
 !>> flag that will be set if overland marsh links have flow
-      marsh_link_flow = 0          
-      Qsalsum_b4link = 0
+!      marsh_link_flow = 0          
+!      Qsalsum_b4link = 0
       
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
@@ -156,22 +155,22 @@
           endif
 !===end 1/30/2024
 
-          Qsalsum_b4link = Qsalsum
+!          Qsalsum_b4link = Qsalsum
 
 !          call salinity(mm,iab,jnb,j,k,Qsalsum)
           if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
           
 !>> check if current link has flow during timestep
-          if (Q(iab,2) .ne. 0.0) then
-              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
-          endif
+!          if (Q(iab,2) .ne. 0.0) then
+!              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
+!          endif
           
 !>> check if marsh overland links have salinity convection and/or dispersion through link flow
-          if (linkt(iab) == 8) then
-              if ( Qsalsum_b4link .ne. Qsalsum ) then
-                  marsh_link_flow = 1
-              endif
-          endif
+!          if (linkt(iab) == 8) then
+!              if ( Qsalsum_b4link .ne. Qsalsum ) then
+!                  marsh_link_flow = 1
+!              endif
+!          endif
       
       enddo
       
@@ -294,11 +293,13 @@
       if(ddy2 > dry_depth) then
 !1/15/2024      if(vol2 > 0) then
 !          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
 
-          !===ZW 1/30/2024 for use of SWMM method
-          if(iSWMM>0) S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
-         
+          if(iSWMM>0) then !===ZW 1/30/2024 use of SWMM method
+              S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
+          else
+              S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
+          endif		  
+
           ds = S(j,2) - S(j,1)
           
           !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 
