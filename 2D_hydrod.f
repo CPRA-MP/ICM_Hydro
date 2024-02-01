@@ -33,7 +33,7 @@
       real :: Qmax,Qpump,Qrunoff,reg_r,reg_s,reg_p,reg_fs
       real :: ruf,w_k,w_ksub,wid
       real :: sDetah,volavailable,Elevel,Dzhlim
-      integer :: downN,upN,pumpon
+      integer :: downN,upN,pumpon,cou_num
 
 ! parameters for Atchafalya River diversion for MP project runs
       integer :: Atch_US_link, Atch_DS_link,BayouShaffer_link,Div_link
@@ -345,8 +345,17 @@
               
               endif
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-              if (abs(link_vel(i)) >= upwind_vel) then
-                  fa(i) = 1.0
+!              if (abs(link_vel(i)) >= upwind_vel) then
+!                  fa(i) = 1.0
+!              endif
+!ZW 1/31/2024 upwind factor update based on velocity to reduce "numerical dispersion" 
+              if (abs(link_vel(i)) >= 0) then
+               fa(i)=min((0.5+abs(link_vel(i))*dt/(2.0*Latr3(i))),1.0)
+               cou_num=abs(link_vel(i))*dt/Latr3(i)
+               if(cou_num>1)then
+                   write(1,*)'Courant number at Link:',i
+                   write(1,*)cou_num,'>1, dt should be reduced!'
+               endif
               endif
 
           !>> Link type 2 = weirs
@@ -737,9 +746,18 @@
                   end if        
                   
 !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-                  if (abs(link_vel(i)) >= upwind_vel) then
-                      fa(i) = 1.0
-                  endif
+!                  if (abs(link_vel(i)) >= upwind_vel) then
+!                      fa(i) = 1.0
+!                  endif
+!ZW 1/31/2024 upwind factor update based on velocity to reduce "numerical dispersion" 
+              if (abs(link_vel(i)) >= 0) then
+               fa(i)=min((0.5+abs(link_vel(i))*dt/(2.0*Latr3(i))),1.0)
+               cou_num=abs(link_vel(i))*dt/Latr3(i)
+               if(cou_num>1)then
+                 write(1,*)'Courant number at Link:',i
+                 write(1,*)cou_num,'>1, dt should be reduced!'
+               endif
+              endif
 
                   if(isNan(Q(i,2))) then
                       write(1,*) 'Type3 Lock Link',i,' flow is NaN'
@@ -1041,9 +1059,17 @@
                EAOL(i)=Exy(i)*Ach/Latr3(i)*dkd  !zw 3/14/2015 add *dkd for high roughness no flow conditions
 
           !>> update upwind factor for salinity/WQ dispersion if channel velocity is greater than threshold value
-               if (abs(link_vel(i)) >= upwind_vel) then
-                  fa(i) = 1.0
+!               if (abs(link_vel(i)) >= upwind_vel) then
+!                  fa(i) = 1.0
+!               endif
+!ZW 1/31/2024 upwind factor update based on velocity to reduce "numerical dispersion" 
+              if (abs(link_vel(i)) >= 0) then
+               fa(i)=min((0.5+abs(link_vel(i))*dt/(2.0*Latr3(i))),1.0)
+               if(cou_num>1)then
+                   write(1,*)'Courant number at Link:',i
+                   write(1,*)cou_num,'>1, dt should be reduced!'
                endif
+              endif
 
 !>> Link type 9 = ridges/levees
           elseif( linkt(i) == 9) then
