@@ -8,7 +8,7 @@
       implicit none
       integer :: iab,jnb,j,k
       real :: Qsalsum,Csalface,diffus,Qlink,d1,d2,cfacemax
-
+      real :: fa_DS,r_BD
 !>@par General Structure of Subroutine Logic:
 !>>
 !      if(iab /= 0.0)then
@@ -48,13 +48,28 @@
 !          else    
           diffus = EAOL(iab)              
           Qlink = Q(iab,2)
+          if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 3) 
+     &        .or. (linkt(lnkid) == 6) .or. (linkt(lnkid) == 11)  
+     &        .or. (linkt(lnkid) == 12).or. (linkt(lnkid) == 8)) then
+              if(fa(iab)<1)then
+                  r_BD=0.5
+                  fa_DS=2.0-r_BD-fa(iab)
+              else
+                  fa_DS=fa(iab)
+              endif
+          else
+              fa_DS=fa(iab)
+          endif
+
           if(Q(iab,2) > 0.0) then
               Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
      &                  +fb(iab)*S(jds(iab),1)))
 !              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
           else
-              Csalface= ((fa(iab)*S(jds(iab),1)
-     &                  +fb(iab)*S(jus(iab),1)))
+!              Csalface= ((fa(iab)*S(jds(iab),1)
+!     &                  +fb(iab)*S(jus(iab),1)))
+              Csalface= fa_DS*S(jds(iab),1)
+     &                  +(1.0-fa_DS)*S(jus(iab),1)
 !              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
           endif
    		!endif
