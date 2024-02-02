@@ -48,9 +48,9 @@
 !          else    
           diffus = EAOL(iab)              
           Qlink = Q(iab,2)
-          if ((linkt(lnkid) == 1) .or. (linkt(lnkid) == 3) 
-     &        .or. (linkt(lnkid) == 6) .or. (linkt(lnkid) == 11)  
-     &        .or. (linkt(lnkid) == 12).or. (linkt(lnkid) == 8)) then
+          if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
+     &        .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
+     &        .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
               if(fa(iab)<1)then
                   r_BD=0.5
                   fa_DS=2.0-r_BD-fa(iab)
