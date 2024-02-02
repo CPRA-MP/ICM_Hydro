@@ -20,6 +20,7 @@
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
       integer,dimension(:),allocatable :: jqtrib
+      real :: r_BD,phi_us
 
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
@@ -480,6 +481,11 @@
               Latr7(lnkid)=max(Latr7(lnkid),0.0)
               Latr8(lnkid)=max(Latr8(lnkid),0.0)
 
+              !ZW 2/1/2024 calculate fa as fa(us) for blended differencing (BD) scheme to determine link face salinity
+              phi_us=As(jus(lnkid),1)/(As(jus(lnkid),1)+As(jds(lnkid),1))
+              r_BD=0.5 !or 0.75
+              fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
+
 !>> weir link attribute checks
           elseif(linkt(lnkid) == 2) then
 !>> set weir coefficient to default value if outside of standard range
@@ -658,6 +664,10 @@
               elseif (Latr5(lnkid) >= 1) then
                   Latr5(lnkid) = 0.05
               endif
+              !ZW 2/1/2024 calculate fa as fa(us) for blended differencing (BD) scheme to determine link face salinity
+              phi_us=As(jus(lnkid),1)/(As(jus(lnkid),1)+As(jds(lnkid),1))
+              r_BD=0.5 !or 0.75
+              fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
 
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
