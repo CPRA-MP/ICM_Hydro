@@ -16,7 +16,12 @@
       integer :: windgages,raingages,etgages,tidegages 
       integer :: writehourly,modeloverland
       integer :: iSed,iSal,iTemp,iWQ
-	  integer :: iSWMM    !zw 1/30/2024 added for option of using SWMM5 numerical scheme in salinity transport 
+
+! zw 2/1/2024 added for option to select scalar advection transport scheme: 
+!     0-SWMM5 WQ scheme; 1-Blended Differencing (BD); 
+!     2-User defined fa (fa=1 Upwind Difference; fa=0.75 Quarter-point)
+      integer :: iAdvTrans    
+      real :: r_BD
       
 ! hardcoded specific salinity and stage trigger flags      
       integer :: SalLockTriggerHNC,SalLockStatusHNC
