@@ -8,7 +8,7 @@
       implicit none
       integer :: iab,jnb,j,k
       real :: Qsalsum,Csalface,diffus,Qlink,d1,d2,cfacemax
-      real :: fa_DS,r_BD
+      real :: fa_DS
 !>@par General Structure of Subroutine Logic:
 !>>
 !      if(iab /= 0.0)then
@@ -48,26 +48,32 @@
 !          else    
           diffus = EAOL(iab)              
           Qlink = Q(iab,2)
-          if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
-     &        .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
-     &        .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
-              if(fa(iab)<1)then
-                  r_BD=0.5
-                  fa_DS=2.0-r_BD-fa(iab)
+
+!==ZW 2/1/2024 add for Blended Differencing scheme
+          if (iAdvTrans==1) then
+              if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
+     &           .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
+     &           .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
+                 if(fa(iab)<1)then
+                     fa_DS=2.0-r_BD-fa(iab)
+                 else
+                     fa_DS=fa(iab)
+                 endif
               else
-                  fa_DS=fa(iab)
+                 fa_DS=fa(iab)
               endif
           else
-              fa_DS=fa(iab)
+		      fa_DS=fa(iab)
           endif
+!===
 
           if(Q(iab,2) > 0.0) then
-              Csalface= ((fa(iab)*S(jus(iab),1)				!cell face values
-     &                  +fb(iab)*S(jds(iab),1)))
+              Csalface= fa(iab)*S(jus(iab),1)				!cell face values
+     &                  +(1-fa(iab))*S(jds(iab),1)
 !              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
           else
-!              Csalface= ((fa(iab)*S(jds(iab),1)
-!     &                  +fb(iab)*S(jus(iab),1)))
+!              Csalface= fa(iab)*S(jds(iab),1)
+!     &                  +(1-fa(iab))*S(jus(iab),1)
               Csalface= fa_DS*S(jds(iab),1)
      &                  +(1.0-fa_DS)*S(jus(iab),1)
 !              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
