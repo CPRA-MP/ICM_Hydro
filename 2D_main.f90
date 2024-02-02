@@ -372,7 +372,10 @@
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
       READ(30,*) dry_threshold   ! 105      dry water depth threshold
-      READ(30,*) iSWMM           ! 106      option to use SWMM5 numerical scheme in salinity transport (1-Yes, 0-NO)
+      READ(30,*) iAdvTrans       ! 106      option to select advection transport scheme: 0-SWMM5 WQ scheme; 1-Blend Differencing (BD); 2-User defined fa (fa=1 Upwind; fa=0.75 Quarter-point)
+      if (iAdvTrans==1) then
+          READ(30,*) r_BD        ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD
+      endif
       close(30)
 
       fa_def=1 !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
