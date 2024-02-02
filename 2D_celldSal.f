@@ -63,8 +63,8 @@
 
 !ZW 1/30/2024 adding Qsal_in & Q_in for use of SWMM5 method
 ! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
-!      iAdvTrans=0  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
-      if(iAdvTrans==0)then
+!      iAdvTrans=3  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+      if(iAdvTrans==3)then
           Qsal_in = 0.0  !Qsal_in>0 
           Q_in=0.0       !Q_in>0         
       endif
@@ -77,9 +77,9 @@
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
           else
-              if(iAdvTrans==0) Qsal_in = Qsal_in+Qtrib(ktrib,kday)
+              if(iAdvTrans==3) Qsal_in = Qsal_in+Qtrib(ktrib,kday)
      &                              *Saltrib*Qmult(j,ktrib)            !ZW 1/30/2024 for use of SWMM method
-              if(iAdvTrans==0) Q_in = Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
+              if(iAdvTrans==3) Q_in = Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
@@ -91,13 +91,13 @@
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
           QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore since Ndiv is always set to 0
-          if(iAdvTrans==0) QSal_in = QSal_in+Qdiv(kdiv,kday)
+          if(iAdvTrans==3) QSal_in = QSal_in+Qdiv(kdiv,kday)
      &                          *0.15*Qmultdiv(j,kdiv)                !ZW 1/30/2024 for use of SWMM method
-          if(iAdvTrans==0) Q_in = Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
+          if(iAdvTrans==3) Q_in = Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
       enddo
 
 !===ZW 1/30/2024 for use of SWMM method
-      if(iAdvTrans==0) then
+      if(iAdvTrans==3) then
         Q_in=Q_in+QRain(j)  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
       endif
 !== end revision 1/30/2024
@@ -118,7 +118,7 @@
           endif
 
 !===ZW 1/30/2024 for use of SWMM method
-          if(iAdvTrans==0)then
+          if(iAdvTrans==3)then
               Qlink = 0
               if(iab > 0) Qlink = sicc(j,k)*Q(iab,2)
               if (Qlink < 0.0) then
@@ -267,7 +267,7 @@
 !1/15/2024      if(vol2 > 0) then
 !          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
 
-          if(iAdvTrans==0) then !===ZW 1/30/2024 use of SWMM method
+          if(iAdvTrans==3) then !===ZW 1/30/2024 use of SWMM method
               S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
           else
               S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2

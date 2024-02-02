@@ -18,8 +18,7 @@
       integer :: iSed,iSal,iTemp,iWQ
 
 ! zw 2/1/2024 added for option to select scalar advection transport scheme: 
-!     0-SWMM5 WQ scheme; 1-Blended Differencing (BD); 
-!     2-User defined fa (fa=1 Upwind Difference; fa=0.75 Quarter-point)
+!     1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme (w/o fa)
       integer :: iAdvTrans    
       real :: r_BD
       

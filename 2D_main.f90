@@ -372,9 +372,9 @@
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
       READ(30,*) dry_threshold   ! 105      dry water depth threshold
-      READ(30,*) iAdvTrans       ! 106      option to select advection transport scheme: 0-SWMM5 WQ scheme; 1-Blend Differencing (BD); 2-User defined fa (fa=1 Upwind; fa=0.75 Quarter-point)
+      READ(30,*) iAdvTrans       ! 106      option to select advection transport scheme: 1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme w/o fa 
       if (iAdvTrans==1) then
-          READ(30,*) r_BD        ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD
+          READ(30,*) r_BD        ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD (UD-upwind; CD-Central Differencing)
       endif
       close(30)
 
