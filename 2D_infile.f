@@ -20,7 +20,7 @@
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
       integer,dimension(:),allocatable :: jqtrib
-      real :: r_BD,phi_us
+      real :: Asum,phi_us,Aus,Ads
 
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
@@ -482,10 +482,11 @@
               Latr8(lnkid)=max(Latr8(lnkid),0.0)
 
               !ZW 2/1/2024 calculate fa as fa(us) for blended differencing (BD) scheme to determine link face salinity
-              phi_us=As(jus(lnkid),1)/(As(jus(lnkid),1)+As(jds(lnkid),1))
-              r_BD=0.5 !or 0.75
-              fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
-
+              if (iAdvTrans==1) then
+                  Asum=As(jus(lnkid),1)+As(jds(lnkid),1)
+                  phi_us=As(jus(lnkid),1)/Asum
+                  fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
+              endif
 !>> weir link attribute checks
           elseif(linkt(lnkid) == 2) then
 !>> set weir coefficient to default value if outside of standard range
@@ -524,7 +525,7 @@
 			  endif
 
 !!!ZW 12/15/2023 upwind factor for weir link should always be 1???
-              !fa_mult(lnkid) = 1.0  
+              fa_mult(lnkid) = 1.0  
 
 !>> Tidal gate/orifice link attribute checks
           elseif((linkt(lnkid) == 4) .or. (linkt(lnkid) == 5)) then
@@ -566,7 +567,7 @@
 			  endif
               if (Latr8(lnkid)<0) Latr8(lnkid)=0.4
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
-              !fa_mult(lnkid) = 1.0  
+              fa_mult(lnkid) = 1.0  
 
 !>> pump link attribute checks
           elseif(linkt(lnkid) == 7) then
@@ -665,9 +666,15 @@
                   Latr5(lnkid) = 0.05
               endif
               !ZW 2/1/2024 calculate fa as fa(us) for blended differencing (BD) scheme to determine link face salinity
-              phi_us=As(jus(lnkid),1)/(As(jus(lnkid),1)+As(jds(lnkid),1))
-              r_BD=0.5 !or 0.75
-              fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
+              if (iAdvTrans==1) then
+                  Aus=Ahf(jus(lnkid))
+                  Ads=Ahf(jds(lnkid))
+                  If(Ahf(jus(lnkid))==0) Aus=As(jus(lnkid),1)
+                  If(Ahf(jds(lnkid))==0) Ads=As(jds(lnkid),1)
+                  Asum=Aus+Ads
+                  phi_us=Aus/Asum
+                  fa_mult(lnkid)=1.0-r_BD*phi_us  !this is fa for flow from US to DS (Q>0)
+              endif
 
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
@@ -722,7 +729,7 @@
 
 	          if(Latr8(lnkid)<0) Latr8(lnkid) = 0.37  !default for long broad-crested weir
 !!!ZW 12/15/2023 upwind factor for weir link should always be 1???
-              !fa_mult(lnkid) = 1.0  
+              fa_mult(lnkid) = 1.0  
           endif
 
 !>> Exy check
