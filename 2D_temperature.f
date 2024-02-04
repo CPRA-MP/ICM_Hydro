@@ -14,6 +14,7 @@
       implicit none
       integer :: iab,jnb,j,k
       real :: QTMPsum,CTMPface,diffus,Qlink,d1,d2
+      real :: fa_DS
 
       if(abs(Q(iab,2)) == 0.0) then
           TL(iab,1)=0
@@ -30,13 +31,36 @@
 !                  CTMPface = 0.0
 !                  diffus = 0.0
 !              endif
-          if(Q(iab,2) >= 0.0) then
-              CTMPface=Tempw(jus(iab),1)
-          else
-              CTMPface=Tempw(jds(iab),1)
-          endif    
           diffus = EAOL(iab)
           Qlink = Q(iab,2)
+
+!==ZW 2/1/2024 add for Blended Differencing scheme
+          if (iAdvTrans==1) then
+              if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
+     &           .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
+     &           .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
+                 if(fa(iab)<1)then
+                     fa_DS=2.0-r_BD-fa(iab)
+                 else
+                     fa_DS=fa(iab)
+                 endif
+              else
+                 fa_DS=fa(iab)
+              endif
+          else
+              fa_DS=fa(iab)
+          endif
+!===
+
+          if(Q(iab,2) >= 0.0) then
+!              CTMPface=Tempw(jus(iab),1)
+              CTMPface= fa(iab)*Tempw(jus(iab),1)				!cell face values
+     &                  +(1-fa(iab))*Tempw(jds(iab),1)
+          else
+!              CTMPface=Tempw(jds(iab),1)
+              CTMPface= fa_DS*Tempw(jds(iab),1)
+     &                  +(1.0-fa_DS)*Tempw(jus(iab),1)
+          endif    
 
 ! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
 ! no diffusion associated with weir links unless submerged         

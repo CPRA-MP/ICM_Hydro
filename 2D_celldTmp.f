@@ -9,8 +9,9 @@
         implicit none
         real :: CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
         real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2
-		real :: Qlink,QTMPsum_link
+        real :: Qlink,QTMPsum_link
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
+        real :: QTmp_in,Q_in
 
         CSHEAT=4182.					!Specific heat
         rhoj=1000.*(1+S(j,1)/1000.)		!density
@@ -40,10 +41,21 @@
 
         QTMPsum=0
 
+!ZW 1/30/2024 adding QTmp_in & Q_in for use of SWMM5 method
+! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
+!      iAdvTrans=3  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+        if(iAdvTrans==3)then
+            QTmp_in = 0.0  !QTmp_in>0 
+            Q_in=0.0       !Q_in>0         
+        endif
+
 !>> update  mass flux (QTMPsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
         do kdiv=1,Ndiv
             QTMPsum=QTMPsum - Qdiv(kdiv,kday)*TempMR(kday)*
      &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
+            if(iAdvTrans==3) QTmp_in=QTmp_in+Qdiv(kdiv,kday)
+     &                          *TempMR(kday)*Qmultdiv(j,kdiv)             !ZW 1/30/2024 for use of SWMM method
+            if(iAdvTrans==3) Q_in=Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
         enddo
 
 !>> update mass flux (QTMPsum) for tributary flows into compartment      
@@ -52,6 +64,9 @@
             if (Qtrib(ktrib,kday) > 0.0) then
                 QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
      &			            Qmult(j,ktrib)
+              if(iAdvTrans==3) QTmp_in=QTmp_in+Qtrib(ktrib,kday)
+     &                             *TMtrib(ktrib,kday)*Qmult(j,ktrib)     !ZW 1/30/2024 for use of SWMM method
+              if(iAdvTrans==3) Q_in=Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
             else
                 QTMPsum = QTMPsum-Qtrib(ktrib,kday)*TempW(j,1)*
      &                    Qmult(j,ktrib)
@@ -64,6 +79,13 @@
 
 !        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
         QTMPsum=QTMPsum-QRain(j)*Tempw(j,1)        !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
+
+!===ZW 1/30/2024 for use of SWMM method
+        if(iAdvTrans==3) then
+            Q_in=Q_in+QRain(j)  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
+            QTmp_in=QTmp_in+QRain(j)*Tempw(j,1)        
+        endif
+!== end revision 1/30/2024
       
 !>> update mass flux (QTMPsum) for link flows into/out of compartment            
         do k=1,nlink2cell(j)
@@ -75,6 +97,18 @@
                 endif
             endif  
             iab=abs(icc(j,k))
+
+!===ZW 1/30/2024 for use of SWMM method
+            if(iAdvTrans==3)then
+                Qlink = 0
+                if(iab > 0) Qlink = sicc(j,k)*Q(iab,2)
+                if (Qlink < 0.0) then
+                    Q_in = Q_in + abs(Qlink)
+                    QTmp_in = QTmp_in+abs(Qlink)*Tempw(jnb,1)
+                endif
+            endif
+!===end 1/30/2024
+
 !          call Temperature(mm,iab,jnb,j,k,QTMPsum)	!Temperature change computations
             if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum)	!Temperature change computations
         enddo
@@ -140,7 +174,11 @@
 
         if(ddy2 > dry_threshold) then
 !        if(vol2 > 0) then
-            Tempw(j,2) = (Tempw(j,1)*vol1 - QTMPsum*dt)/vol2 + DTempw2
+            if(iAdvTrans==3) then !===ZW 1/30/2024 use of SWMM method
+                Tempw(j,2)=(Tempw(j,1)*vol1+QTmp_in*dt)/(vol1+Q_in*dt)+DTempw2
+            else
+                Tempw(j,2)=(Tempw(j,1)*vol1-QTMPsum*dt)/vol2+DTempw2
+            endif
         else
             Tempw(j,2) = ta(kday)
         endif
