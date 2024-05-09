@@ -213,7 +213,7 @@
       integer :: NNN,ichem,me,mm,kt,k,kk,kj,kl
       real :: dday,ddayhr,Pardpmr
       Character*100 header
-      
+      integer :: ndt_1hr, nts_1hr  
      
 !>@par General Structure of Subroutine Logic:
 
@@ -795,12 +795,16 @@
           print*, 'dt_all =', ndt_all_ICM
       endif
  !>> start model time stepping     
+	  ndt_1hr = int(3600.0/dt) !ndt_1hr=num of dt in 1hr for hourly output
+	  nts_1hr = 0              !nts_1hr=counting of time steps in an hour
+	  
       mm=0                                          ! initialize time counter
       do n_1d=0, ntim_all_ICM-1      
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
           if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
+              nts_1hr=nts_1hr+1
 
 !>> -- Calculate various versions of time to be used as flags throughout program
               day = t/3600./24.
@@ -847,7 +851,7 @@
 
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
-              call hydrod(mm)
+              call hydrod(mm,nts_1hr,ndt_1hr)
 
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections

@@ -1,4 +1,4 @@
-	  Subroutine hydrod(mm)
+	  Subroutine hydrod(mm,nts_1hr,ndt_1hr)
 
       use params
 
@@ -38,6 +38,7 @@
 ! parameters for Atchafalya River diversion for MP project runs
       integer :: Atch_US_link, Atch_DS_link,BayouShaffer_link,Div_link
       real :: Atch_US_Q,BayouShaffer_Qold,Div_Q
+      integer :: nts_1hr,ndt_1hr
 
 !c     time in seconds
 !      time=float(mm)*dt           ! elapsed time !it is the same as global varaible "t" calculated in main.f
@@ -1780,8 +1781,8 @@
 
 
 !>> generate array of hourly water level in boundary condition compartments (if flag is set to write hourly output file)
-      if (dhr == 0.0) then
-
+      !if (dhr == 0.0) then
+      if (nts_1hr == ndt_1hr) then
 !>> Write hourly water level in boundary compartments
           if(nstghr > 0) then
 		      do jj = 1,nstghr
@@ -1789,6 +1790,8 @@
 		      enddo
 		      WRITE(210,1111) (EShrly(jj),jj=1,nstghr)
           endif
+
+          nts_1hr = 0
       endif
 
 !>> Write flow output for select links, unit m^3/day
