@@ -164,7 +164,7 @@
               if (linkt(iab) > 0) then		
 !                  if (linkt(iab) /= 8) then
 !                      if (linkt(iab) /= 9) then
-! pump link velocity should be accounted into average link velocity for sediment - zw 1/4/2024
+! pump link velocity should not be accounted into average link velocity for sediment - zw 1/4/2024
                   if ((linkt(iab) /= 7) .and. (linkt(iab) /= 8) .and. (linkt(iab) /= 9))  then
                           ave_vel_sum(j) = ave_vel_sum(j) + abs(link_vel(iab))
 !                          ave_vel_cnt(j) = ave_vel_cnt(j) + 1.0

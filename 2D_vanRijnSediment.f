@@ -297,10 +297,10 @@
 !     &                         - QStrib(k)
 !     &                         - QSdiv(k)
 ! Source/sink term for sand (g/sec) = alpha*settling velocity *(ceq-c) where ceq=CSSvRs(j,2), c=CSS(j,1,k) - zw 1/4/2024
-! alpha is non equilibrium adaptation coefficient (constant or varying)
-! The nonequilibrium adaptation coefficient is assigned different values by different
+! alpha is non-equilibrium adaptation coefficient (constant or varying)
+! The non-equilibrium adaptation coefficient is assigned different values by different
 ! investigators in their studies. Han et al. (1980) and Wu and Li (1992) used a=1 for strong erosion,
-! a = 0:25 for strong deposition and a = 0.5 for weak erosion and deposition. Yang (1998) used a
+! a = 0.25 for strong deposition and a = 0.5 for weak erosion and deposition. Yang (1998) used a
 ! very small value 0.001. Thus, the nonequilibrium adaptation coefficient is defined as
 ! a user-defined parameter in the model as a compartment attribute in cells.csv
                   SedAccumRate(k) = (CSS(j,1,k)-CSSvRs(j,2))*velset(j,k)
