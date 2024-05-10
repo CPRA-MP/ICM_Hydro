@@ -1363,7 +1363,7 @@
 !>> If calculated flowrate is greater than needed to exchange all available water, set flowrate to this max rate
           if (linkt(i) > 0) then
               if (Qmax < abs(Q(i,2))) then
-                  Q(i,2) = Qmax*sn
+                  !Q(i,2) = Qmax*sn  !comment out to test
                   if (Qmax /= 0.0) then
                       if (daystep == lastdaystep) then
                           Write(1,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
