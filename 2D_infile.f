@@ -16,7 +16,7 @@
       integer :: gridbedcount,gridmarcount,gridplcount
       integer :: windstartrun,tidestartrun
       integer :: ETzero,Rzero
-      integer :: node,lnkid,jmds,k,jk
+      integer :: node,lnkid,jmds,k,jk,ndtt
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
       integer,dimension(:),allocatable :: jqtrib
@@ -2150,6 +2150,35 @@
           Chem(jj,13,1) = BCTOC(jj)*0.04
           Chem(jj,14,1) = BCTOC(jj)*0.025   !!marsh POP JAM April 16, 2011
 	  enddo
+
+!>> user-specified varying time step option - ZW 1/27/2025
+!     If idt_schm = 2 user specified varying time step input file
+      if(idt_schm == 2) then
+          dt_var_user(:)=0
+
+!>> Skip timestep data for years prior to current model year
+          do kt=1,startrun
+              read(900,*)
+              if (kt == startrun) then
+                  write(1,*)'variable timestep input data starts at:'
+                  write(1,66) '      line ',int(startrun+1)
+              endif
+          enddo
+
+!>> Read variable tiemstep data for current model year
+          do kt=1,simdays
+              read(900,*) dt_var_user(kt)
+              if (dt_var_user(kt) > dt) then  !varying time step should not greater than dt specified in RunControlR.dat
+                  dt_var_user(kt) = dt
+              else
+			      if (mod(dt,dt_var_user(kt)) > 0) then  !variable timestep should be an integer fraction of dt
+                     ndtt = int(dt/dt_var_user(kt))
+                     dt_var_user(kt) = dt/ndtt
+                  endif
+              endif				  
+          enddo
+          close(900)
+      endif
 
   	  return
       end
