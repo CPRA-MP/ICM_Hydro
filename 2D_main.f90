@@ -373,16 +373,16 @@
       READ(30,*) n1D             ! 104      number of 1D regions
       READ(30,*) dry_threshold   ! 105      dry water depth threshold
       READ(30,*) iAdvTrans       ! 106      option to select advection transport scheme: 1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme w/o fa 
-      if (iAdvTrans==1) then
-          READ(30,*) r_BD        ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD (UD-upwind; CD-Central Differencing)
-      endif
+!      if (iAdvTrans==1) then
+      READ(30,*) r_BD            ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD (UD-upwind; CD-Central Differencing)
+!      endif
+      READ(30,*) idt_schem       ! 108      Time Step option (1-fixed; 2-Variable User Defined; 3-Varibale SWMM Scheme)
       close(30)
 
-      fa_def=1 !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
 
 !>> Determine number of simulation timesteps
-      ndt_ICM = dt
       simdays = endrun-startrun+1
+      ndt_ICM = dt
       NTs =int(simdays*24*60*60/dt)
       NNN=NTs-int(24*60*60/dt)
       lastdaystep = 24*60*60/dt !dt is in seconds - number of timesteps in a day
@@ -409,218 +409,11 @@
 !>> (some temporary arrays are allocated in ICM_InterpolateToGrid subroutine which postprocesses model results).
       call allocate_params
 
-!>> Initialize 1D model subroutines
-      if (n1D > 0) then
-          call common_init(n_region)              ! n1d is read from RuncontrolR.data and n_region is read in from region_input.txt during configuration of 1D model
-          if (n1D /= n_region) then
-              write(*,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              write(1,*) 'Number of 1D regions defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              stop !pause
-          endif
-          if (nlc /= sum(nlat_R(1:n_region))) then
-              write(*,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              write(1,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
-              stop !pause
-          endif	  
-          do iir=1, n_region
-              write(*,*) 'Initializing 1D model for region: ',iir
-              write(1,*) 'Initializing 1D model for region: ',iir
-              call init_R(iir, ncomp_R(iir),ioutf_R(iir), Input_file_R(iir), days_all, ndt_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)), y_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), hy_R(iir,1:ncomp_R(iir)), wl_lat_R(iir,1:nlat_R(iir)), Q_terminal_R(iir))
-              if (Nctr_SAL_R(iir) .eq. 1)call init_SAL_R(iir, ncomp_R(iir), ioutf_R(iir)+4, Input_SAL_R(iir), days_all, ndt_SAL_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
-              if (Nctr_TMP_R(iir) .eq. 1)call init_TMP_R(iir, ncomp_R(iir), ioutf_R(iir)+5, Input_TMP_R(iir),days_all, ndt_TMP_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
-              if (Nctr_FINE_R(iir) .eq. 1)call init_FINE_R(iir, ncomp_R(iir), ioutf_R(iir)+6, Input_FINE_R(iir), days_all, ndt_FINE_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
-              if (Nctr_SAND_R(iir) .eq. 1)call init_SAND_R(iir, ncomp_R(iir), ioutf_R(iir)+7, Input_SAND_R(iir),days_all, ndt_SAND_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
-          enddo
-          ndt_all_ICM = ndt_all
-          ntim_all_ICM = ntim_all          
-      else
-          write(*,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
-          write(1,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
-      endif
-      
-      
 !>> Set initial conditions for constants and model parameters that are not included in input text files
-!   Initial Conditions
-      g=9.81					 ! Gravity (m/s2)
-      pi=4.0*atan(1.0)
-!      TemI = 15.				 ! Initial Water Temperature
-      KnN= 20.				 ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-      KnP= 3.				 ! (ug/L) P Michaelis Constant
-      KnSS= 50.				 ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-      KnSal=4.				 ! (ppt) Salinity  Michaelis Constant
-    
-      ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
-      ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
-      PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
-      ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
-      Pardpmr= 0.05
-      PPMR=1.-ParPMR-Pardpmr
-      ParSand=0.05			 ! sand/TSS in Tribs and MR typical
-      ParCLa=0.03			 ! Partition LivA --> ChlA
-    
-      consd=24*3600			 ! sec to days
-      conv=0.001*consd		 ! (mg/L)*(m3/s) --> kg/d
-      floodf(:)=0.0
-!      nuo=0.000001			 ! DEFAULT Viscosity
+      call Constants2D
 
-!>> Generate array for Day of Year value for the first day of each month
-      month_DOY(1) = 1
-      month_DOY(2) = 32
-      month_DOY(3) = 60
-      month_DOY(4) = 91
-      month_DOY(5) = 121
-      month_DOY(6) = 152
-      month_DOY(7) = 182
-      month_DOY(8) = 213
-      month_DOY(9) = 244
-      month_DOY(10) = 274
-      month_DOY(11) = 305
-      month_DOY(12) = 335
-!>> Update first day of month for March through December during a leap year
-      if(simdays == 366) then
-          do j = 3,12
-              month_DOY(j) = month_DOY(j)+1
-          enddo
-      endif
-
-
-!>> determine upper CSS threshold for each sediment class where resuspension of bed material will be deactivated
-!>> These values are based on an assumption that at a TSS value equal to the threshold concentration, the particle size distribution is 10% sand, 45% silt, and 45% clay.
-      CSSresusOff(1) = TSSresusOff*0.1
-      CSSresusOff(2) = TSSresusOff*0.45
-      CSSresusOff(3) = TSSresusOff*0.45
-      CSSresusOff(4) = TSSresusOff*0.45
-
-
-!>> Open input text files.
-
-      open (unit=32, file= 'Cells.csv', status = 'unknown')
-      open (unit=323, file ='Fetch.csv', status = 'unknown')
-      open (unit=33, file= 'Links.csv', status = 'unknown')			! JAM Oct 2010
-      open (unit=34, file= 'LinksClosedHours.dat', status = 'unknown') !-EDW !value of 1 means link is closed for the hour, zero means it is open
-      open (unit=35,file='LockControlObservedData.csv',status='unknown')
-!      open (unit=36, file= 'SWR.dat', status = 'unknown')
-      open (unit=74, file= 'MissRToC.csv', status = 'unknown')		! JAM Oct 2010
-      open (unit=39, file= 'TribQ.csv', status = 'unknown')   !Tributary flow (m3/s)
-      open (unit=40, file= 'PET.csv', status = 'unknown')
-      open (unit=42, file= 'Precip.csv', status='unknown')
-      open (unit=45, file= 'Meteorology.csv', status = 'unknown')
-      open (unit=43, file= 'WindVectorsX.csv',status= 'unknown')
-      open (unit=46, file= 'WindVectorsY.csv',status= 'unknown')
-      open (unit=47, file= 'TideData.csv',status='unknown')
-      open (unit=48, file= 'TideTranspose.csv',status='unknown')
-      open (unit=49, file= 'TideWeight.csv',status='unknown')
-      open (unit=77, file= 'QMult.csv', form= 'formatted',status = 'unknown')
-      open (unit=55, file= 'TribS.csv', status = 'unknown')	! Tributary sand concentration (mg/L)
-      open (unit=555,file= 'TribF.csv',status='unknown')      ! Tributary fines concentration (mg/L)
-      open (unit=56, file= 'SBC.dat', status = 'unknown')
-      open (unit=110, file= 'surge.csv', form = 'formatted')
-      open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
-      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
-
-!==== conditional input files
-	  if (Ndiv>0) then
-          open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
-          open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
-          open (unit=89, file= 'DivSW.csv', status = 'unknown')
-	  endif
-!      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
-	  if (nlinksw>0) then
-          open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
-	  endif
-	  if (nstghr>0) then
-          open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
-      endif
-      if (nlinklimiter>0) then
-	      open (unit=500, file= 'links_to_apply.csv',status='unknown')
-	  endif
-
-!     If WQ modeling is excluded (iWQ=0), WQ inputs are disabled	  
-	  if (iWQ>0) then
-          open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
-          open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
-          open (unit=81, file= 'NH4Data.csv', status = 'unknown')
-          open (unit=82, file= 'OrgNData.csv', status = 'unknown')
-          open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
-          open (unit=84, file= 'AtmChemData.csv', status ='unknown')
-          open (unit=85, file= 'Decay.csv', status ='unknown')
-          open (unit=87, file= 'DivWQ.csv', status ='unknown')
-!          open (unit=118, file= 'UplandNP.dat', form ='formatted')
-      endif
-	  
-!     If 1D2D coupling enabled, 1D2Dcoupling input files
-      if (n1D>0) then
-          if (ntc>0) then
-     	      open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
-		  endif
-          if (nlc>0) then
-              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
-		  endif
-          if (nuc>0) then
-              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
- 		  endif
-      endif	  
-
-!>> Open output text files (in append mode, if needed).
-      open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
-      open (unit=96,file='TSS.out',form='formatted',position='append')
-      open (unit=100,file='TMP.out',form='formatted',position='append')		   
-	  open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute open water Acc. 
-	  open (unit=104,file='SedAcc_MarshInt.out',form='formatted',position='append')		! Last row will be used to compute interior marsh Acc. 
-	  open (unit=1045,file='SedAcc_MarshEdge.out',form='formatted',position='append')		! Last row will be used to compute marsh edge Acc. 
-      open (unit=105,file='fflood.out',form='formatted',position='append')
-      open (unit=111,file='STG.out',form='formatted',position='append')			! ESAVE.OUT
-      open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
-      open (unit=124,file='FLOm.out',form='formatted',position='append')
-      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
-      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
-      open(unit=212,file='STGm.out',form='formatted',position='append')
-      open (unit=93,file='O2Sat.out',form='formatted',position='append')
-
-!     If WQ modeling is excluded (iWQ=0), WQ outputs are disabled	  
-	  if (iWQ>0) then
-          open (unit=70,file='DIN.out',form ='formatted',position='append')
-          open (unit=71,file='OrgN.out',form='formatted',position='append')
-          open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
-          open (unit=73,file='TOC.out',form='formatted',position='append')
-          open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
-          open (unit=92,file='NH4.out',form = 'formatted',position='append')		
-          open (unit=94,file='ALG.out',form='formatted',position='append')
-          open (unit=95,file='DO.out',form='formatted',position='append')
-          open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
-          open (unit=113,file='DON.out',form='formatted',position='append')
-          open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
-          open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
-          open (unit=123,file='TKN.out',form='formatted',position='append')
-      endif
-! read in information for grid cells used to pass data to other ICM routines !-EDW
-      open (unit=200, file='grid_lookup_500m.csv', form='formatted')              ! compartment and link lookup table for 500-m grid cells
-      open (unit=201, file='grid_interp_dist_500m.csv',form='formatted')          ! distance from each 500-m grid cell centroid to the compartment and link centroids
-      open (unit=202, file='grid_data_500m.csv', form='formatted')                ! mean elevation for 500 m grid cells     
-      open (unit=203, file='grid_IDs_Veg_matrix.csv', form='formatted')           ! 500m grid cell names formatted in the matrix used by Vegetation ICM routine
-
-      open (unit=204, file='grid_500m_out.csv', form='formatted')                 ! output file for 500 m grid cells - in list form
-      open (unit=205, file='compartment_out.csv',form='formatted')                ! output file for hydro compartments - summary values for ICM in list form
-
-      open(unit=206,file='sal_monthly_ave_500m.out',form='formatted')
-      open(unit=207,file='tmp_monthly_ave_500m.out',form='formatted')
-      open(unit=208,file='tkn_monthly_ave_500m.out',form='formatted')
-      open(unit=209,file='TSS_monthly_ave_500m.out',form='formatted')
-
-! output files for use in the Vegetation ICM routine !-EDW
-! these are written in append mode. ICM checks when first run as to whethere these files exist.
-! If Ecohydro is run outside of the ICM these files may be erroneously appended to if they contain data and the model is re-run.
-      open (unit=301, file=TRIM(ADJUSTL(VegMeanSalFile)),form='formatted', position='append')         ! mean salinity formatted for input into Vegetation ICM routine     
-      open (unit=302, file=TRIM(ADJUSTL(VegSummerSalFile)),form='formatted', position='append')       ! mean summertime salinity for input into Vegetation ICM routine     
-      open (unit=303, file=TRIM(ADJUSTL(VegSummerDepthFile)),form='formatted', position='append')     ! mean summertime water depth for input into Vegetation ICM routine   
-      open (unit=304, file=TRIM(ADJUSTL(VegWaveAmpFile)),form='formatted', position='append')         ! variance in daily water depth for input into Vegetation ICM routine    
-      open (unit=305, file=TRIM(ADJUSTL(VegSummerTempFile)),form='formatted', position='append')      ! mean summertime water temperature for input into Vegetation ICM routine
-      open (unit=306, file=TRIM(ADJUSTL(VegTreeEstCondFile)),form='formatted', position='append')     ! tree establishment conditions for input into Vegetation ICM routine    
-      open (unit=307, file=TRIM(ADJUSTL(VegBIHeightFile)),form='formatted', position='append')      ! tree establishment conditions for input into Vegetation ICM routine     
-      open (unit=308, file=TRIM(ADJUSTL(VegPerLandFile)),form='formatted', position='append')      ! tree establishment conditions for input into Vegetation ICM routine       
-! hotstart files
-      open(unit=400,file='hotstart_in.dat',form='formatted')
-      open(unit=401,file='hotstart_out.dat',form='formatted')
+!>> Open input/output text files.
+      call OpenFiles
 
 !>> Call 'infile' subroutine, which reads input text files and stores data into arrays
       call infile
@@ -632,7 +425,7 @@
 !skip_header      else
 !skip_header          write(210,*) 'Hourly water level not saved to file.'
 !skip_header      endif
-908	FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
+!908	FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
 
 !>> write header row for flowrate output file (since not all links are printed)
 !skip_header	  if (nlinksw > 0) then
@@ -640,141 +433,21 @@
 !skip_header      else
 !skip_header          write(211,*) 'No links chosen to have flowrate outputs saved.'
 !skip_header      endif
-909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
+!909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
-!   These files are closed within infile subroutine after importing the data
+!   These files are closed within 'infile' subroutine after importing the data
 
-!>> Take first timestep of imported wind data and save into windx and windy arrays.
-!>> These arrays will be overwritten at a delta t that matches the wind data timestep (this update occurs immediately prior to calling hydrod)
 !>> 'windrow' is a counter that is incrementally updated each time a wind data timestep is reached
       windrow = 1
-      do jjj = 1,N
-!          windx(jjj) = max(0.01,windx_data(windrow,jwind(jjj)))
-!          windy(jjj) = max(0.01,windy_data(windrow,jwind(jjj)))
-          windx(jjj) = windx_data(windrow,jwind(jjj))
-          windy(jjj) = windy_data(windrow,jwind(jjj))
-      enddo
 
 !>> 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a tide or lock control data timestep is reached
       tiderow = 0	!YW! Modified to match all other initialization
       surgerow = 0	!YW!
       lockrow = 0	!YW!
 
-!>> Initialize some variables and arrays
-!      NR(:)=0.0
-      stds=0.
-
-!>> Set initial conditions for links
-      do i=1,M
-          fa(i) = fa_def*fa_mult(i) !Set array of initial upwind factor to default value
-          Q(i,1)=0.0	!YW!
-          Q(i,2)=Q(i,1)
-
-          ! MP2023 zw added 04/06/2020
-          EAOL(i)=0.0
-          !FLO(i)=0.0 !YW! flo range nlinksw
-          SlkAve(i) = 0
-          SL(i,1) = 0  ! SL is for links
-          SL(i,2)=0
-          TL(i,1)=0
-          asedout(i)=0.0
-      enddo
-
-      if(nlinksw > 0) then               !YW!
-          do jj = 1,nlinksw
-              FLO(jj) = 0.0
-          enddo
-      endif
-
-
-!>> Initialize hardcoded salinity and stage control trigger flags
-      SalLockStatusHNC = 1  !Open = 1 Close = -1
-      SalLockTriggerHNC = 1
-      StgTriggerSuperiorCanal = 1
-      StgTriggerStatusSuperiorCanal = 1
-      !SalLockStatusCSC = 1
-      !SalLockTriggerCSC = 1
-      !Atch_div_onoff = 1
-
-!>> Initialize compartment related arrays
-      do j=1,N
-          As(j,2)= As(j,1)				    ! Surface water area of cells (m2)
-          Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
-          ds(j,1)= Es(j,1)-Bed(j)			! Depth in storage cells (m)
-          !Eh(j,1) = BedM(j) + 0.1           ! Initial marsh depth (override hotstart file read in above)
-          Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
-          BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
-          BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
-          BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
-          BCsurge(j,2) = BCsurge(j,1)
-          ESMX(j,2)=ES(j,1)
-          ESMN(j,2)=ES(j,1)
-          dailyHW(j)=0.0
-          dailyLW(j)=0.0
-          ESAV(j,1) = ES(j,1)*dt/(3600.*24.)
-          EHAV(j,1) = EH(j,1)*dt/(3600.*24.)
-          
-          Qmarsh(j,1) = 0.0				    ! Flow into/out of marsh area
-          Qmarsh(j,2) = Qmarsh(j,1)		    
-          Qmarshmax(j) = 0.0
-          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
-
-          S(j,2) = S(j,1)
-          SALAV(j) = S(j,1)*dt/(3600.*24.)
-          sal_ave(j)=0.0
-          Tempw(j,2) = Tempw(j,1)
-          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
-
-          do sedclass=1,4
-               CSS(j,2,sedclass) = CSS(j,1,sedclass)
-               CSSh(j,1,sedclass) = CSS(j,1,sedclass)
-               CSSh(j,2,sedclass) = CSS(j,1,sedclass)
-          enddo
-          accsed(j)=0.0
-          cumul_retreat(j) = 0.0
-          Sacc(j,1)=0.0
-          Sacch_int(j,1)=0.0
-          Sacch_edge(j,1)=0.0
-          Sandacc(j,1) = 0.0
-          Siltacc(j,1) = 0.0
-          Clayacc(j,1) = 0.0
-          CSSvRs(j,1)= 0.0
-          Sacc(j,2)=Sacc(j,1)
-          Sacch_int(j,2)=Sacch_int(j,1)
-          Sacch_edge(j,2)=Sacch_edge(j,1)
-          Sandacc(j,2) = Sandacc(j,1)
-          Siltacc(j,2) = Siltacc(j,1)
-          Clayacc(j,2) = Clayacc(j,1)
-          CSSvRs(j,2)= CSSvRs(j,1)
-          TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2) + CSS(j,1,3) + CSS(j,1,4) )*dt/(3600.*24.)
-
-          do ichem = 1,14
-              Chem(j,ichem,2)=Chem(j,ichem,1)
-              ChemAve(j,ichem) = Chem(j,ichem,1)*dt/(3600.*24.)
-              ! initially set GrowAlgae array equal to zero
-              do me=1,14
-                  GrowAlgae(j,ichem,me) = 0.
-              enddo
-          enddo
-          denit(j,1)=0
-          denit(j,2)=0
-
-      enddo
-
-!      Emax=0.0  !never used
-!      Emin=0.0  !never used
-      
-!>> initialize BCnosurge and BCsurge with initial tide and surge       -YW
-      do jj=1,tidegages
-          BCnosurge(transposed_tide(jj,1),1) = TideData(1,jj)
-          do jjj=1,Mds
-              if (KBC(jjj)==transposed_tide(jj,1)) then
-                  BCsurge(transposed_tide(jj,1),1)= Surge(1,jjj)
-              endif
-          enddo
-      enddo
-              
+!>> Initialize 1D/2D models
+      call Initialization
  
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
@@ -841,7 +514,7 @@
               endif
 
 !>> -- Loop over links and number of diversions and calculate sediment accumulation timeseries for each model link.
-              kt=1+ifix(t/24./3600./365.25)
+!              kt=1+ifix(t/24./3600./365.25)
 !		do j=1,N
 !			do it=1,Ndiv
 !				ASANDD(j,kt)=ParSandD(kt)*Qdiv(it,kt)*cssTdiv(it,kt)
@@ -1144,84 +817,8 @@
       end if
 
 
-!>> Add error terms to last timestep value before writing hotstart file
-      write(1,*) 'Adding error adjustment to last timestep values.'
-      write(*,*) 'Adding error adjustment to last timestep values.'
-
-      do j=1,N
-          Es(j,2) = Es(j,2) + stage_error
-
-          if(S(j,2) < 1.0) then
-              S(j,2) = max(0.0,S(j,2) + sal_0_1_error)
-          elseif(S(j,2) < 5.0) then
-              S(j,2) = max(0.0,S(j,2) + sal_1_5_error)
-          elseif(S(j,2) < 20.0) then
-              S(j,2) = max(0.0,S(j,2) + sal_5_20_error)
-          else
-              S(j,2) = max(0.0,S(j,2) + sal_20_35_error)
-          endif
-
-          Css(j,2,1) = max(0.0,Css(j,2,1)*(1.0+tss_error))
-          Css(j,2,2) = max(0.0,Css(j,2,2)*(1.0+tss_error))
-          Css(j,2,3) = max(0.0,Css(j,2,3)*(1.0+tss_error))
-          Css(j,2,4) = max(0.0,Css(j,2,4)*(1.0+tss_error))
-
-      enddo
-
-!>> Save output values of last simulation timestep in a hotstart file
-      write(1,*)'Saving values from last timestep to a hotstart file.'
-      write(*,*)'Saving values from last timestep to a hotstart file.'
-
-      write(401,11140)'Compartment',	&
-                      'Stage',		    &
-                      'Salinity',		&
-                      'CSS_sand',		&
-                      'CSS_silt',		&
-                      'CSS_clay',		&
-                      'CSS_clayfloc',	&
-                      'WaterTemp',		&
-                      'NO3_NO2',		&
-                      'NH4',		    &
-                      'DIN',		    &
-                      'OrgN',		    &
-                      'TIP',		    &
-                      'TOC',		    &
-                      'DO',		        &
-                      'LiveAlg',	    &
-                      'DeadAlg',	    &
-                      'DON',		    &
-                      'DOP',		    &
-                      'DIP',		    &
-                      'ChlA',		    &
-                      'TKN',            &
-                      'Marsh_stage'
-
-      do j=1,N
-	      write(401,11142) j,		                    &
-                          Es(j,2),		                &
-                          S(j,2),		                &
-                          Css(j,2,1),		            &
-                          Css(j,2,2),		            &
-                          Css(j,2,3),		            &
-                          Css(j,2,4),		            &
-                          Tempw(j,2),		            &
-                          min(Chem(j,1,2),1000.0),		&
-                          min(Chem(j,2,2),1000.0),		&
-                          min(Chem(j,3,2),1000.0),		&
-                          min(Chem(j,4,2),1000.0),		&
-                          min(Chem(j,5,2),1000.0),		&
-                          min(Chem(j,6,2),1000.0),		&
-                          min(Chem(j,7,2),1000.0),		&
-                          min(Chem(j,8,2),1000.0),		&
-                          min(Chem(j,9,2),1000.0),		&
-                          min(Chem(j,10,2),1000.0),		&
-                          min(Chem(j,11,2),1000.0),		&
-                          min(Chem(j,12,2),1000.0),		&
-                          min(Chem(j,13,2),1000.0),		&
-                          min(Chem(j,14,2),1000.0),     & ! chem unit = mg/L
-                          Eh(j,2)
-      enddo
-      close(401)
+!>> writing hotstart file using the last timestep compartment values
+      call Write_Hotstart
 
 ! Write sediment accumulation in open water output file - 1 value per year      
 !      pm1 = (1.-Apctmarsh(j))
@@ -1239,307 +836,11 @@
           endif
       enddo
 
-!>> Call 'ICM_Summaries' subroutine which calculates the average output values used by the other ICM routines (Wetland Morph, Vegetation, and Ecosytems)
-      call ICM_Summaries
+!>> Call 'ICM_PP' subroutine which post-processing hydro results for the other ICM routines (Wetland Morph, Vegetation, and Ecosytems)
+      call ICM_PP
 
-!>> Call 'ICM_SalinityThreshold_WM' subroutine which calculates the maximum two-week salinity average for each hydro compartment (used in  Marsh Collapse calculations in Wetland Morph)
-      call ICM_SalinityThreshold_WM
-
-!>> Call 'ICM_MapToGrid' subroutine which maps (without interpolation) the hydro compartment results to the gridded structrure used by the other ICM routines.
-      call ICM_MapToGrid(1,500)               ! Map annual mean salinity to grid
-      call ICM_MapToGrid(2,500)               ! Map summer salinity to grid
-      call ICM_MapToGrid(3,500)               ! Interpolate annual mean temperature to grid
-      call ICM_MapToGrid(4,500)               ! Interpolate summer mean temperature to grid
-      call ICM_MapToGrid(5,500)               ! Map annual mean water stage to grid
-      call ICM_MapToGrid(6,500)               ! Map summer water stage to grid
-      call ICM_MapToGrid(7,500)               ! Map summer water stage variance to grid
-      call ICM_MapToGrid(8,500)               ! Map summer maximum 2-wk mean salinity to grid
-      call ICM_MapToGrid(9,500)               ! Map percent sand in bed to grid
-
-      do kk=301,312
-        call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TKN values to grid
-      enddo
-
-      do kk=401,412
-        call ICM_MapMonthlytoGrid(kk,500)		! Map monthly TSS values to grid
-      enddo
-
-!>> Calculate water depth for 500 m-grid cells.
-      do j=1,n_500m_cells
-          depth_500m(j) = stage_500m(j)-bed_elev_500m(j)
-          depth_summer_500m(j) = stage_summer_500m(j)-bed_elev_500m(j)
-          height_500m(j) = land_elev_500m(j)-stage_500m(j)
-      enddo
-
-!>> Call 'ICM_InterpolateToGrid' subroutine which interpolates hydro compartment and link results to the gridded structure used by the other ICM routines.
-      call ICM_InterpolateToGrid(1,500)       ! Interpolate annual mean salinity to grid
-      call ICM_InterpolateToGrid(2,500)       ! Interpolate summer mean salinity to grid
-      call ICM_InterpolateToGrid(3,500)       ! Interpolate annual mean temperature to grid
-      call ICM_InterpolateToGrid(4,500)       ! Interpolate summer mean temperature to grid
-      call ICM_InterpolateToGrid(5,500)       ! Interpolate summer maximum 2-wk mean salinity to grid
-
-      do kk=101,112
-          call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean salinity values to grid
-      enddo
-
-      do kk=201,212
-          call ICM_InterpolateMonthlyToGrid(kk,500)       ! Interpolate monthly mean temperatures to grid
-      enddo
-
-!>> Call 'ICM_TreeConditions_Veg' subroutine which determines if tree establishment conditions are met for each grid cell of the Veg model.
-      call ICM_TreeConditions_Veg
-
-!>> Call 'ICM_Formatting' subroutine which formats the gridded output into versions directly digestable by other ICM routines.
-      call ICM_Formatting
-
-!>> Calculate average tidal prism for each compartment.
-      do j = 1,N
-          TRsum(j) = 0.0
-          do kl=1,simdays
-              TRsum(j) = TRsum(j) + tidal_range_daily(kl,j)
-          enddo
-          TRave(j) = TRsum(j)/simdays
-          tidalprism_ave(j) = TRave(j)*As(j,1)
-      enddo
-
-!>> Write compartment summary output to file in list form - one row for each compartment
-!>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM.PY
-      write(205,1117)'ICM_ID',		&
-             'max_annual_stage',		&
-             'ave_annual_stage',		&
-             'ave_stage_summer',		&
-             'var_stage_summer',		&
-             'ave_annual_salinity',		&
-             'ave_salinity_summer',		&
-             'sal_2wk_max',		&
-             'ave_tmp',		&
-             'ave_tmp_summer',		&
-             'openwater_sed_accum',		&
-             'marsh_int_sed_accum',		&
-             'marsh_edge_sed_accum',		&
-             'tidal_prism_ave',		&
-             'ave_sepmar_stage',		&
-             'ave_octapr_stage',		&
-             'marsh_edge_erosion_rate',		&
-             'ave_annual_tss',		&
-             'stdev_annual_tss',		&
-             'totalland_m2'
-
-      do kj=1,N
-          write(205,1118) kj,		&
-             max(-stagemax,min(stagemax,stage_max(kj))),		&
-             max(-stagemax,min(stagemax,stage_ave(kj))),		&
-             max(-stagemax,min(stagemax,stage_ave_summer(kj))),		&
-             !max(-rangemax,min(rangemax,stage_var_summer(kj))),		&
-             max(-rangemax,min(rangemax,stage_wlv_summer(kj))),		&
-             min(salmax,sal_ave(kj)),		&
-             min(salmax,sal_ave_summer(kj)),		&
-             min(salmax,sal_2wk_ave_max(kj)),		&
-             min(tmpmax,tmp_ave(kj)),		&
-             min(tmpmax,tmp_ave_summer(kj)),		&
-             max(-sedmaxow,min(sedmaxow,Sacc(kj,2))),		&
-             max(-sedmaxmi,min(sedmaxmi,Sacch_int(kj,2))),		&
-             max(-sedmaxme,min(sedmaxme,Sacch_edge(kj,2))),		&
-             tidalprism_ave(kj),		&
-             max(-stagemax,min(stagemax,sepmar_stage(kj))),		&
-             max(-stagemax,min(stagemax,octapr_stage(kj))),		&
-             MEE(kj),		&
-             tss_ave(kj),		&
-             tss_var_annual(kj)**0.5, 		&  !stdev = sqrt(variance)
-             max(0.0,(Atotal(kj)-As(kj,1)))
-      enddo
-      close(205)
-!>> Write gridded output to file in list form - one row for each grid cell.
-!>> Write header rows in grid output files
-!>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM
-
-      write(204,1115)'GRID_ID',		&
-        'compartment_ave_salinity_ppt',		&
-         'IDW_ave_salinity_ppt',		&
-         'compartment_ave_summer_salinity_ppt',		&
-         'IDW_ave_summer_salinity_ppt',		&
-         'compartment_max_2wk_summer_salinity_ppt',		&
-         'IDW_max_2wk_summer_salinity_ppt',		&
-         'bed_pct_sand',		&
-         'compartment_ave_temp',		&
-         'IDW_ave_temp',		&
-         'compartment_ave_summer_temp',		&
-         'IDW_ave_summer_temp',		&
-         'stage_ave',		&
-         'stage_summer_ave',		&
-         'WLV_stage_summer',		&
-         'ave_depth_summer',		&
-         'ave_depth'
-	  write(206,1119)'GRID_ID',		&
-         'sal_ave_jan',		&
-         'sal_ave_feb',		&
-         'sal_ave_mar',		&
-     	'sal_ave_apr',		&
-         'sal_ave_may',		&
-         'sal_ave_jun',		&
-         'sal_ave_jul',		&
-     	'sal_ave_aug',		&
-         'sal_ave_sep',		&
-         'sal_ave_oct',		&
-         'sal_ave_nov',		&
-     	'sal_ave_dec'
-      write(207,1119)'GRID_ID',		&
-         'tmp_ave_jan',		&
-         'tmp_ave_feb',		&
-     	'tmp_ave_mar',		&
-         'tmp_ave_apr',		&
-         'tmp_ave_may',		&
-         'tmp_ave_jun',		&
-     	'tmp_ave_jul',		&
-         'tmp_ave_aug',		&
-         'tmp_ave_sep',		&
-         'tmp_ave_oct',		&
-     	'tmp_ave_nov',		&
-         'tmp_ave_dec'
-      write(208,1119)'GRID_ID',		&
-         'tkn_ave_jan',		&
-         'tkn_ave_feb',		&
-     	'tkn_ave_mar',		&
-         'tkn_ave_apr',		&
-         'tkn_ave_may',		&
-         'tkn_ave_jun',		&
-     	'tkn_ave_jul',		&
-         'tkn_ave_aug',		&
-         'tkn_ave_sep',		&
-         'tkn_ave_oct',		&
-     	'tkn_ave_nov',		&
-         'tkn_ave_dec'
-	  write(209,1119)'GRID_ID',		&
-         'TSS_ave_jan',		&
-         'TSS_ave_feb',		&
-         'TSS_ave_mar',		&
-     	'TSS_ave_apr',		&
-         'TSS_ave_may',		&
-         'TSS_ave_jun',		&
-         'TSS_ave_jul',		&
-     	'TSS_ave_aug',		&
-         'TSS_ave_sep',		&
-         'TSS_ave_oct',		&
-         'TSS_ave_nov',		&
-     	'TSS_ave_dec'
-
-	! write various summary results in 500m grid output file
-      do k=1,n_500m_cells
-         write(204,1116) grid_lookup_500m(k,1),		&
-           min(salmax,salinity_500m(k)),		&
-           min(salmax,salinity_IDW_500m(k)),		&
-           min(salmax,salinity_summer_500m(k)),		&
-           min(salmax,salinity_summer_IDW_500m(k)),		&
-           min(salmax,sal_thresh_500m(k)),		&
-           min(salmax,sal_thresh_IDW_500m(k)),		&
-           pct_sand_bed_500m(k),		&
-           min(tmpmax,tmp_500m(k)),		&
-           min(tmpmax,tmp_IDW_500m(k)),		&
-           min(tmpmax,tmp_summer_500m(k)),		&
-           min(tmpmax,tmp_summer_IDW_500m(k)),		&
-           max(-stagemax,min(stagemax,stage_500m(k))),		&
-           max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
-           max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
-           max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
-           max(-depthmax,min(depthmax,depth_500m(k)))
-
- 		 write(206,1120) k,		&
-     	   min(salmax,sal_IDW_500m_month(1,k)),		&
-     	   min(salmax,sal_IDW_500m_month(2,k)),		&
-           min(salmax,sal_IDW_500m_month(3,k)),		&
-     	   min(salmax,sal_IDW_500m_month(4,k)),		&
-     	   min(salmax,sal_IDW_500m_month(5,k)),		&
-     	   min(salmax,sal_IDW_500m_month(6,k)),		&
-     	   min(salmax,sal_IDW_500m_month(7,k)),		&
-     	   min(salmax,sal_IDW_500m_month(8,k)),		&
-     	   min(salmax,sal_IDW_500m_month(9,k)),		&
-     	   min(salmax,sal_IDW_500m_month(10,k)),		&
-     	   min(salmax,sal_IDW_500m_month(11,k)),		&
-     	   min(salmax,sal_IDW_500m_month(12,k))
-
- 		 write(207,1120) k,		&
-     	   min(tmpmax,tmp_IDW_500m_month(1,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(2,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(3,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(4,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(5,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(6,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(7,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(8,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(9,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(10,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(11,k)),		&
-     	   min(tmpmax,tmp_IDW_500m_month(12,k))
-
- 		 write(208,1120) k,		&
-     	   min(tknmax,tkn_500m_month(1,k)),		&
-     	   min(tknmax,tkn_500m_month(2,k)),		&
-     	   min(tknmax,tkn_500m_month(3,k)),		&
-     	   min(tknmax,tkn_500m_month(4,k)),		&
-     	   min(tknmax,tkn_500m_month(5,k)),		&
-     	   min(tknmax,tkn_500m_month(6,k)),		&
-     	   min(tknmax,tkn_500m_month(7,k)),		&
-     	   min(tknmax,tkn_500m_month(8,k)),		&
-     	   min(tknmax,tkn_500m_month(9,k)),		&
-     	   min(tknmax,tkn_500m_month(10,k)),		&
-     	   min(tknmax,tkn_500m_month(11,k)),		&
-     	   min(tknmax,tkn_500m_month(12,k))
-
- 		 write(209,1120) k,TSS_500m_month(1,k),		&
-     	   min(tssmax,TSS_500m_month(2,k)),		&
-     	   min(tssmax,TSS_500m_month(3,k)),		&
-     	   min(tssmax,TSS_500m_month(4,k)),		&
-     	   min(tssmax,TSS_500m_month(5,k)),		&
-     	   min(tssmax,TSS_500m_month(6,k)),		&
-     	   min(tssmax,TSS_500m_month(7,k)),		&
-     	   min(tssmax,TSS_500m_month(8,k)),		&
-     	   min(tssmax,TSS_500m_month(9,k)),		&
-     	   min(tssmax,TSS_500m_month(10,k)),		&
-     	   min(tssmax,TSS_500m_month(11,k)),		&
-     	   min(tssmax,TSS_500m_month(12,k))
-	enddo
-	close(204)
-	close(206)
-	close(207)
-	close(208)
-	close(209)
-	close(75)
-	close(96)
-	close(100)
-	close(103)
-	close(104)
-	close(1045)
-	close(105)
-	close(111)
-	close(112)
-	close(124)
-	close(210)
-	close(211)
-	close(212)
-	close(93)
-	close(301)
-	close(302)
-	close(303)
-	close(304)
-	close(305)
-	close(306)
-	close(307)
-	close(308)
-	if (iWQ>0) then
-	    close(70)
-		close(71)
-		close(72)
-		close(73)
-		close(91)
-		close(92)
-		close(94)
-		close(95)
-		close(97)
-		close(113)
-		close(119)
-		close(121)
-		close(123)
-	endif
+!>> close the input/output files
+      call CloseFiles
 	
 !>> determine end time for calculating runtimes
       call SYSTEM_CLOCK(runtime_end,count_rate2,count_max2)
@@ -1564,23 +865,9 @@
       endif
 
 
-1111  FORMAT(A,',',A,',',A)
-1112  FORMAT(I4,2(',',F))
 1113  FORMAT(A,F10.2,A)
-11140 format(A,22(' ',A))
-11141 format(I8,22(F))
-11142 format(I8,22(F20.4))
-1115  format(A,16(',',A))
-1116  format(I0,16(',',F0.4))
-1117  format(A,19(',',A))
-1118  format(I0,19(',',F0.4))
-1119  format(A,12(',',A))
-1120  format(I0,12(',',F0.4))
 3333  FORMAT(4x,A,1x,I4,1x,A,1x,I4,1x,A)
 9229  FORMAT(<cells-1>(F0.2,','),F0.2)
-!9229	format(1000(F0.2,','),F0.2)
-
-
       
 !>> End model simulation.
       return
