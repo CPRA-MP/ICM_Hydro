@@ -105,9 +105,10 @@
 !>> Calculate monthly averages for use in HSI equations
        do mn=1,12
           DOYstart = month_DOY(mn)
-          DOYend = month_DOY(mn+1) - 1
           if (mn==12) then                !update last day of month for December (since their isn't a DOY_month(13))
               DOYend = month_DOY(12)+30
+          else
+              DOYend = month_DOY(mn+1) - 1
           endif
           ndays = DOYend-DOYstart+1
           
