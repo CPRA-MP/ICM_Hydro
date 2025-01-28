@@ -542,5 +542,10 @@
       
       allocate(NTs_Ratio(n_region)) ! time step ratio between 1D river and ICM
 
+!     If idt_schm = 2 user specified varying time step input file in daily interval
+      if(idt_schm == 2) then
+          allocate(dt_var_user(simdays))  !variable time step in daily interval
+      endif
+
       return
       end
