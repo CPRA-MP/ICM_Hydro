@@ -20,7 +20,12 @@
 ! zw 2/1/2024 added for option to select scalar advection transport scheme: 
 !     1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme (w/o fa)
       integer :: iAdvTrans    
-      real :: r_BD
+      real(sp):: r_BD
+
+! zw 11/6/2024 added for option to select time step options: 
+!     1-fixed; 2-Variable User Defined; 3-Varibale SWMM Scheme
+      integer :: idt_schem
+      real(sp),dimension(:),allocatable :: dt_var_user
       
 ! hardcoded specific salinity and stage trigger flags      
       integer :: SalLockTriggerHNC,SalLockStatusHNC
