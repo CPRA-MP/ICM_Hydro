@@ -1,10 +1,10 @@
 !c***********************Start Subroutine for face salinity**************************************
     
-!      Subroutine salinity(mm,iab,jnb,j,k,Qsalsum)		!face densities from node densities
-      Subroutine salinity(iab,jnb,j,k,Qsalsum)		!face densities from node densities
+!      Subroutine salinity(mm,iab,jnb,j,k,Qsalsum)      !face densities from node densities
+      Subroutine salinity(iab,jnb,j,k,Qsalsum)      !face densities from node densities
 
       use params
-	  
+      
       implicit none
       integer :: iab,jnb,j,k
       real :: Qsalsum,Csalface,diffus,Qlink,d1,d2,cfacemax
@@ -30,15 +30,15 @@
           SL(iab,2)=0
           QSalSum=QSalSum+0.0
       else
-!	    if (linkt(iab) == 8) then
+!       if (linkt(iab) == 8) then
 !              if(Ahf(j) == 0) then
 !!              if (Eh(j,1) - Bedm(j) > 0.3) then
 !                  if(Q(iab,2) >= 0.0) then
 !                      Csalface=((fa(iab)*S(jus(abs(icc(j,k))),1)+
-!     &					fb(iab)*S(jds(abs(icc(j,k))),1)))
+!     &                 fb(iab)*S(jds(abs(icc(j,k))),1)))
 !                  else
 !                      Csalface=((fa(iab)*S(jds(abs(icc(j,k))),1)+
-!     &					fb(iab)*S(jus(abs(icc(j,k))),1)))
+!     &                 fb(iab)*S(jus(abs(icc(j,k))),1)))
 !                  endif
 !                  diffus = EAOL(iab)
 !              else
@@ -63,12 +63,12 @@
                  fa_DS=fa(iab)
               endif
           else
-		      fa_DS=fa(iab)
+              fa_DS=fa(iab)
           endif
 !===
 
           if(Q(iab,2) > 0.0) then
-              Csalface= fa(iab)*S(jus(iab),1)				!cell face values
+              Csalface= fa(iab)*S(jus(iab),1)               !cell face values
      &                  +(1-fa(iab))*S(jds(iab),1)
 !              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
           else
@@ -78,7 +78,7 @@
      &                  +(1.0-fa_DS)*S(jus(iab),1)
 !              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
           endif
-   		!endif
+        !endif
    
 ! diffusion term reinforcement, although EAOL has been dealed with in hydrod.f
 ! no diffusion associated with weir links unless submerged         
@@ -120,7 +120,7 @@
       endif
           
       return
-	  end
+      end
 
 
 !c***********************End Subrout
