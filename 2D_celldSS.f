@@ -1,9 +1,8 @@
-!       Subroutine CellDSS(Dz,j,CSSTRIBj,dref,Tres)
+!> @file
+!> @brief This is the subrouine to calculate sediments at each timestep.
+!> @details This is the subrouine to calculate sediments at each timestep.
 
-! QSSUM, QSSumh, kthr and kday now global parameters - no longer needed to be passed into subroutine      
-!   Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
       Subroutine CelldSS(j,kday)
-!cJAM      Tributary and resuspension/deposition contributions to SS
 
 !> @param     QSsum(k)        sediment flux in Open Water from all links - negative value is flux INTO open water (g/s)
 !> @param     QSsumh(k)       sediment flux in Marsh from all marsh links - negative value is flux INTO marsh (g/s)
@@ -26,7 +25,7 @@
       real :: dSacch_int,dSacch_edge
       real :: dry_depth
       
-      !>> Define depth, in meters, for dry cells that will turn off TSS change calculations 
+!>> Define depth, in meters, for dry cells that will turn off TSS change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
 !      dry_depth = 0.05
       dry_depth = dry_threshold
@@ -180,9 +179,6 @@
               do sedclass=1,4
 !                  call TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)
                   if(abs(Q(iab,2)>0)) call TSSOLIDS(iab,jnb,j,k,sedclass)
-                  !if (j == 115) then
-                  !    write(*,*) sedclass,iab,jnb,j,QSsum(sedclass)
-                  !end if
               enddo
           endif
       enddo
