@@ -1,8 +1,8 @@
 !       Subroutine CellDSS(Dz,j,CSSTRIBj,dref,Tres)
 
 ! QSSUM, QSSumh, kthr and kday now global parameters - no longer needed to be passed into subroutine      
-!  	Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
-  	  Subroutine CelldSS(j,kday)
+!   Subroutine CelldSS(j,kday,kthr,CSSTRIBj,dref,Tres)
+      Subroutine CelldSS(j,kday)
 !cJAM      Tributary and resuspension/deposition contributions to SS
 
 !> @param     QSsum(k)        sediment flux in Open Water from all links - negative value is flux INTO open water (g/s)
@@ -16,7 +16,7 @@
 !> @param     depo_avail_h    sediment flux available to deposit in marsh during timestep based on available sediment (g/s)
 !> @param     depo_settling_h sediment flux available to desposit in marsh based on settling velocity (g/s)
       
-	  use params      
+      use params      
       
       implicit none
       integer :: j,kday,k,sedclass,jn,jnt,it,jit,iab,jnb
@@ -83,7 +83,7 @@
 !>> if flow is into marsh and there are suspended solid in open water determine maximum possible sediment flux (g/sec) based on available sediment
               if (Css(j,1,k) > CSSmin) then
                   QSmarsh_avail = CSS(j,1,k)*As(j,1)*ddy_1/dt
-                  QSmarsh(k) = min(Qmarsh(j,2)*Css(j,1,k),QSmarsh_avail)	!g/s !going into marsh
+                  QSmarsh(k) = min(Qmarsh(j,2)*Css(j,1,k),QSmarsh_avail)    !g/s !going into marsh
               else
                   QSmarsh(k) = 0.0
               endif
@@ -91,7 +91,7 @@
 !>> if flow is out of marsh and there are suspended solids in marsh determine maximum possible sediment flux (g/sec) based on available sediment
               if (Cssh(j,1,k) > CSSmin) then
                   QSmarsh_avail = -CSSh(j,1,k)*Ahf(j)*ddh_1/dt
-	              QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)	! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
+                  QSmarsh(k) = max(Qmarsh(j,2)*Cssh(j,1,k),QSmarsh_avail)   ! QSmarsh is negative here (since Qmarsh is negative), therefore the max() is on negative values and will take the value with the smaller magnitude
 
               else
                   QSmarsh(k) = 0.0
@@ -161,7 +161,7 @@
 !>> if link value in connectivity matrix is non-zero - call subroutine that will accumulate sediment flux from all links
           if (iab /= 0) then
 !>> calculate velocity magnitude of all flows into/out of compartment
-              if (linkt(iab) > 0) then		
+              if (linkt(iab) > 0) then      
 !                  if (linkt(iab) /= 8) then
 !                      if (linkt(iab) /= 9) then
 ! pump link velocity should not be accounted into average link velocity for sediment - zw 1/4/2024
@@ -174,7 +174,7 @@
                           min_vel(j) = min( min_vel(j),abs(link_vel(iab)) )
 !                      endif
                   endif
-	          endif
+              endif
               
 !>> call link suspended solids computations for non-sand particles (sand link flow is calculated in van Rijn subroutine)
               do sedclass=1,4
@@ -212,8 +212,8 @@
 !>> loop over sediment classes to 
 !>> Calculate change in open water CSS concentration for each sediment class,  based on net accumulation rates
           if(ddy_2 <= dry_depth) then
-		      CSS(j,2,k)=0
-		  else
+              CSS(j,2,k)=0
+          else
               CSS(j,2,k) = ((CSS(j,1,k)*As(j,1)*ddy_1/dt)
      &                - SedAccumRate(k)   
      &                - MEESedRate(k)
@@ -245,8 +245,8 @@
 
 !>> Calculate change in marsh CSS concentration in each sediment class
               if(ddh_2 <= dry_depth)then
-			      CSSh(j,2,k) = 0
-			  else
+                  CSSh(j,2,k) = 0
+              else
                   CSSh(j,2,k) = (CSSh(j,1,k)*Ahf(j)*ddh_1/dt
      &            + QSmarsh(k)
      &            - QSsumh(k)
@@ -330,9 +330,9 @@
       Sacch(j,2) = Sacch_int(j,2) + Sacch_edge(j,2)
 
 ! Miscellaneous calculations
-!      ASandA(j)=ASandT(j,kday)*dt+ASandA(j)					!kg/s*s*1000 = kg*1000=g June 2011  JAM Dec 12, 2010
-!      ASandA(j)=ASandD(j,kday)*dt+ASandA(j)						!JAM Dec 12 2010 *** June 21, 2011
-!      sbm=-SourceBM(j)*Ahf(j)*1000./(365.25*24*3600)				!Biomass SS source in marsh !JAM Oct 2010
+!      ASandA(j)=ASandT(j,kday)*dt+ASandA(j)                    !kg/s*s*1000 = kg*1000=g June 2011  JAM Dec 12, 2010
+!      ASandA(j)=ASandD(j,kday)*dt+ASandA(j)                        !JAM Dec 12 2010 *** June 21, 2011
+!      sbm=-SourceBM(j)*Ahf(j)*1000./(365.25*24*3600)               !Biomass SS source in marsh !JAM Oct 2010
 
      
 !     if (daystep == lastdaystep) then
@@ -360,4 +360,4 @@
 
      
       return 
-	  end
+      end
