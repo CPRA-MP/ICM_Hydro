@@ -15,7 +15,7 @@
 !> @param[in]     j                       compartment number iterator from hydrod subroutine
 !> @param[in]     Es(N,2)                 water surface elevation for model timestep at each compartment
 !> @param[in]     Bed(N)                  bed elevation of compartment
-!> @param[in]     D50(class)			    D50 grain size for sediment class (m)
+!> @param[in]     D50(class)              D50 grain size for sediment class (m)
 !> @param[in]     flocA                   clay flocculation parameter (McAnally A)
 !> @param[in]     flocB                   clay flocculation parameter (McAnally B)
 !> @param[in]     flocM                   clay flocculation exponent (McAnally m)
@@ -27,15 +27,15 @@
 !> @param[in]     D90x                    representative D90/D50 ratio
 !> @param[in]     ka                      wind-driven currents coefficient, ranges from 0.023-0.032
 !> @param[in]     cf                      bed shear stress coefficient, ranges from 0.001-0.003
-!> @param[in]		group_vel(N,2)			array of wave group velocity for compartments
+!> @param[in]     group_vel(N,2)          array of wave group velocity for compartments
 !> @param[in]     rhoSed(class)           density of sediment particles in each particle size class (kg/m**3)
 !> @param[in]     S(N,2)                  salinity in compartment
-!> @param[in]		SedDens(class)			representative particle density for each sediment class (kg/m**3)
-!> @param[in]		Tempw(N,2)				array of water temperature for compartments
-!> @param[in]	    Uorb(N,2)				array of orbital velocity values (at bed level) for compartments (m/s)
-!> @param[in]		wave_frequency(N,2)     array of wave frequency for compartments
-!> @param[in]		wavelength(N,2)         array of wavelength values for compartments
-!> @param[in]		wave_period(N,2)		array of wave period for compartments
+!> @param[in]     SedDens(class)          representative particle density for each sediment class (kg/m**3)
+!> @param[in]     Tempw(N,2)              array of water temperature for compartments
+!> @param[in]     Uorb(N,2)               array of orbital velocity values (at bed level) for compartments (m/s)
+!> @param[in]     wave_frequency(N,2)     array of wave frequency for compartments
+!> @param[in]     wavelength(N,2)         array of wavelength values for compartments
+!> @param[in]     wave_period(N,2)        array of wave period for compartments
 !> @param[in]     windx(N)                wind X-vector for compartments at model timestep (m/s)
 !> @param[in]     windy(N)                wind speed Y-vector for compartments at model timestep (m/s)
 !> @param[in]     Qsum_abs(N)             absolute value of flows into and out of compartment
@@ -59,13 +59,13 @@
       
       
 !> @param[out]    CSSvRs(N,2)             suspended sand concentration for compartment from van Rijn calcs
-!> @param[out]    kinvisc(j)		        kinematic viscosity in compartment (m**2/s)
-!> @param[out]    Dr(class)				dimensionless particle diameter for sediment class
-!> @param[out]    Dgr(class)		    	grain size diameter for sediment class(m)
-!> @param[out]    SedDens(class)		    particle density for sediment class
-!> @param[out]    SGsed(class)			specific gravity of sediment for sediment class
-!> @param[out]    velF(class)			    velocity factor for sediment class
-!> @param[out]    velset(N,class)			settling velocity for sediment class in compartment (m/sec)
+!> @param[out]    kinvisc(j)              kinematic viscosity in compartment (m**2/s)
+!> @param[out]    Dr(class)               dimensionless particle diameter for sediment class
+!> @param[out]    Dgr(class)              grain size diameter for sediment class(m)
+!> @param[out]    SedDens(class)          particle density for sediment class
+!> @param[out]    SGsed(class)            specific gravity of sediment for sediment class
+!> @param[out]    velF(class)             velocity factor for sediment class
+!> @param[out]    velset(N,class)         settling velocity for sediment class in compartment (m/sec)
 !> @param[out]    resuspension(N,class)   resuspensed sediment (in g/sec) for sediment class in compartment
 !> @param[out]    deposition(N,class)     deposited sediment (in g/sec) for sediment class in compartment
 !> @param[out]    SedAccumRate(class)     net sediment accumulation rate (in g/seC) for sediment class in compartment - positve value is deposition on bed, negative value is resuspension into water column
@@ -73,9 +73,9 @@
       subroutine vanRijnSediment(j,kday)
 
       use params
-	  implicit none
-	  integer :: j,jn,jt,k,kk,kday
-	
+      implicit none
+      integer :: j,jn,jt,k,kk,kday
+    
       real :: ddy_1,ddy_2,OWwidth,OWArea,Uflows
       real :: windx_value,windy_value,wind_spd,Uwind,Ubed,Tbed
       real :: aa,bb,cc,dd,ee,ff,rhow,Dr,velF,YY,ZZ
@@ -90,8 +90,8 @@
 !>@par General Structure of Subroutine Logic:
 
 !>> Calculate kinematic viscosity from temperature.(eq 7d in methodology memo)
-	  kinvisc(j) = 0.00000179/
-     &				(1+0.03369*Tempw(j,1)+0.000221*Tempw(j,1)**2)
+      kinvisc(j) = 0.00000179/
+     &              (1+0.03369*Tempw(j,1)+0.000221*Tempw(j,1)**2)
 
 !>> Calculate water depths for current and previous timesteps - depth is not allowed to be less than 0.0001 in celldQ, so these values will always be non-zero
       ddy_1 = Es(j,1) - Bed(j)
@@ -104,11 +104,11 @@
 
 
 !>> Calculate portion of fines available for flocculation as function of salinity (eq. 8 in methodology memo) 
-	  if (S(j,1) < Csalmax) then
-		  Pfloc = Pflocmax*S(j,1)/Csalmax
-	  else
-		  Pfloc = Pflocmax
-	  endif
+      if (S(j,1) < Csalmax) then
+          Pfloc = Pflocmax*S(j,1)/Csalmax
+      else
+          Pfloc = Pflocmax
+      endif
 
 !>> Read in concentrations of different sediment classes from previous timestep
       CSand = CSS(j,1,1)
@@ -129,36 +129,36 @@
 !>> Calculate settling velocities for different sediment classes
 !>> particle class size (k): 1=sand,2=silt,3=unfloc clay, 4=floc clay
       do k=1,4 
-		  Dgr(k) = D50(k)         !Dgr(k) is grain size - can set to non-D50 values here in the future
+          Dgr(k) = D50(k)         !Dgr(k) is grain size - can set to non-D50 values here in the future
           D90(k) = D90x*D50(k)
-		  SGsed(k) = Specg        !ability to set different sediment specific gravities - currently use one value
+          SGsed(k) = Specg        !ability to set different sediment specific gravities - currently use one value
           rhoSed(k) = SGsed(k)*rhow 
 
-!>> Calculate settling velocity for sand particles (eq. 7a & 7b in methodology  memo)		
-		  if (k == 1) then
-		 	  Dr = Dgr(k)*sqrt((g*(SGsed(k)-1.)/kinvisc(j)**2.))
-			  velF = max(sqrt((36./Dr**3.) + 2./3.) - sqrt(36./(Dr**3.)),0.0)
-			  velset(j,k) = velF*sqrt((SGsed(k)-1.)*Dgr(k)*g)
-		  else
+!>> Calculate settling velocity for sand particles (eq. 7a & 7b in methodology  memo)       
+          if (k == 1) then
+              Dr = Dgr(k)*sqrt((g*(SGsed(k)-1.)/kinvisc(j)**2.))
+              velF = max(sqrt((36./Dr**3.) + 2./3.) - sqrt(36./(Dr**3.)),0.0)
+              velset(j,k) = velF*sqrt((SGsed(k)-1.)*Dgr(k)*g)
+          else
 !>> Calculate settling velocity for silt & clay particles (eq. 6 in methodology memo)
-			  velset(j,k) = (g*(SGsed(k)-1.0)*D50(k)**2.0)/(18.0*kinvisc(j))
-		  endif
-	  enddo
+              velset(j,k) = (g*(SGsed(k)-1.0)*D50(k)**2.0)/(18.0*kinvisc(j))
+          endif
+      enddo
 
 !>> Update settling velocity for flocculated clay particles (sediment class (k) = 4) 
 ! BUG - flocC1 and flocC3 unit is kg/m3 in the inputs whereas CSS is in g/m3!!
 ! BUG - flocA/flocB/flocN/flocM in eq.9 of methodology memo are for unit of kg/m3!!
 ! BUG fix - need to convert CClayFloc from g/m3 to kg/m3 in the following codes - zw 1/4/2024
       CClayFloc = CClayFloc/1000.0  !convert CClayFloc from g/m3 to kg/m3
-	  if (CClayFloc < flocC1) then
-		  flocset = velset(j,4)
-	  elseif (CClayFloc < flocC3) then
-		  flocset = flocA*(CClayFloc**flocN)/(CClayFloc**2+flocB**2)**flocM
-	  else
-		  flocset = 0.000001
-	  endif
-	  velset(j,4) = flocset
-	
+      if (CClayFloc < flocC1) then
+          flocset = velset(j,4)
+      elseif (CClayFloc < flocC3) then
+          flocset = flocA*(CClayFloc**flocN)/(CClayFloc**2+flocB**2)**flocM
+      else
+          flocset = 0.000001
+      endif
+      velset(j,4) = flocset
+    
 !>> Calculate wind-driven currents.
       windx_value = windx(j)
       windy_value = windy(j)
@@ -182,7 +182,7 @@
 !>> Loop over 4 sediment classes and determine maximum possible sediment accumulation rates based on flow conditions and an infinite sediment source    
       do k=1,4
           if (k /= 1) then
-!>> -- Determine deposition fluxes (g/sec) for non-sand particles (via Krone methodology - eq. 10 in methodology memo)	
+!>> -- Determine deposition fluxes (g/sec) for non-sand particles (via Krone methodology - eq. 10 in methodology memo)  
               if (Tbed<Tcrit(k)) then
                   deposition(j,k) = velset(j,k)*(1.0-Tbed/Tcrit(k))
      &                                *Css(j,1,k)*OWArea
@@ -204,7 +204,7 @@
 !     &                         - QSdiv(k)
 
 !>> -- Determine resuspension and deposition fluxes for sand particles (eqs. 32-40 in methodology memo)      
-          else	
+          else  
 !>> -- set van Rijn constants based on D50 size
               if (D50(k) < 0.0005) then
                   aa = 0.19
@@ -223,16 +223,16 @@
                   ee = 0.43
                   ff = 0.14
               else
-				  write(1,*) '*************ERROR**************'
-				  write(1,*) 'D50 for sand is greater than 2 mm.'
-				  write(1,*) 'The van Rijn equation should not be used.'
-				  write(1,*) 'Correct grain size definitions and re-run.' 
+                  write(1,*) '*************ERROR**************'
+                  write(1,*) 'D50 for sand is greater than 2 mm.'
+                  write(1,*) 'The van Rijn equation should not be used.'
+                  write(1,*) 'Correct grain size definitions and re-run.' 
                             
                   write(*,*) '*************ERROR**************'
-				  write(*,*) 'D50 for sand is greater than 2 mm.'
-				  write(*,*) 'The van Rijn equation should not be used.'
-				  write(*,*) 'Correct grain size definitions and re-run.' 
-				  stop !pause
+                  write(*,*) 'D50 for sand is greater than 2 mm.'
+                  write(*,*) 'The van Rijn equation should not be used.'
+                  write(*,*) 'Correct grain size definitions and re-run.' 
+                  stop !pause
                   
               endif
                   
@@ -287,7 +287,7 @@
 !                  CSSvRs(j,2) = 0.0
 !              endif
 !>> -- var Rijn equilibrium concentration (kg/m3 -> g/m3) - zw 1/4/2024
-			      CSSvRs(j,2) = vRqs/(Uflows*ddy_2)*1000.0 
+                  CSSvRs(j,2) = vRqs/(Uflows*ddy_2)*1000.0 
 !>> -- calculate maximum possible sand sediment accumulation rate (g/sec) based on sediment fluxes (positive rate is deposition on open water bed)              
 !              SedAccumRate(k) = (CSS(j,1,k)*As(j,1)*ddy_1/dt)
 !     &                         - (CSSvRs(j,2)*As(j,1)*ddy_2/dt)   
@@ -354,7 +354,7 @@
           
           
       enddo        
-     	
+        
       return
       end
 
