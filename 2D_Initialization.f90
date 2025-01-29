@@ -23,7 +23,7 @@
               write(*,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
               write(1,*) 'Number of 1D lateral connections defined in ICM (RuncontrolR.dat) and MESH (region_input.txt) are not consistent.'
               stop !pause
-          endif	  
+          endif   
           do iir=1, n_region
               write(*,*) 'Initializing 1D model for region: ',iir
               write(1,*) 'Initializing 1D model for region: ',iir
@@ -33,8 +33,8 @@
               if (Nctr_FINE_R(iir) .eq. 1)call init_FINE_R(iir, ncomp_R(iir), ioutf_R(iir)+6, Input_FINE_R(iir), days_all, ndt_FINE_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
               if (Nctr_SAND_R(iir) .eq. 1)call init_SAND_R(iir, ncomp_R(iir), ioutf_R(iir)+7, Input_SAND_R(iir),days_all, ndt_SAND_R(iir), nlat_R_ori(iir), nlat_R(iir), latFlowLoc_R(iir,1:nlat_R(iir)), latFlowType_R(iir,1:nlat_R(iir)), latFlowXsec_R(iir,1:nlat_R(iir)))
           enddo
-          ndt_all_ICM = ndt_all
-          ntim_all_ICM = ntim_all          
+          !ndt_all_ICM = ndt_all    ! move to main
+          !ntim_all_ICM = ntim_all  ! move to main        
       else
           write(*,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
           write(1,*) 'No 1D regions defined in ICM (RuncontrolR.dat, n1D=0) - only 2D compartments will be modeled.'
@@ -43,7 +43,7 @@
 !>> Set initial conditions for 2D links
       do i=1,M
           fa(i) = fa_def*fa_mult(i) !Set array of initial upwind factor to default value
-          Q(i,1)=0.0	!YW!
+          Q(i,1)=0.0    !YW!
           Q(i,2)=Q(i,1)
 
           ! MP2023 zw added 04/06/2020
@@ -63,11 +63,11 @@
 
 !>> Initialize 2D compartment related arrays
       do j=1,N
-          As(j,2)= As(j,1)				    ! Surface water area of cells (m2)
-          Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
-          ds(j,1)= Es(j,1)-Bed(j)			! Depth in storage cells (m)
+          As(j,2)= As(j,1)                  ! Surface water area of cells (m2)
+          Es(j,2)= Es(j,1)                  ! Stage in storage cells (m)
+          ds(j,1)= Es(j,1)-Bed(j)           ! Depth in storage cells (m)
           !Eh(j,1) = BedM(j) + 0.1           ! Initial marsh depth (override hotstart file read in above)
-          Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
+          Eh(j,2)=Eh(j,1)                   ! Stage in Marsh storage (m)    !JAM Oct 2010
           BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
           BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
@@ -80,8 +80,8 @@
           EHAV(j,1) = EH(j,1)*dt/(3600.*24.)
           floodf(j)=0.0
           
-          Qmarsh(j,1) = 0.0				    ! Flow into/out of marsh area
-          Qmarsh(j,2) = Qmarsh(j,1)		    
+          Qmarsh(j,1) = 0.0                 ! Flow into/out of marsh area
+          Qmarsh(j,2) = Qmarsh(j,1)         
           Qmarshmax(j) = 0.0
           QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
 
