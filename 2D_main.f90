@@ -29,7 +29,7 @@
 ! Doxygen documentation logic structure, which needs to be embedded within a subroutine, not a program.
       program Ecohydro
 
-	!ZW 3/13/2015 move the log file open statement to here
+    !ZW 3/13/2015 move the log file open statement to here
       !open (unit=1, file='hydro_run.log', status='unknown')
 
       call main
@@ -78,65 +78,65 @@
 !c***********************************************************************************************
 !c* Matrix Variables:
 !c
-!c	Cells;-    j
-!> @param[out] As(N,3)				surface area of cells (m2)
-!> @param[out] Eso(N)					initial stage of storage cells (m)
-!> @param[out] Bed(N)					bed elevation of storage cells (m)
-!> @param[out] ds(N,3)				depth in storage cells         (m)
-!> @param[out] Es(N,3)				stage in storage cells         (m)
-!> @param[out] Ahydro(N)				area of hydrologically connected area for water balance (m2)
-!> @param[out] ow						% open water in attach drainage basin
-!> @param[out] dAdz(N)				change in As with depth (m)
-!> @param[out] CSS(N,3)				sediment concentration	(mg/L)
-!> @param[out] S(N,3)					salinity (TDS)	(ppt)
-!> @param[out] acss(N)				resuspension parameter
-!> @param[out] bcss(N)				resuspension parameter
-!> @param[out] Vss(N)					deposition velocity		(m/d)
-!> @param[out] tau(N,3)				bed shear stress		(Pa)
-!> @param[out] Tauc(N)				critical shear stress	(Pa)
-!> @param[out] Fetch(N,10)			Fetch EW				(km)
-!> @param[out] Fetch(N,10)			Fetch NS				(km)
+!c  Cells;-    j
+!> @param[out] As(N,3)              surface area of cells (m2)
+!> @param[out] Eso(N)                   initial stage of storage cells (m)
+!> @param[out] Bed(N)                   bed elevation of storage cells (m)
+!> @param[out] ds(N,3)              depth in storage cells         (m)
+!> @param[out] Es(N,3)              stage in storage cells         (m)
+!> @param[out] Ahydro(N)                area of hydrologically connected area for water balance (m2)
+!> @param[out] ow                       % open water in attach drainage basin
+!> @param[out] dAdz(N)              change in As with depth (m)
+!> @param[out] CSS(N,3)             sediment concentration  (mg/L)
+!> @param[out] S(N,3)                   salinity (TDS)  (ppt)
+!> @param[out] acss(N)              resuspension parameter
+!> @param[out] bcss(N)              resuspension parameter
+!> @param[out] Vss(N)                   deposition velocity     (m/d)
+!> @param[out] tau(N,3)             bed shear stress        (Pa)
+!> @param[out] Tauc(N)              critical shear stress   (Pa)
+!> @param[out] Fetch(N,10)          Fetch EW                (km)
+!> @param[out] Fetch(N,10)          Fetch NS                (km)
 
-!c	Cellsh - Properties for marsh compontent of cells
-!> @param[out] Ahf(N)					Marsh area subject to flooding
-!> @param[out] flood(N)				Fraction of Ahydro subject to flooding
-!> @param[out] CSSo(N)					TSS concentration to be applied to offshore cells - set to -9999 if not used		(mg/L)
-!> @param[out] Eh(N,3)				stage in flooded area of marsh.
-!> @param[out] CSSh(N,3)				TSS in flood area of marsh
-!> @param[out] Sh(N,3)				Salinity in flood area of marsh			(ppt)
-!> @param[out] acssh(N)				resupension in flooded area of marsh
-!> @param[out] Vsh(N)					settling velocity in flooded area of marsh (m/d)
-!> @param[out] Esho(N)				dead storage in marshes					(m)
+!c  Cellsh - Properties for marsh compontent of cells
+!> @param[out] Ahf(N)                   Marsh area subject to flooding
+!> @param[out] flood(N)             Fraction of Ahydro subject to flooding
+!> @param[out] CSSo(N)                  TSS concentration to be applied to offshore cells - set to -9999 if not used        (mg/L)
+!> @param[out] Eh(N,3)              stage in flooded area of marsh.
+!> @param[out] CSSh(N,3)                TSS in flood area of marsh
+!> @param[out] Sh(N,3)              Salinity in flood area of marsh         (ppt)
+!> @param[out] acssh(N)             resupension in flooded area of marsh
+!> @param[out] Vsh(N)                   settling velocity in flooded area of marsh (m/d)
+!> @param[out] Esho(N)              dead storage in marshes                 (m)
 !c
 !cc***********************************************************************************************
 !c        Links:-   i
-!> @param[out] Deptho(M)				initial channel depth	(m)
-!> @param[out] Depth(M,3)				channel depth			(m)
-!> @param[out] Length(M)				channel length			(m)
-!> @param[out] Width(M)				channel width			(m)
-!> @param[out] an(M)					channel Mannings n
-!> @param[out] Km(M)					minor loss coefficient due to structures based on Km(Vch)^2/2g
-!> @param[out] Ken(100)				entrance loss coefficient
-!> @param[out] Kx(M)					exit loss coefficient based on Kx(Vch-Vrec)^2/2g
-!> @param[out] Exy(M)					diffusion coefficient thru link between cells (m2/s)
-!> @param[out] Q(M,3)					channel flow in m3/s
-!> @param[out] Qss(M,3)				channel sediment flow	(kg/s)
-!> @param[out] QSal(M,3)				channel TDS transport	(kg/s)
-!> @param[out] jus(M)					u/s junction no.
-!> @param[out] jds(M)					d/s junction no.
-!> @param[out] itype(M)				"-1" is u/s BC, "+1" is d/s BC, "2" is two cell link.
+!> @param[out] Deptho(M)                initial channel depth   (m)
+!> @param[out] Depth(M,3)               channel depth           (m)
+!> @param[out] Length(M)                channel length          (m)
+!> @param[out] Width(M)             channel width           (m)
+!> @param[out] an(M)                    channel Mannings n
+!> @param[out] Km(M)                    minor loss coefficient due to structures based on Km(Vch)^2/2g
+!> @param[out] Ken(100)             entrance loss coefficient
+!> @param[out] Kx(M)                    exit loss coefficient based on Kx(Vch-Vrec)^2/2g
+!> @param[out] Exy(M)                   diffusion coefficient thru link between cells (m2/s)
+!> @param[out] Q(M,3)                   channel flow in m3/s
+!> @param[out] Qss(M,3)             channel sediment flow   (kg/s)
+!> @param[out] QSal(M,3)                channel TDS transport   (kg/s)
+!> @param[out] jus(M)                   u/s junction no.
+!> @param[out] jds(M)                   d/s junction no.
+!> @param[out] itype(M)             "-1" is u/s BC, "+1" is d/s BC, "2" is two cell link.
 
 
 !c***********************************************************************************************
 !c        Forcing:-
-!> @param[out] Qtrib(26,366*25)		Mean daily tributary flow			(m3/s)
-!> @param[out] CssT(26,366*25)		Mean daily tributary sediment conc	(mg/L)
-!> @param[out] Strib(30,366*25)		Mean daily tributary salinity		(ppt)
-!> @param[out] Tcoef(M,25)			Tide generation coefficients
-!> @param[out] Sal(1,1)				d/s BC on Salinity					(ppt)
-!> @param[out] BCTSS(10)				d/s BC on TSS						(mg/L)	!added TSS=CSS+Algae+Detritus XX!!NOT USED JAM July 09
-!> @param[out] PET(366)				daily potential evapotranspiration	(m/d)
-!> @param[out] Precip(366)			daily rainfall						(m/d)
+!> @param[out] Qtrib(26,366*25)     Mean daily tributary flow           (m3/s)
+!> @param[out] CssT(26,366*25)      Mean daily tributary sediment conc  (mg/L)
+!> @param[out] Strib(30,366*25)     Mean daily tributary salinity       (ppt)
+!> @param[out] Tcoef(M,25)          Tide generation coefficients
+!> @param[out] Sal(1,1)             d/s BC on Salinity                  (ppt)
+!> @param[out] BCTSS(10)                d/s BC on TSS                       (mg/L)  !added TSS=CSS+Algae+Detritus XX!!NOT USED JAM July 09
+!> @param[out] PET(366)             daily potential evapotranspiration  (m/d)
+!> @param[out] Precip(366)          daily rainfall                      (m/d)
 !> @param[out] QCHEM(N,15,366*25)     chemical load in tributaries (g/sec)
 !> @param[out] CHEM(N,15,2)     water quality concentration
 !> @param[out] QChemSUM(15)
@@ -158,21 +158,21 @@
 !c
 !c***********************************************************************************************
 !c        Control parameters:-
-!> @param[out] N						number of compartments
-!> @param[out] M						number of links
-!> @param[out] Mus					number of u/s BCs
-!> @param[out] Mds					number of d/s BCs
-!> @param[out] dt						computational time step			(s)
-!> @param[out] dTprint				output time step			(hours)
-!> @param[out] startrun				Julian day of start of run
-!> @param[out] endrun 				Julian day at end of run
-!> @param[out] Specg					Specific gravity of sediment
+!> @param[out] N                        number of compartments
+!> @param[out] M                        number of links
+!> @param[out] Mus                  number of u/s BCs
+!> @param[out] Mds                  number of d/s BCs
+!> @param[out] dt                       computational time step         (s)
+!> @param[out] dTprint              output time step            (hours)
+!> @param[out] startrun             Julian day of start of run
+!> @param[out] endrun               Julian day at end of run
+!> @param[out] Specg                    Specific gravity of sediment
 !> @param[out] time                   elapsed model time seconds
 !> @param[out] day                    elapsed model time in decimals days
 !> @param[out] thour                  elapsed model time in decimal hours
 !> @param[out] tmon                   elapsed model time in decimal months
 !> @param[out] kthr                   integer of hourly elapsed model time +1
-!> @param[out] kmon				    integer of monthly elapsed model time +1
+!> @param[out] kmon                 integer of monthly elapsed model time +1
 !> @param[out] kday                   integer of daily elapsed model time +1
 !> @param[out] dday                   decimal portion of day, dday=0.0 at 0:00 (midnight)
 !> @param[out] hday                   decimal portion of day normalized to noon, hday = 0.0 at 12:00 (noon)
@@ -183,7 +183,7 @@
 !> @param      windrow                row of wind data array that corresponds to hour of simulation
 !c
 !c***********************************************************************************************
-!c	   Chemical Inputs
+!c     Chemical Inputs
 !c        1 = NO3 + NO2
 !c        2 = NH4
 !c        3 = DIN (1+2)
@@ -191,8 +191,8 @@
 !c        5 = TIP
 !c        6 = TOC
 !c        7 = DO
-!c	   8 = Live Algae (ALG)
-!c	   9 = Dead Algae (DET)
+!c     8 = Live Algae (ALG)
+!c     9 = Dead Algae (DET)
 !c        10= DON
 !c        11= DOP
 !c        12= DIP   !PArtition SRP = ParP*TP
@@ -213,7 +213,7 @@
       integer :: NNN,ichem,me,mm,kt,k,kk,kj,kl
       real :: dday,ddayhr,Pardpmr
       Character*100 header
-      integer :: ndt_1hr, nts_1hr  
+      integer :: ndt_1hr, nts_1hr, isimday  
      
 !>@par General Structure of Subroutine Logic:
 
@@ -261,8 +261,8 @@
       write(*,*)
 
 !>> Read RunControlR.dat and set simulation variables (RunControlR.dat is updated yearly by ICM.py).
-      allocate(D50(4))	!sediment class parameters that need to be allocated for control data inputs (e.g. before allocate_params is called)
-      allocate(Tcrit(4))	!sediment class parameters that need to be allocated for control data inputs (e.g. before allocate_params is called)
+      allocate(D50(4))  !sediment class parameters that need to be allocated for control data inputs (e.g. before allocate_params is called)
+      allocate(Tcrit(4))    !sediment class parameters that need to be allocated for control data inputs (e.g. before allocate_params is called)
 
       open (unit=30, file= 'RuncontrolR.dat', status = 'unknown')
       READ(30,*) year          !  1        year of simulation (e.g. 2015)
@@ -379,31 +379,9 @@
       READ(30,*) idt_schem       ! 108      Time Step option (1-fixed; 2-Variable User Defined; 3-Varibale SWMM Scheme)
       close(30)
 
-
-!>> Determine number of simulation timesteps
       simdays = endrun-startrun+1
-      ndt_ICM = dt
-      NTs =int(simdays*24*60*60/dt)
-      NNN=NTs-int(24*60*60/dt)
-      lastdaystep = 24*60*60/dt !dt is in seconds - number of timesteps in a day
-!>> Determine number of simulation steps needed before updating tide and wind data
-      lasttidestep = dttide*60*60/dt !dttide is in hours - number of timesteps before updating tide data
-      lastwindstep = dtwind*60*60/dt !dtwind is in hours - number of timesteps before updating wind data
-      lastlockstep = dtlock*60*60/dt !dtlock is in hours - number of timesteps before updating lock control data
       lockOPstep = 600               ! YW time (s) needed for lock to open or close. Can be added to RuncontrolR      
-!>> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
-      daystep = 0  !YW! Modified to fix the issue with skipping the first time step
-      tidestep = 0 !YW!
-      windstep = 0 !YW!
-      lockstep = 0 !YW!
 
-!>>  ndt_ICM is the ICM time step and is shared by the 1D and ICM. ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled.
-!>>  ndt_all_ICM and ntim_all_ICM are ICM only time step control. These two variables are updated if 1D is activated
-!>>  this allows for different timesteps to be used between the 2D model, and each 1D reach
-!>>  the timestep looping below will be by second, and 2D and 1D subroutine calls will occur when the appropriate dt is reached
-      ndt_all_ICM = ndt_ICM
-      ntim_all_ICM=int(simdays*86400/ndt_all_ICM)
-      
       
 !>> Call 'allocate_params' subroutine which allocates memory for almost all arrays used by this program
 !>> (some temporary arrays are allocated in ICM_InterpolateToGrid subroutine which postprocesses model results).
@@ -419,36 +397,42 @@
       call infile
 
 
-!>> write header row for hourly stage output file (since not all compartments are printed)	
+!>> write header row for hourly stage output file (since not all compartments are printed)  
 !skip_header      if (nstghr > 0) then
 !skip_header          write(210,908) 'Compartment:',(stghrwrite(jjk),jjk=1,nstghr)
 !skip_header      else
 !skip_header          write(210,*) 'Hourly water level not saved to file.'
 !skip_header      endif
-!908	FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
+!908    FORMAT(A,<nstghr-1>(I0,','),I0) ! first column has 'Compartment:##', followed by comma delimited list of boundary compartments
 
 !>> write header row for flowrate output file (since not all links are printed)
-!skip_header	  if (nlinksw > 0) then
+!skip_header      if (nlinksw > 0) then
 !skip_header          write(211,909) 'Link:',(linkswrite(jjk),jjk=1,nlinksw)
 !skip_header      else
 !skip_header          write(211,*) 'No links chosen to have flowrate outputs saved.'
 !skip_header      endif
-!909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
+!909    format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
 !   These files are closed within 'infile' subroutine after importing the data
 
-!>> 'windrow' is a counter that is incrementally updated each time a wind data timestep is reached
-      windrow = 1
-
-!>> 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a tide or lock control data timestep is reached
-      tiderow = 0	!YW! Modified to match all other initialization
-      surgerow = 0	!YW!
-      lockrow = 0	!YW!
 
 !>> Initialize 1D/2D models
       call Initialization
- 
+
+!>> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
+      daystep = 0  !YW! Modified to fix the issue with skipping the first time step
+      tidestep = 0 !YW!
+      windstep = 0 !YW!
+      lockstep = 0 !YW!
+!>> 'windrow', 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a wind or tide or lock control data timestep is reached
+      windrow = 1
+      tiderow = 0   !YW! Modified to match all other initialization
+      surgerow = 0  !YW!
+      lockrow = 0   !YW!
+
+      t=0           ! initialize total time counter in a year (in seconds)    
+
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
 !>> Main DO loop. Looped over each simulation timestep.
@@ -461,28 +445,56 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
+
+      do isimday = 1, simdays
+          if(idt_schm == 2) then
+              dt = dt_var_user(isimday)
+          endif
+!>>  ndt_ICM is the ICM time step and is shared by the 1D and ICM. ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled.
+!>>  ndt_all_ICM and ntim_all_ICM are ICM only time step control. These two variables are updated if 1D is activated
+!>>  this allows for different timesteps to be used between the 2D model, and each 1D reach
+!>>  the timestep looping below will be by second, and 2D and 1D subroutine calls will occur when the appropriate dt is reached
+          ndt_ICM = dt
+          ndt_all_ICM = ndt_ICM                        !hydro simulation time step
+          ntim_all_ICM=int(simdays*86400/ndt_all_ICM)  !number of time steps in a simulation year
+      
+          if (n1D > 0) then
+              ndt_all_ICM = ndt_all
+              ntim_all_ICM = ntim_all          
+          endif
+          
+          ntim_all_ICM = ntim_all_ICM/simdays          !convert number of time steps in a simulation year to a day
+          
+!>> Determine number of simulation timesteps
+          NTs =int(simdays*24*60*60/dt)  !it's used in cellDSS
+          !NNN=NTs-int(24*60*60/dt)  !never used
+          lastdaystep = int(24*60*60/dt) !dt is in seconds - number of timesteps in a day
+!>> Determine number of simulation steps needed before updating tide and wind data
+          lasttidestep = int(dttide*60*60/dt) !dttide is in hours - number of timesteps before updating tide data
+          lastwindstep = int(dtwind*60*60/dt) !dtwind is in hours - number of timesteps before updating wind data
+          lastlockstep = int(dtlock*60*60/dt) !dtlock is in hours - number of timesteps before updating lock control data
     
-      print*, 'ICM dt =',ndt_ICM, 'should =',dt
-      if (n1d > 0) then
-          print*, 'MESH dt =', ndt_R
-          print*, 'dt_all =', ndt_all_ICM
-      endif
+          print*, 'ICM dt =',ndt_ICM, 'should =',dt
+          if (n1d > 0) then
+              print*, 'MESH dt =', ndt_R
+              print*, 'dt_all =', ndt_all_ICM
+          endif
+ 
  !>> start model time stepping     
-	  ndt_1hr = int(3600.0/dt) !ndt_1hr=num of dt in 1hr for hourly output
-	  nts_1hr = 0              !nts_1hr=counting of time steps in an hour
-	  
-      mm=0                                          ! initialize time counter
-      do n_1d=0, ntim_all_ICM-1      
+          ndt_1hr = int(3600.0/dt) !ndt_1hr=num of dt in 1hr for hourly output
+          nts_1hr = 0              !nts_1hr=counting of time steps in an hour
+          mm=0                     ! initialize time counter in a day
+          do n_1d=0, ntim_all_ICM-1      
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
-          if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
+            if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-              t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
+              t=t+float(mm)*dt                      ! lapse time in seconds  JAM 5/25/2011
               nts_1hr=nts_1hr+1
 
 !>> -- Calculate various versions of time to be used as flags throughout program
-              day = t/3600./24.
-              dday=day-int(day)                     ! decimal portion of day, dday=0.0 at 0:00 (midnight), 0.99 at end of day
-              ddayhr = dday*24.                     ! decimal portion of day converted to hours dday = 0.00 @ midnight, 23.99 at end of day
+              day = t/3600./24.                      ! day in a year
+!              dday=day-int(day)                     ! decimal portion of day, dday=0.0 at 0:00 (midnight), 0.99 at end of day
+!              ddayhr = dday*24.                     ! decimal portion of day converted to hours dday = 0.00 @ midnight, 23.99 at end of day
 
 !>> -- Update counters for current timestep in day, tide data, and wind data
 !>> -- Counters are reset to zero at end of main.f timestepping Do loop when value meets the laststep values calculated at start of main.f
@@ -515,12 +527,12 @@
 
 !>> -- Loop over links and number of diversions and calculate sediment accumulation timeseries for each model link.
 !              kt=1+ifix(t/24./3600./365.25)
-!		do j=1,N
-!			do it=1,Ndiv
-!				ASANDD(j,kt)=ParSandD(kt)*Qdiv(it,kt)*cssTdiv(it,kt)
-!    &				   *Qmultdiv(j,it)
+!       do j=1,N
+!           do it=1,Ndiv
+!               ASANDD(j,kt)=ParSandD(kt)*Qdiv(it,kt)*cssTdiv(it,kt)
+!    &                 *Qmultdiv(j,it)
 !              enddo
-!		enddo
+!       enddo
 
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
@@ -570,7 +582,7 @@
                                   if (Nctr_SAND_R(i) .eq. 1) then
                                       SAND_lat_from_ICM_R(i,j) = CSS(lcr2D(k+j),2,1)                                              ! check unit
                                   endif
-                            endif	  
+                            endif     
                           enddo
                           k = k+nlat_R(i)
                       enddo
@@ -614,16 +626,16 @@
 
 !>> -- Reset daystep counter because end of day is met
               if (daystep == lastdaystep) then
-                  write(1,3333)' 2D domain: year',year,' -day',int(day),'complete.'
-                  write(*,3333)' 2D domain: year',year,' -day',int(day),'complete.'
+                  write(1,3333)' 2D domain: year',year,' -day',isimday,'complete.'
+                  write(*,3333)' 2D domain: year',year,' -day',isimday,'complete.'
                   daystep = 0
               endif
 !>> End IF for checking whether model timestep should have the 2D model subroutines run          
-          endif
+            endif
 
 
 !>> Call 1D channel routing subroutines
-	      if (n1d> 0) then
+            if (n1d> 0) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
@@ -636,38 +648,38 @@
                        if (mod((n_1d*ndt_all+ndt_all), ndt_SAL_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_SAL_R(iir)=n_SAL_R(iir)+1
                            call cal_SAL_R(iir, n_SAL_R(iir), ncomp_R(iir), ioutf_R(iir)+4, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sal_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_lat_from_ICM_R(iir,1:nlat_R(iir)), SAL_upstream_from_ICM_R(iir), SAL_terminal_from_ICM_R(iir))
-                       endif		
+                       endif        
                   endif
 !>> -- Call temperature subroutines for each 1D reach with temperature modeling activated  
                   if (Nctr_TMP_R(iir) .eq. 1) then
                        if (mod((n_1d*ndt_all+ndt_all), ndt_TMP_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_TMP_R(iir)=n_TMP_R(iir)+1
                            call cal_TMP_R(iir, n_TMP_R(iir), ncomp_R(iir), ioutf_R(iir)+5, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), tmp_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_lat_from_ICM_R(iir,1:nlat_R(iir)), TMP_upstream_from_ICM_R(iir), TMP_terminal_from_ICM_R(iir))
-                       endif		
+                       endif        
                   endif
 !>> -- Call suspended fines subroutines for each 1D reach with fines modeling activated  
                   if (Nctr_FINE_R(iir) .eq. 1) then
                        if (mod((n_1d*ndt_all+ndt_all), ndt_FINE_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_FINE_R(iir)=n_FINE_R(iir)+1
                            call cal_FINE_R(iir, n_FINE_R(iir), ncomp_R(iir), ioutf_R(iir)+6, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), fine_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_lat_from_ICM_R(iir,1:nlat_R(iir)), FINE_upstream_from_ICM_R(iir), FINE_terminal_from_ICM_R(iir))
-                       endif		
+                       endif        
                   endif
 !>> -- Call suspended sand subroutines for each 1D reach with sand modeling activated  
                   if (Nctr_SAND_R(iir) .eq. 1) then
                        if (mod((n_1d*ndt_all+ndt_all), ndt_SAND_R(iir)) .eq. 0 .or. (n_1d.eq.0) )then
                            n_SAND_R(iir)=n_SAND_R(iir)+1
                            call cal_SAND_R(iir, n_SAND_R(iir), ncomp_R(iir), ioutf_R(iir)+7, nlat_R(iir), hy_R(iir,1:ncomp_R(iir)), area_R(iir,1:ncomp_R(iir)), q_R(iir,1:ncomp_R(iir)), sand_R(iir,1:ncomp_R(iir)), Q_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_lat_from_ICM_R(iir,1:nlat_R(iir)), SAND_upstream_from_ICM_R(iir), SAND_terminal_from_ICM_R(iir))
-                       endif		
+                       endif        
                   endif
               enddo
-          endif
+            endif
  
         
 !>> 1D-2D ICM coupling - update terminal and lateral flow connections from 1D arrays to the 2D arrays
 !>> This will save for every time loop - but 1D values are only updated on select timesteps that meet the ndt_R criteria above
 !>> -- saving calculated values for terminal connections from 1D array to the 2D array
-          if (n1d>0) then 
-              if (ntc>0) then                                
+            if (n1d>0) then 
+                if (ntc>0) then                                
                   do i = 1,ntc
                       Q(tcl2D(i),2) = q_R(tcr1D(i),tcn1D(i))  ! Connecting link USnode is connecting_compartment, DSnode is receiving compartment
                       Es(tcf2D(i),2) = y_R(tcr1D(i),tcn1D(i))
@@ -686,9 +698,9 @@
                           CSS(tcf2D(i),2,1) = sand_R(tcr1D(i),tcn1D(i))                                            ! check unit
                       endif                  
                   enddo
-              endif
+                endif
 !>> -- saving calculated values for lateral connections from 1D array to the 2D array                  
-              if (nlc>0) then
+                if (nlc>0) then
                   k = 0
                   do i = 1,n1D
                       do j = 1,nlat_R(i)   
@@ -712,9 +724,9 @@
                       enddo
                       k = k+nlat_R(i)                  
                   enddo
-              endif
+                endif
 !>> -- saving calculated values for upstream connections from 1D array to the 2D array
-              if (nuc>0) then
+                if (nuc>0) then
                   do i=1,nuc
                       Es(ucf2D(i),2) = y_R(ucr1D(i),ucn1D(i))
                       if (Nctr_SAL_R(ucr1D(i)) .eq. 1) then
@@ -732,84 +744,59 @@
                           CSS(ucf2D(i),2,1) = sand_R(ucr1D(i),ucn1D(i))                                             ! check unit
                       endif                     
                   enddo
-              endif
-          endif
+                endif
+            endif
               
 !>> -- Loop over links. Save calculated flowrates, Q as the initial condition for the next simulation timestep.
 !>> -- Check if any link flowrate values are NaN - if so, pause model run
-          do i=1,M
-              Q(i,1)=Q(i,2)
-              SL(i,1) = SL(i,2) !SL is for links
-              if(isNAN(Q(i,2))) then
-                  write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
-                  write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
+            do i=1,M
+                Q(i,1)=Q(i,2)
+                SL(i,1) = SL(i,2) !SL is for links
+                if(isNAN(Q(i,2))) then
+                  write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',isimday
+                  write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',isimday
                   write(*,*) '  Linkt=',linkt(i)
                   stop !pause
-              endif
-          enddo                  
+                endif
+            enddo                  
 
 !>> -- Loop over compartments. Save numerous variables that were just calculated by 'hydrod' as the initial condition for the next simulation timestep.
-          do j=1,N
-              Es(j,1)=Es(j,2)
-              S(j,1)=S(j,2)				! resetting ICs
-              BCnosurge(j,1) = BCnosurge(j,2)
-              BCsurge(j,1) = BCsurge(j,2)                !YW!
-              do sedclass=1,4
+            do j=1,N
+                Es(j,1)=Es(j,2)
+                S(j,1)=S(j,2)               ! resetting ICs
+                BCnosurge(j,1) = BCnosurge(j,2)
+                BCsurge(j,1) = BCsurge(j,2)                !YW!
+                do sedclass=1,4
                   CSS(j,1,sedclass) = CSS(j,2,sedclass)
                   CSSh(j,1,sedclass) = CSSh(j,2,sedclass)
-              enddo
-              Tempw(j,1)=Tempw(j,2)
-!              Age(j,1)=Age(j,2)
-              Sacc(j,1)=Sacc(j,2)
-              Sacch_int(j,1)=Sacch_int(j,2)
-              Sacch_edge(j,1)=Sacch_edge(j,2)
-              Sandacc(j,1) = Sandacc(j,2)
-              Siltacc(j,1) = Siltacc(j,2)
-              Clayacc(j,1) = Clayacc(j,2)
+                enddo
+                Tempw(j,1)=Tempw(j,2)
+!               Age(j,1)=Age(j,2)
+                Sacc(j,1)=Sacc(j,2)
+                Sacch_int(j,1)=Sacch_int(j,2)
+                Sacch_edge(j,1)=Sacch_edge(j,2)
+                Sandacc(j,1) = Sandacc(j,2)
+                Siltacc(j,1) = Siltacc(j,2)
+                Clayacc(j,1) = Clayacc(j,2)
 
-              do ichem = 1,14
+                do ichem = 1,14
                   Chem(j,ichem,1)=Chem(j,ichem,2)
-              enddo
-              CSSvRs(j,1)= CSSvRs(j,2)
-              Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
-              Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
+                enddo
+                CSSvRs(j,1)= CSSvRs(j,2)
+                Qmarsh(j,1) = Qmarsh(j,2)       ! added EDW/ZW -02/16/2015
+                Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
 !>> Check if any water surface elevation values are NaN - if so, pause model run
-              if(isNAN(Es(j,2))) then  
-                  write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
-                  write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm
+                if(isNAN(Es(j,2))) then  
+                  write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',isimday
+                  write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',isimday
                   stop !pause
-              endif          
-!!>> -- Check that some  calculated water quality values do not exceed default threshold values. If they do, set equal to the threshold
-!              if(Chem(j,10,2) > 0.00025) then
-!                  Chem(j,10,2) = 0.00025
-!              endif
-!
-!              if(Chem(j,11,2) > 0.00025) then
-!                    Chem(j,11,2) = 0.00025
-!              endif
-!
-!              if(Chem(j,12,2) > 0.00025) then
-!                  Chem(j,12,2) = 0.00025
-!              endif
-!!>> -- Repeat water quality threshold check, so that the initial conditions array for the next model timestep matches the 'current' array.
-!              if(Chem(j,10,1) > 0.00025) then
-!                  Chem(j,10,1)=0.00025
-!              endif
-!
-!              if(Chem(j,11,1) > 0.00025) then
-!                  Chem(j,11,1)=0.00025
-!              endif
-!
-!              if(Chem(j,12,1) > 0.00025) then
-!                  Chem(j,12,1)=0.00025
-!              endif
+                endif          
 
-          enddo                    
-        
+            enddo                    
           
 !>> End main model DO loop that is looped over each simulation timestep
+          enddo
       enddo
-      
 
 !>> Close any open 1D files
       if (n1d > 0) then
@@ -823,9 +810,9 @@
 ! Write sediment accumulation in open water output file - 1 value per year      
 !      pm1 = (1.-Apctmarsh(j))
 !      WRITE(117,9229)(((ASandA(j)/As(j,1)+clams
-!     &			+max(0.,Sacc(j,2)))*pm1				!modified June 20, 2011 JAM for testing removed /1000  added ASANDA(
-!     &			+Sacch(j,2)*Apctmarsh(j)+476.), j=1,N)		!increase fines captured
-!	close (117)
+!     &         +max(0.,Sacc(j,2)))*pm1             !modified June 20, 2011 JAM for testing removed /1000  added ASANDA(
+!     &         +Sacch(j,2)*Apctmarsh(j)+476.), j=1,N)      !increase fines captured
+!   close (117)
 
 !>> Calculate percentage of sand in open water bed sediments
       do j = 1,N
@@ -841,7 +828,7 @@
 
 !>> close the input/output files
       call CloseFiles
-	
+    
 !>> determine end time for calculating runtimes
       call SYSTEM_CLOCK(runtime_end,count_rate2,count_max2)
       runtime_s = dble(runtime_start)
