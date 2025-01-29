@@ -1,7 +1,7 @@
 !cc**********************Start Subroutine for TSS Solids*****************************************
     
-!      Subroutine TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)		!face densities from node densities
-      Subroutine TSSOLIDS(iab,jnb,j,k,sedclass)		!face densities from node densities
+!      Subroutine TSSOLIDS(mm,iab,jnb,j,k,dz,dzh,dref,sedclass)     !face densities from node densities
+      Subroutine TSSOLIDS(iab,jnb,j,k,sedclass)     !face densities from node densities
 
       use params
       
@@ -27,15 +27,15 @@
               diffus = EAOL(iab) 
               Qlink=Q(iab,2)
               
-              if (Ahf(j)>0) then			  
+              if (Ahf(j)>0) then              
 !>> add sediment flux from this marsh link to the cumulative sediment flux for marsh in this comparment (QSsumh)
                   QSSumh(sedclass) = QSsumh(sedclass)
      &              + sicc(j,k)*Qlink*Cssface
-     &              + fe*diffus*(CSSh(j,1,sedclass)-CSSh(jnb,1,sedclass))			!Diffusion
+     &              + fe*diffus*(CSSh(j,1,sedclass)-CSSh(jnb,1,sedclass))           !Diffusion
               else
                   QSSum(sedclass) = QSSum(sedclass) 
-     &              + sicc(j,k)*Qlink*Cssface				!face exchange
-     &              + fe*diffus*(CSSh(j,1,sedclass)-CSSh(jnb,1,sedclass))			!Diffusion
+     &              + sicc(j,k)*Qlink*Cssface               !face exchange
+     &              + fe*diffus*(CSSh(j,1,sedclass)-CSSh(jnb,1,sedclass))           !Diffusion
               endif
           endif
 !>> If link is not marsh overland flow link, use CSS in open water and add sediment flux to open water cumulative sediment flux term
@@ -74,7 +74,7 @@
               if(sedclass/=1) then
                   QSSumh(sedclass) = QSsumh(sedclass)
      &            + sicc(j,k)*Qlink2*Cssface
-     &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))			!Diffusion
+     &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))           !Diffusion
               endif
           endif
           
@@ -93,16 +93,16 @@
 !     &            + sicc(j,k)*Q(abs(icc(j,k)),2)*Cssface
               
 !          else
-!>> add sediment flux from this link to the cumulative sediment flux for the compartment (QSsum)			    
+!>> add sediment flux from this link to the cumulative sediment flux for the compartment (QSsum)                
           QSSum(sedclass) = QSSum(sedclass) 
-     &            + sicc(j,k)*Qlink*Cssface				!face exchange
-     &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))			!Diffusion
+     &            + sicc(j,k)*Qlink*Cssface             !face exchange
+     &            + fe*diffus*(CSS(j,1,sedclass)-CSS(jnb,1,sedclass))           !Diffusion
               
 !          endif
       endif
 
       
-	
+    
       return
       end
 
