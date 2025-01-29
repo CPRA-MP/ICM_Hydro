@@ -12,13 +12,13 @@
       
 !>> Set initial conditions for constants and model parameters that are not included in input text files
 !   Initial Conditions
-      g=9.81			      ! Gravity (m/s2)
+      g=9.81                  ! Gravity (m/s2)
       pi=4.0*atan(1.0)
-!      TemI = 15.				 ! Initial Water Temperature
-      KnN= 20.				  ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-      KnP= 3.				  ! (ug/L) P Michaelis Constant
-      KnSS= 50.				  ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-      KnSal=4.				  ! (ppt) Salinity  Michaelis Constant
+!      TemI = 15.                ! Initial Water Temperature
+      KnN= 20.                ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
+      KnP= 3.                 ! (ug/L) P Michaelis Constant
+      KnSS= 50.               ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
+      KnSal=4.                ! (ppt) Salinity  Michaelis Constant
     
       ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
       ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
@@ -26,13 +26,13 @@
       ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
       Pardpmr= 0.05
       PPMR=1.-ParPMR-Pardpmr
-      ParSand=0.05			  ! sand/TSS in Tribs and MR typical
-      ParCLa=0.03			  ! Partition LivA --> ChlA
+      ParSand=0.05            ! sand/TSS in Tribs and MR typical
+      ParCLa=0.03             ! Partition LivA --> ChlA
     
-      consd=24*3600			  ! sec to days
-      conv=0.001*consd		  ! (mg/L)*(m3/s) --> kg/d
+      consd=24*3600           ! sec to days
+      conv=0.001*consd        ! (mg/L)*(m3/s) --> kg/d
       stds=0.
-!      nuo=0.000001			  ! DEFAULT Viscosity
+!      nuo=0.000001           ! DEFAULT Viscosity
       fa_def=1                !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
 
 !>> Generate array for Day of Year value for the first day of each month
