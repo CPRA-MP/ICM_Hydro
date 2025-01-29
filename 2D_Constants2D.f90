@@ -34,6 +34,7 @@
       stds=0.
 !      nuo=0.000001           ! DEFAULT Viscosity
       fa_def=1                !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
+      cden=1./1000./24./3600.       ! mm/d to m/s conversion
 
 !>> Generate array for Day of Year value for the first day of each month
       month_DOY(1) = 1
