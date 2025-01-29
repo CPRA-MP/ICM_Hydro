@@ -1,9 +1,9 @@
-!	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
+!   Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
-!	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-	  Subroutine CelldTmp(j,kday)
+!   Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+        Subroutine CelldTmp(j,kday)
 !JAM     c Salinity  computations ****************************
-	
+    
         use params
 
         implicit none
@@ -13,15 +13,15 @@
         integer :: kdiv,ktrib,k,iab,jnb,j,kday
         real :: QTmp_in,Q_in
 
-        CSHEAT=4182.					!Specific heat
-        rhoj=1000.*(1+S(j,1)/1000.)		!density
+        CSHEAT=4182.                    !Specific heat
+        rhoj=1000.*(1+S(j,1)/1000.)     !density
 
 !>> Set minimum depth value (avoids div-by-zero errors)
         ddy1 = Es(j,1)-Bed(j)
         ddy2 = Es(j,2)-Bed(j)
         ddym1 = Eh(j,1)-BedM(j)
         ddym2 = Eh(j,2)-BedM(j)
-	
+    
 !      if(ddy1 <= 0.1) then
 !          dddy = 0.1
         if(ddy1 <= dry_threshold) then
@@ -32,7 +32,7 @@
       
 !        ake=5.0
         ake=26.5  !zw - 1/12/2024 based on MP2012 Ke averages
-!        cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
+!        cden=1./1000./24./3600.        !JAM Oct 2010 mm/d to m/s
         if(ddy1 <= dry_threshold) then
             aktmp=0
         else
@@ -52,7 +52,7 @@
 !>> update  mass flux (QTMPsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
         do kdiv=1,Ndiv
             QTMPsum=QTMPsum - Qdiv(kdiv,kday)*TempMR(kday)*
-     &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
+     &      Qmultdiv(j,kdiv)                                        !!!JAM Oct 2010
             if(iAdvTrans==3) QTmp_in=QTmp_in+Qdiv(kdiv,kday)
      &                          *TempMR(kday)*Qmultdiv(j,kdiv)             !ZW 1/30/2024 for use of SWMM method
             if(iAdvTrans==3) Q_in=Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
@@ -63,7 +63,7 @@
 !>> If Qtrib is negative, flow is leaving system via tributary, use compartment temp if this is the case
             if (Qtrib(ktrib,kday) > 0.0) then
                 QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
-     &			            Qmult(j,ktrib)
+     &                      Qmult(j,ktrib)
               if(iAdvTrans==3) QTmp_in=QTmp_in+Qtrib(ktrib,kday)
      &                             *TMtrib(ktrib,kday)*Qmult(j,ktrib)     !ZW 1/30/2024 for use of SWMM method
               if(iAdvTrans==3) Q_in=Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
@@ -109,13 +109,13 @@
             endif
 !===end 1/30/2024
 
-!          call Temperature(mm,iab,jnb,j,k,QTMPsum)	!Temperature change computations
-            if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum)	!Temperature change computations
+!          call Temperature(mm,iab,jnb,j,k,QTMPsum) !Temperature change computations
+            if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum)   !Temperature change computations
         enddo
 
 
 !      DTempw1=  -QTMPsum/(As(j,1)*dddy)*dt
-!     &	-Dz*Tempw(j,1)/dddy
+!     & -Dz*Tempw(j,1)/dddy
 
 !>> New temperature equations:
 ! T2*V2 = T1*V1 + Tin*Vin + Tsource
@@ -128,11 +128,11 @@
 
 !>> Calculate temperature source from equilbrium tempertaure at air-water interface
 
-        DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt			!JAM Oct 2010
+        DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt         !JAM Oct 2010
       
       ! debug for v23.4.2
       !if(isNan(QTMPsum)) then
-      !	  QTMPsum = 0.0
+      !   QTMPsum = 0.0
       !endif
 
 !     openwater volume
@@ -182,27 +182,27 @@
         else
             Tempw(j,2) = ta(kday)
         endif
-!	Tempw(j,2)=Tempw(j,1)+DTempw1+DTempw2
+!   Tempw(j,2)=Tempw(j,1)+DTempw1+DTempw2
       
 
 !=== for code debugging
 !        if(((Tempw(j,2))<0) .or. ((Tempw(j,2))>tmpmax)) then
         if(isNan(Tempw(j,2))) then
-          write(1,*) 'j:',j
-          write(1,*) 'As(j,1):',As(j,1)
-          write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
-          write(1,*) 'depth(t) =', Es(j,2)-Bed(j)
-          write(1,*) 'Dz =',Es(j,2)-Es(j,1)
-          write(1,*) 'vol(t-1) =', vol1,marsh_vol1
-          write(1,*) 'vol(t) =', vol2,marsh_vol2
-          write(1,*) 'Tempw(j,1):',Tempw(j,1)
-          write(1,*) 'Tempw(j,2):',Tempw(j,2)
-          write(1,*) 'QTMPsum:',QTMPsum
-          write(1,*) 'QRain:',QRain(j)
-          write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
-          write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
-          write(1,*) 'Air Temp:',ta(kday)   
-          do k=1,nlink2cell(j)
+            write(1,*) 'j:',j
+            write(1,*) 'As(j,1):',As(j,1)
+            write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
+            write(1,*) 'depth(t) =', Es(j,2)-Bed(j)
+            write(1,*) 'Dz =',Es(j,2)-Es(j,1)
+            write(1,*) 'vol(t-1) =', vol1,marsh_vol1
+            write(1,*) 'vol(t) =', vol2,marsh_vol2
+            write(1,*) 'Tempw(j,1):',Tempw(j,1)
+            write(1,*) 'Tempw(j,2):',Tempw(j,2)
+            write(1,*) 'QTMPsum:',QTMPsum
+            write(1,*) 'QRain:',QRain(j)
+            write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
+            write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
+            write(1,*) 'Air Temp:',ta(kday)   
+            do k=1,nlink2cell(j)
               iab=abs(icc(j,k))
               if(icc(j,k) /= 0) then
                   if(icc(j,k) < 0) then
@@ -220,20 +220,20 @@
      &                      'Tempw(jds)=',Tempw(jds(iab),1)
                   write(1,*)'QTMP_adv+diff=',QTMPsum_link
               endif
-          enddo
-          stop
+            enddo
+            stop
         endif
 
 ! low high pass filter
-!		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
+!       if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
         if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
 !      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
         if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax
 !zw 1/18/2024        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
 
 
-!	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
-!	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
+!   fsal=(1+S(j,2)/35) !-EDW not used anywhere                                  !salinity correction on Vs
+!   Temph(j,2)=Tempw(j,2)+0.5                           !JKS 10/31/13
 
         return 
         end
