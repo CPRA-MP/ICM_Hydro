@@ -99,44 +99,44 @@
 !!!         if(output_flag == mmm) then
 !!!               write(*,5555)' Mapping monthly mean salinity',
 !!!  &                      ' values to grid. Month: ',mmm-100
-!!!	   	    do kk=1,N
-!!!	   		    map_comp_input(kk) = sal_month_ave(mmm-100,kk)
-!!!	   	    enddo
+!!!         do kk=1,N
+!!!             map_comp_input(kk) = sal_month_ave(mmm-100,kk)
+!!!         enddo
 !!!       endif
-!!!	enddo
+!!! enddo
 !!!
-!!!	do mmm=201,212
+!!! do mmm=201,212
 !!!          if(output_flag == mmm) then
 !!!               write(*,5555)' Mapping monthly mean temperature',
 !!!  &                      ' values to grid. Month: ',mmm-200
-!!!	        do kk=1,N
-!!!	     		map_comp_input(kk) = tmp_month_ave(mmm-200,kk)
-!!!	    	enddo
+!!!         do kk=1,N
+!!!             map_comp_input(kk) = tmp_month_ave(mmm-200,kk)
+!!!         enddo
 !!!          endif
 !!!      enddo
 !!! salinity and temperature are mapped to grid using IDW interpolation subroutine
       
-   	do mmm=301,312
-	    if(output_flag == mmm) then
-               write(1,5555)' Mapping monthly mean TKN',
+      do mmm=301,312
+          if(output_flag == mmm) then
+              write(1,5555)' Mapping monthly mean TKN',
      &                      ' values to grid. Month: ',mmm-300
-               write(*,5555)' Mapping monthly mean TKN',
+              write(*,5555)' Mapping monthly mean TKN',
      &                      ' values to grid. Month: ',mmm-300
               do kk=1,N
-	     	    map_comp_input(kk) = tkn_month_ave(mmm-300,kk)
+                map_comp_input(kk) = tkn_month_ave(mmm-300,kk)
               enddo
           endif
       enddo
 
       do mmm=401,412
-	   	if(output_flag == mmm) then
+          if(output_flag == mmm) then
               write(1,5555)' Mapping monthly mean TSS',
      &                      ' values to grid. Month: ',mmm-400
               write(*,5555)' Mapping monthly mean TSS',
      &                      ' values to grid. Month: ',mmm-400
               do kk=1,N
-	     		map_comp_input(kk) = tss_month_ave(mmm-400,kk)
-	    	enddo
+                map_comp_input(kk) = tss_month_ave(mmm-400,kk)
+              enddo
           endif
       enddo
 
@@ -153,28 +153,28 @@
 !>> Set output arrays equal to the temporary interpolation array
 !!! salinity and temperature are mapped to grid using IDW interpolation subroutine
 !!!      do mmm=101,112
-!!!    	    if (output_flag == mmm) then
+!!!         if (output_flag == mmm) then
 !!!               salinity_500m_month(mmm-100,k) = grid_no_interp(k)
 !!!           endif
-!!!      endo	
+!!!      endo   
 !!!      
 !!!       do mmm=201,212
-!!!     	    if (output_flag == mmm) then
+!!!             if (output_flag == mmm) then
 !!!               tmp_500m_month(mmm-200,k) = grid_no_interp(k)
 !!!           endif
 !!!       enddo
 !!! salinity and temperature are mapped to grid using IDW interpolation subroutine      
 
           do mmm=301,312
-      	    if (output_flag == mmm) then
+              if (output_flag == mmm) then
                   tkn_500m_month(mmm-300,k) = grid_no_interp(k)
               endif
           enddo
       
           do mmm=401,412
-      	    if (output_flag == mmm) then
+              if (output_flag == mmm) then
                   TSS_500m_month(mmm-400,k) = grid_no_interp(k)
-       	    endif
+              endif
           enddo
       
       enddo
