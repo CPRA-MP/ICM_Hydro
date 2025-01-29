@@ -5,61 +5,61 @@
       
 !> @ author Eric White - The Water Institute of the Gulf
 
-!> @param[in]     M                       number of links
-!> @param[in]     N                       number of compartments
-!> @param[in]     sal_daily(366,N)        daily compartment salinity, calculated in hydrod (ppt)    
-!> @param[in]     sal_daily_links(366,M)  daily link salinity, calculated in hydrod (ppt)
-!> @param[in]     simdays                 number of days in the simulation year (either 365 or 366)
-!> @param[in]     stage_daily(366,N)      daily compartment water stage, calculated in hydrod (m)    
-!> @param[in]     tmp_daily(366,N)        daily compartment water temperature, calculated in hydrod (deg C)    
-!> @param[in]     tmp_daily_links(366,M)  daily link water temperature, calculated in hydrod (deg C)
+!> @param[in]     M                          number of links
+!> @param[in]     N                          number of compartments
+!> @param[in]     sal_daily(366,N)           daily compartment salinity, calculated in hydrod (ppt)    
+!> @param[in]     sal_daily_links(366,M)     daily link salinity, calculated in hydrod (ppt)
+!> @param[in]     simdays                    number of days in the simulation year (either 365 or 366)
+!> @param[in]     stage_daily(366,N)         daily compartment water stage, calculated in hydrod (m)    
+!> @param[in]     tmp_daily(366,N)           daily compartment water temperature, calculated in hydrod (deg C)    
+!> @param[in]     tmp_daily_links(366,M)     daily link water temperature, calculated in hydrod (deg C)
 
-!> @param[out]    sal_ave(N)              annual mean compartment salinity (ppt)
-!> @param[out]    sal_summer(180,N)       daily compartment salinity for summer days (ppt)
-!> @param[out]    sal_ave_summer(N)       mean summertime compartment salinity (ppt)  
-!> @param[out]    sal_ave_links(M)        annual mean link salinity (ppt)
-!> @param[out]    sal_ave_summer_links(M) mean summertime link salinity (ppt)  
-!> @param[out]    stage_ave(N)            annual mean compartment stage (m)
-!> @param[out]    stage_summer(180,N)     daily compartment stage for summer days (m)
-!> @param[out]    stage_ave_summer(N)     mean summertime compartment stage (m)  
-!> @param[out]    stage_var_summer(N)     variance in summertime compartment stage (m)  
-!> @param[out]    tmp_ave(N)              annual mean compartment temperature (deg C)
-!> @param[out]    tmp_summer(180,N)       daily compartment temperature for summer days (deg C)
-!> @param[out]    tmp_ave_summer(N)       mean summertime compartment temperature (deg C)
-!> @param[out]    tmp_ave_links(M)        annual mean link water temperature (deg C)
-!> @param[out]    tmp_ave_summer_links(M) mean summertime link water temperature (deg C)
-!> @param[out]    sal_month_ave(12,N)     monthly average salinity for compartments
-!> @param[out]    tmp_month_ave(12,N)     monthly average temperature for compartments
-!> @param[out]    alg_month_ave(12,N)   monthly average algae for compartments
-!> @param[out]    tss_month_ave(12,N)   monthly average TSS for for compartments
+!> @param[out]    sal_ave(N)                 annual mean compartment salinity (ppt)
+!> @param[out]    sal_summer(180,N)          daily compartment salinity for summer days (ppt)
+!> @param[out]    sal_ave_summer(N)          mean summertime compartment salinity (ppt)  
+!> @param[out]    sal_ave_links(M)           annual mean link salinity (ppt)
+!> @param[out]    sal_ave_summer_links(M)    mean summertime link salinity (ppt)  
+!> @param[out]    stage_ave(N)               annual mean compartment stage (m)
+!> @param[out]    stage_summer(180,N)        daily compartment stage for summer days (m)
+!> @param[out]    stage_ave_summer(N)        mean summertime compartment stage (m)  
+!> @param[out]    stage_var_summer(N)        variance in summertime compartment stage (m)  
+!> @param[out]    tmp_ave(N)                 annual mean compartment temperature (deg C)
+!> @param[out]    tmp_summer(180,N)          daily compartment temperature for summer days (deg C)
+!> @param[out]    tmp_ave_summer(N)          mean summertime compartment temperature (deg C)
+!> @param[out]    tmp_ave_links(M)           annual mean link water temperature (deg C)
+!> @param[out]    tmp_ave_summer_links(M)    mean summertime link water temperature (deg C)
+!> @param[out]    sal_month_ave(12,N)        monthly average salinity for compartments
+!> @param[out]    tmp_month_ave(12,N)        monthly average temperature for compartments
+!> @param[out]    alg_month_ave(12,N)        monthly average algae for compartments
+!> @param[out]    tss_month_ave(12,N)        monthly average TSS for for compartments
 !> @param[out]    sal_month_ave_links(12,M)  monthly average salinity for links
 !> @param[out]    tmp_month_ave_links(12,M)  monthly average temperature for links
 !> @param[out]    alg_month_ave_links(12,M)  monthly average algae for links
-!> @param[out]    tss_month_ave_links(12,M)   monthly average TSS for for links
+!> @param[out]    tss_month_ave_links(12,M)  monthly average TSS for for links
 
 
-!> @param         difmean(180,N)          temporary array used in calculating the variance in summertime stage
-!> @param         ndays                   number of days in month
-!> @param         summerstart             first day of summer - May 1 - updated for leap years
-!> @param         summerend               last day of summer - Aug 31 - updated for leap years
-!> @param         summerlength            length (days) in summer
-!> @param         salsum                  local value summing the daily salinity values of the month for compartments
-!> @param         salsum_links            local value summing the daily salinity values of the month for links
-!> @param         tempsum                 local value summing the daily temperature values of the month for compartments
-!> @param         tempsum_links           local value summing the daily temperature values of the month for links
-!> @param         tsssum                  local value summing the daily TSS values of the month for compartments
-!> @param         tsssum_links            local value summing the daily TSS values of the month for links
-!> @param         algsum                 local value summing the daily chlorophyll A values of the month for compartments
-!> @param         algsum_links           local value summing the daily chlorophyll A values of the month for links
-!> @param		  stgsum1                 local value summing the monthly average stages for taking subset of annual
-!> @param		  nmonths1                local value used for finding the average from a subset of months
-!> @param		  stgsum2                 local value summing the monthly average stages for taking subset of annual
-!> @param		  nmonths2                local value used for finding the average from a subset of months
+!> @param         difmean(180,N)             temporary array used in calculating the variance in summertime stage
+!> @param         ndays                      number of days in month
+!> @param         summerstart                first day of summer - May 1 - updated for leap years
+!> @param         summerend                  last day of summer - Aug 31 - updated for leap years
+!> @param         summerlength               length (days) in summer
+!> @param         salsum                     local value summing the daily salinity values of the month for compartments
+!> @param         salsum_links               local value summing the daily salinity values of the month for links
+!> @param         tempsum                    local value summing the daily temperature values of the month for compartments
+!> @param         tempsum_links              local value summing the daily temperature values of the month for links
+!> @param         tsssum                     local value summing the daily TSS values of the month for compartments
+!> @param         tsssum_links               local value summing the daily TSS values of the month for links
+!> @param         algsum                     local value summing the daily chlorophyll A values of the month for compartments
+!> @param         algsum_links               local value summing the daily chlorophyll A values of the month for links
+!> @param         stgsum1                    local value summing the monthly average stages for taking subset of annual
+!> @param         nmonths1                   local value used for finding the average from a subset of months
+!> @param         stgsum2                    local value summing the monthly average stages for taking subset of annual
+!> @param         nmonths2                   local value used for finding the average from a subset of months
       
       
       subroutine ICM_Summaries
-      			
-	use params
+                
+      use params
 
       implicit none
       integer :: j,k,jj,kk,kl,mn,DOYstart,DOYend,ndays
@@ -103,7 +103,7 @@
 
 
 !>> Calculate monthly averages for use in HSI equations
-       do mn=1,12
+      do mn=1,12
           DOYstart = month_DOY(mn)
           if (mn==12) then                !update last day of month for December (since their isn't a DOY_month(13))
               DOYend = month_DOY(12)+30
@@ -150,7 +150,7 @@
               tkn_month_ave_links(mn,kk) = tknsum_links/ndays
               tss_month_ave_links(mn,kk)= tsssum_links/ndays
           enddo
-       enddo
+      enddo
       
 !>> Calculate annual mean values.
       ! summing over dimension 1 of sal_daily sums the daily values at each compartment or link
@@ -174,39 +174,39 @@
       trg_ave_summer = sum(trg_summer,DIM=1)/float(summerlength)
 
 !>> Calculate mean stage values for bird HSIs.
-	do k = 1,N
-		stgsum1 = 0.0
-		nmonths1 = 0.0
-		stgsum2 = 0.0
-		nmonths2 = 0.0
+      do k = 1,N
+          stgsum1 = 0.0
+          nmonths1 = 0.0
+          stgsum2 = 0.0
+          nmonths2 = 0.0
 
 !>> Calculate September-March mean stage.
-		do mn = 1,3
-			stgsum1 = stgsum1 + stg_month_ave(mn,k)
-			nmonths1 = nmonths1 + 1.0
-      	enddo
-      	do mn = 9,12
-      		stgsum1 = stgsum1 + stg_month_ave(mn,k)
-      		nmonths1 = nmonths1 + 1.0
-      	enddo
+          do mn = 1,3
+              stgsum1 = stgsum1 + stg_month_ave(mn,k)
+              nmonths1 = nmonths1 + 1.0
+          enddo
+          do mn = 9,12
+              stgsum1 = stgsum1 + stg_month_ave(mn,k)
+              nmonths1 = nmonths1 + 1.0
+          enddo
       
-      	sepmar_stage(k) = stgsum1/nmonths1
+          sepmar_stage(k) = stgsum1/nmonths1
 
 !>> Calculate October-April mean stage.
-		do mn = 1,4
-			stgsum2 = stgsum2 + stg_month_ave(mn,k)
-			nmonths2 = nmonths1 + 1.0
-      	enddo
-      	do mn = 10,12
-      		stgsum2 = stgsum2 + stg_month_ave(mn,k)
-      		nmonths2 = nmonths2 + 1.0
-      	enddo
+          do mn = 1,4
+              stgsum2 = stgsum2 + stg_month_ave(mn,k)
+              nmonths2 = nmonths1 + 1.0
+          enddo
+          do mn = 10,12
+              stgsum2 = stgsum2 + stg_month_ave(mn,k)
+              nmonths2 = nmonths2 + 1.0
+          enddo
       
-      	octapr_stage(k) = stgsum2/nmonths2
+          octapr_stage(k) = stgsum2/nmonths2
 
       enddo
-      	
-      	
+        
+        
 !>> Calculate variance in stage height over summer
       do j=1,summerlength
           do k = 1,N
@@ -349,5 +349,5 @@
       
       return
       end 
-			
-					
+            
+                    
