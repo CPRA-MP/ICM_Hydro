@@ -40,7 +40,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 
 ###########################################################################
 #...Set the version string (used for libraries)
-SET(ICMHYDRO_VERSION_MAJOR 24)
+SET(ICMHYDRO_VERSION_MAJOR 25)
 SET(ICMHYDRO_VERSION_MINOR  0)
 SET(ICMHYDRO_VERSION_PATCH  0)
 SET(ICMHYDRO_VERSION_STRING ${ICMHYDRO_VERSION_MAJOR}.${ICMHYDRO_VERSION_MINOR}.${ICMHYDRO_VERSION_PATCH})
@@ -431,6 +431,12 @@ ADD_EXECUTABLE( ${HYDRO} 1D_common_array_R.f90
                          2D_TP.f
                          2D_TSSolids.f
                          2D_vanRijnSediment.f
-                         2D_waves_YV.f )
+                         2D_waves_YV.f 
+                         2D_Initialization.f90
+                         2D_CloseFiles.f90
+                         2D_OpenFiles.f90
+                         2D_ICM_PP.f90
+                         2D_Write_Hotstart.f90
+                         2D_Constants2D.f90)
 SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles/mod)
 SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES COMPILE_FLAGS "${Fortran_LINELENGTH_FLAG} ${Fortran_COMPILER_SPECIFIC_FLAG}" )
