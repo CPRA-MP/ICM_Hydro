@@ -73,7 +73,7 @@
       !integer :: kday
       !integer :: kthr
       integer :: NTs
-	real(sp) :: dtwind
+      real(sp) :: dtwind
       real(sp) :: dttide
       real(sp) :: dz
       real(sp) :: dry_threshold  !dry water depth threshold >0
@@ -112,9 +112,9 @@
       real(sp),dimension(:),allocatable :: EShrly
       
 !parameters used in flowrate output file
-	integer :: nlinksw
-	integer,dimension(:),allocatable :: linkswrite
-	real(sp),dimension(:),allocatable :: FLO
+      integer :: nlinksw
+      integer,dimension(:),allocatable :: linkswrite
+      real(sp),dimension(:),allocatable :: FLO
       
 ! wind data arrays
       real(sp),dimension(:,:),allocatable :: windx_data
@@ -125,16 +125,16 @@
       real(sp),dimension(:,:),allocatable :: TideData
       integer,dimension(:,:),allocatable :: transposed_tide
       real(sp),dimension(:,:),allocatable :: weighted_tide
-	
+    
 
 ! Young&Verhagen wave arrays
-	real(sp),dimension(:,:),allocatable :: group_vel
-	real(sp),dimension(:,:),allocatable :: Hs
-	real(sp),dimension(:,:),allocatable :: Uorb
-	real(sp),dimension(:,:),allocatable :: wave_energy
-	real(sp),dimension(:,:),allocatable :: wave_frequency
-	real(sp),dimension(:,:),allocatable :: wavelength
-	real(sp),dimension(:,:),allocatable :: wave_period
+      real(sp),dimension(:,:),allocatable :: group_vel
+      real(sp),dimension(:,:),allocatable :: Hs
+      real(sp),dimension(:,:),allocatable :: Uorb
+      real(sp),dimension(:,:),allocatable :: wave_energy
+      real(sp),dimension(:,:),allocatable :: wave_frequency
+      real(sp),dimension(:,:),allocatable :: wavelength
+      real(sp),dimension(:,:),allocatable :: wave_period
 
 ! Sediment distribution variables and arrays
       real(sp) :: flocA
@@ -155,15 +155,15 @@
       real(sp),dimension(:),allocatable :: sedn
       real(sp),dimension(:),allocatable :: sedcalib
       real(sp),dimension(:),allocatable :: alphaSed
-	real(sp),dimension(:),allocatable :: Dgr
-	real(sp),dimension(:),allocatable :: D50
-	real(sp),dimension(:),allocatable :: D90
+      real(sp),dimension(:),allocatable :: Dgr
+      real(sp),dimension(:),allocatable :: D50
+      real(sp),dimension(:),allocatable :: D90
       real(sp),dimension(:),allocatable :: rhoSed
-	real(sp),dimension(:),allocatable :: SGsed
+      real(sp),dimension(:),allocatable :: SGsed
       real(sp),dimension(:),allocatable :: kinvisc
       real(sp),dimension(:),allocatable :: Tcrit
       real(sp),dimension(:),allocatable :: dCSS
-	real(sp),dimension(:),allocatable :: dCSSh
+      real(sp),dimension(:),allocatable :: dCSSh
       real(sp),dimension(:),allocatable :: dSacc
       real(sp),dimension(:),allocatable :: dSacch
       real(sp),dimension(:),allocatable :: depo_on_off
@@ -222,7 +222,7 @@
       character*300 :: VegWaveAmpFile
       character*300 :: VegMeanSalFile  
       character*300 :: VegSummerDepthFile
-	character*300 :: VegSummerSalFile 
+      character*300 :: VegSummerSalFile 
       character*300 :: VegSummerTempFile
       character*300 :: VegTreeEstCondFile
       character*300 :: VegBIHeightFile
@@ -297,8 +297,8 @@
       
       
       ! arrays for HSI monthly values
-      real(sp), dimension(:,:), allocatable :: stg_month_ave			! monthly average stage values for compartments
-	real(dp), dimension(:,:), allocatable :: sal_month_ave          ! monthly average salinity values for compartments
+      real(sp), dimension(:,:), allocatable :: stg_month_ave            ! monthly average stage values for compartments
+      real(dp), dimension(:,:), allocatable :: sal_month_ave          ! monthly average salinity values for compartments
       real(dp), dimension(:,:), allocatable :: sal_month_ave_links    ! monthly average salinity values for links
       real(sp), dimension(:,:), allocatable :: tmp_month_ave          ! monthly average temperature values for compartments
       real(sp), dimension(:,:), allocatable :: tmp_month_ave_links    ! monthly average temperature values for links
@@ -321,11 +321,11 @@
       real(sp), dimension(:,:), allocatable :: stage_daily            ! daily stage values for compartments
       real(sp), dimension(:), allocatable :: stage_ave                ! average stage values for compartments
       real(sp), dimension(:), allocatable :: stage_max                ! maximum stage values for compartments
-      real(sp), dimension(:), allocatable :: sepmar_stage				! average stage for September-March (Green-winged Teel HSI)
-	real(sp), dimension(:), allocatable :: octapr_stage				! average stage for October-April (Gadwall HSI)
-	real(sp), dimension(:), allocatable :: stage_500m               ! average stage values mapped to 500m grid cells - no smoothing/interpolation
+      real(sp), dimension(:), allocatable :: sepmar_stage               ! average stage for September-March (Green-winged Teel HSI)
+      real(sp), dimension(:), allocatable :: octapr_stage             ! average stage for October-April (Gadwall HSI)
+      real(sp), dimension(:), allocatable :: stage_500m               ! average stage values mapped to 500m grid cells - no smoothing/interpolation
       real(sp), dimension(:), allocatable :: depth_500m               ! average depth values mapped to 500m grid cells - no smoothing/interpolation
-      	     
+             
       real(sp), dimension(:,:), allocatable :: stage_summer           ! daily summertime stage values for compartments
       real(sp), dimension(:), allocatable :: stage_ave_summer         ! average summertime stage values for compartments
       real(sp), dimension(:), allocatable :: stage_summer_500m        ! average summertime stage values mapped to 500m grid cells - no smoothing/interpolation
@@ -412,7 +412,7 @@
       real(sp), dimension(:), allocatable :: Percent
       real(sp), dimension(:), allocatable :: SBC
       real(sp), dimension(:), allocatable :: SSource      
-!     real(sp), dimension(:), allocatable :: tauc
+!      real(sp), dimension(:), allocatable :: tauc
 !      real(sp), dimension(:), allocatable :: Vss
             
              
@@ -429,7 +429,7 @@
       real(sp), dimension(:,:), allocatable :: ESMX
       real(sp), dimension(:,:), allocatable :: Fetch
       real(sp), dimension(:,:), allocatable :: sicc
-!     real(sp), dimension(:,:), allocatable :: SA             !variable not used
+!      real(sp), dimension(:,:), allocatable :: SA             !variable not used
 !      real(sp), dimension(:,:), allocatable :: tau
       real(sp), dimension(:,:), allocatable :: EHAV
       
