@@ -1,4 +1,4 @@
-      Subroutine CelldChem(j,kday,ichem)		!Chemical  computations
+      Subroutine CelldChem(j,kday,ichem)        !Chemical  computations
 
       use params      
 
@@ -25,8 +25,8 @@
       if(ichem == 1) then
 !          if(dyy > 0.01) then
           if(ddy2 > dry_threshold) then
-!          QChemSUM(ichem)=QChemSUM(ichem)-AnthL(j)								! kg/d N-NO3  JAM April 3, 2011
-              QChemSUManth(ichem) = -AnthL(j)*1000.0/(24.0*3600.0)			!zw 4/28/2015 AnthL kg/d to g/s
+!          QChemSUM(ichem)=QChemSUM(ichem)-AnthL(j)                             ! kg/d N-NO3  JAM April 3, 2011
+              QChemSUManth(ichem) = -AnthL(j)*1000.0/(24.0*3600.0)          !zw 4/28/2015 AnthL kg/d to g/s
           endif
       endif
       
@@ -38,26 +38,26 @@
           endif
       endif
 
-!>> Determine tributary contributions to cumulative WQ load	
+!>> Determine tributary contributions to cumulative WQ load 
       do ktrib=1,Ntrib
 !>> If Qchem is negative, flow is leaving system via tributary, use compartment WQ concentration if this is the case
           if (QChem(ktrib,ichem,kday) > 0.0) then
-!			QChemSUM(ichem)=QChemSUM(ichem)-QChem(ktrib,ichem,kday)*
-!     &			Qmult(j,ktrib)
+!           QChemSUM(ichem)=QChemSUM(ichem)-QChem(ktrib,ichem,kday)*
+!     &         Qmult(j,ktrib)
               QChemSUMtrib(ichem) = QChemSUMtrib(ichem)
-     &            -QChem(ktrib,ichem,kday)*Qmult(j,ktrib)		!-EDW 6/4/2015 QChem is now in g/s!zw 4/28/2015 QChem kg/s to g/s	(QChem is converted from kg/d to kg/s in infile.f)
+     &            -QChem(ktrib,ichem,kday)*Qmult(j,ktrib)       !-EDW 6/4/2015 QChem is now in g/s!zw 4/28/2015 QChem kg/s to g/s   (QChem is converted from kg/d to kg/s in infile.f)
           else
               QChemSUMtrib(ichem) = QChemSUMtrib(ichem)
      &            - Qtrib(ktrib,kday)*Qmult(j,ktrib)*Chem(j,ichem,1)
           endif
-      enddo															! end trib chem   g/s
+      enddo                                                         ! end trib chem   g/s
 !>> Determine diversion contributions to cumulative WQ load      
       do kdiv=1,Ndiv
-!			QChemSUM(ichem)=QChemSUM(ichem)-QChemdiv(kdiv,ichem,kday)*	! JAM Feb 22, 2010
-!     &			Qmultdiv(j,kdiv)
+!           QChemSUM(ichem)=QChemSUM(ichem)-QChemdiv(kdiv,ichem,kday)*  ! JAM Feb 22, 2010
+!     &         Qmultdiv(j,kdiv)
           QChemSUMdiv(ichem) = QChemSUMdiv(ichem)
-     &           -QChemdiv(kdiv,ichem,kday)*Qmultdiv(j,kdiv)     !-EDW 6/4/2015 QChemdiv is now in g/s !zw 4/28/2015 QChem kg/s to g/s	(QChemdiv is converted from kg/d to kg/s in infile.f)
-      enddo	
+     &           -QChemdiv(kdiv,ichem,kday)*Qmultdiv(j,kdiv)     !-EDW 6/4/2015 QChemdiv is now in g/s !zw 4/28/2015 QChem kg/s to g/s  (QChemdiv is converted from kg/d to kg/s in infile.f)
+      enddo 
 
       do k=1,nlink2cell(j)
           if(icc(j,k) /= 0) then
@@ -70,17 +70,17 @@
           iab=abs(icc(j,k))
 
 !>> call chemical subroutine (mass balance)
-!	    call chemical(mm,iab,jnb,j,k,ichem)
+!       call chemical(mm,iab,jnb,j,k,ichem)
           if(iab > 0) call chemical(iab,jnb,j,k,ichem)
-      enddo															! k do loop neighbouring cell contributions
+      enddo                                                         ! k do loop neighbouring cell contributions
       
 !      if (dyy > 0.01) then
       if (ddy2 > dry_threshold) then
           QChemSUMatm(ichem) = -QAtm(1,ichem,kday)
-     &                     *As(j,1)/(1000000.)*1000.0	  ! zw 4/28/2015 QAtm kg/s/km2 to g/s/km2 (QAtm is converted from kg/d/km2 to kg/s/km2 in infile.f)
+     &                     *As(j,1)/(1000000.)*1000.0     ! zw 4/28/2015 QAtm kg/s/km2 to g/s/km2 (QAtm is converted from kg/d/km2 to kg/s/km2 in infile.f)
       endif
 !      QChemSUM(ichem)=QChemSUM(ichem) 
-!     &	- QAtm(1,ichem,kday)*(As(j,1)+AHydro(j))/(1000000.)			! kg/day
+!     & - QAtm(1,ichem,kday)*(As(j,1)+AHydro(j))/(1000000.)         ! kg/day
 
       QChemSUM(ichem) = QChemSUManth(ichem)
      &                + QChemSUMtrib(ichem)
@@ -141,14 +141,14 @@
      &                + DChemSUM*dt/(24.0*3600.0)*vol1)/vol2      
       else
           Chem(j,ichem,2) = 0
-      endif	
+      endif 
 !      DChem(ichem)=  -1.0*QChemSUM(ichem)/(As(j,1)*dyy)*dt
-!     &	-Dz*Chem(j,ichem,1)/dyy+DChemSUM*(dt/(24.0*3600.0))   !zw 4/28/2015 change dt from sec to day in DChemSUM term because the paramters in the source/sink terms are all in 1/day
-!     &	-Dz*Chem(j,ichem,1)/dyy+DChemSUM*dt
+!     & -Dz*Chem(j,ichem,1)/dyy+DChemSUM*(dt/(24.0*3600.0))   !zw 4/28/2015 change dt from sec to day in DChemSUM term because the paramters in the source/sink terms are all in 1/day
+!     & -Dz*Chem(j,ichem,1)/dyy+DChemSUM*dt
 
 !>> Calculate new WQ concentration from dChem
       Chem(j,ichem,2)=min(1000.0,max(Chem(j,ichem,2),0.0))
-!      Chem(j,ichem,2)=min(1000.0,max(Chem(j,ichem,1)+DChem(ichem),0.0))			  !zw 4/28/2015 if Chem unit is mg/L (=g/m3), then zw changes are correct; otherwise, need to check the WQ units 
+!      Chem(j,ichem,2)=min(1000.0,max(Chem(j,ichem,1)+DChem(ichem),0.0))              !zw 4/28/2015 if Chem unit is mg/L (=g/m3), then zw changes are correct; otherwise, need to check the WQ units 
       !
       !if (chem(j,ichem,2)>1000.0) then
       !    write(*,*) 'ICMID:',j,'ichem:',ichem
@@ -162,6 +162,31 @@
       !    pause
       !
       !endif
+
+!!>> -- Check that some  calculated water quality values do not exceed default threshold values. If they do, set equal to the threshold
+!              if(Chem(j,10,2) > 0.00025) then
+!                  Chem(j,10,2) = 0.00025
+!              endif
+!
+!              if(Chem(j,11,2) > 0.00025) then
+!                    Chem(j,11,2) = 0.00025
+!              endif
+!
+!              if(Chem(j,12,2) > 0.00025) then
+!                  Chem(j,12,2) = 0.00025
+!              endif
+!!>> -- Repeat water quality threshold check, so that the initial conditions array for the next model timestep matches the 'current' array.
+!              if(Chem(j,10,1) > 0.00025) then
+!                  Chem(j,10,1)=0.00025
+!              endif
+!
+!              if(Chem(j,11,1) > 0.00025) then
+!                  Chem(j,11,1)=0.00025
+!              endif
+!
+!              if(Chem(j,12,1) > 0.00025) then
+!                  Chem(j,12,1)=0.00025
+!              endif
 
       return 
       end
