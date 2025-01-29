@@ -68,17 +68,17 @@
           n_cells = n_500m_cells
           
           ! these array sizes change depending on interpolated grid cell size
-		allocate(grid_interp_dist(n_cells,22))
-		allocate(grid_lookup(n_cells,22))
-		allocate(IDW_denom(n_cells))
-		allocate(IDW_numer(n_cells))
-		allocate(IDW_output(n_cells))
+          allocate(grid_interp_dist(n_cells,22))
+          allocate(grid_lookup(n_cells,22))
+          allocate(IDW_denom(n_cells))
+          allocate(IDW_numer(n_cells))
+          allocate(IDW_output(n_cells))
           
           ! these array dimensions do not change
           allocate(IDW_comp_input(N))
           allocate(IDW_link_input(M))
-          		
-			
+                
+            
 
 !>> Error checks - print error message if interpolation arrays were not read into subroutine correctly
           if(size(grid_lookup)==size(grid_lookup_500m)) then
@@ -121,66 +121,66 @@
 !>> (e.g. output_flag 1 = mean salinity data, output_flag 2 = mean summer salinity, etc.)
   
 !>> filter through output_flag values 101-112, 201-212, 301-312, 401-412 
-!>> choose corresponding month dimension of monthly output arrays  		
-	  	do mmm=101,112
-	    	if(output_flag == mmm) then
-                  write(1,5555)' Interpolating monthly mean salinity',
+!>> choose corresponding month dimension of monthly output arrays       
+      do mmm=101,112
+          if(output_flag == mmm) then
+              write(1,5555)' Interpolating monthly mean salinity',
      &                       ' values to grid. Month: ',mmm-100
               
-                  write(*,5555)' Interpolating monthly mean salinity',
+              write(*,5555)' Interpolating monthly mean salinity',
      &                       ' values to grid. Month: ',mmm-100
-	     		do kk=1,N
-	     			IDW_comp_input(kk) = sal_month_ave(mmm-100,kk)
-	    		enddo
-	    		do jj=1,M
-	    			IDW_link_input(jj) = sal_month_ave_links(mmm-100,jj)
-	     		enddo
-	     	endif
-	    enddo
+              do kk=1,N
+                  IDW_comp_input(kk) = sal_month_ave(mmm-100,kk)
+              enddo
+              do jj=1,M
+                  IDW_link_input(jj) = sal_month_ave_links(mmm-100,jj)
+              enddo
+          endif
+      enddo
           
-          do mmm=201,212
-	    	if(output_flag == mmm) then
-                  write(1,5555)' Interpolating monthly mean',
+      do mmm=201,212
+          if(output_flag == mmm) then
+              write(1,5555)' Interpolating monthly mean',
      &                    ' temperature values to grid. Month: ',mmm-200
                   
-                  write(*,5555)' Interpolating monthly mean',
+              write(*,5555)' Interpolating monthly mean',
      &                    ' temperature values to grid. Month: ',mmm-200
      
-                  do kk=1,N
-	     			IDW_comp_input(kk) = tmp_month_ave(mmm-200,kk)
-	    		enddo
-	    		do jj=1,M
-	    			IDW_link_input(jj) = tmp_month_ave_links(mmm-200,jj)
-	     		enddo
-	     	endif
-	    enddo
+              do kk=1,N
+                  IDW_comp_input(kk) = tmp_month_ave(mmm-200,kk)
+              enddo
+              do jj=1,M
+                  IDW_link_input(jj) = tmp_month_ave_links(mmm-200,jj)
+              enddo
+          endif
+      enddo
 
 !!! Algae and TSS not interpolated to grid - they are mapped in the MapMonthlyToGrid subroutine      
-!!!   	 do mmm=301,312
-!!!	    	if(output_flag == mmm) then
+!!!      do mmm=301,312
+!!!         if(output_flag == mmm) then
 !!!               write(*,*)'Interpolating monthly mean Chlorophyll A',
 !!!  &                       'values to grid. Month: ',mmm-300
-!!!	     		do kk=1,N
-!!!	     			IDW_comp_input(kk) = alg_month_ave(mmm-300,kk)
-!!!	    		enddo
-!!!	    		do jj=1,M
-!!!	    			IDW_link_input(jj) = alg_month_ave_links(mmm-300,jj)
-!!!	     		enddo
-!!!	     	endif
-!!!	    enddo
+!!!             do kk=1,N
+!!!                 IDW_comp_input(kk) = alg_month_ave(mmm-300,kk)
+!!!             enddo
+!!!             do jj=1,M
+!!!                 IDW_link_input(jj) = alg_month_ave_links(mmm-300,jj)
+!!!             enddo
+!!!         endif
+!!!     enddo
 !!!
-!!!   	 do mmm=401,412
-!!!	    	if(output_flag == mmm) then
+!!!      do mmm=401,412
+!!!         if(output_flag == mmm) then
 !!!                  write(*,*)'Interpolating monthly mean TSS',
 !!!  &                       'values to grid. Month: ',mmm-400
-!!!	     		do kk=1,N
-!!!	     			IDW_comp_input(kk) = tss_month_ave(mmm-400,kk)
-!!!	    		enddo
-!!!	    		do jj=1,M
-!!!	    			IDW_link_input(jj) = tss_month_ave_links(mmm-400,jj)
-!!!	     		enddo
-!!!	     	endif
-!!!	    enddo
+!!!             do kk=1,N
+!!!                 IDW_comp_input(kk) = tss_month_ave(mmm-400,kk)
+!!!             enddo
+!!!             do jj=1,M
+!!!                 IDW_link_input(jj) = tss_month_ave_links(mmm-400,jj)
+!!!             enddo
+!!!         endif
+!!!     enddo
 !!! Algae and TSS not interpolated to grid - they are mapped in the MapMonthlyToGrid subroutine      
           
           
@@ -232,7 +232,7 @@
               if (output_flag == mmm) then
                   sal_IDW_500m_month(mmm-100,k) = IDW_output(k)
               endif
-          enddo	
+          enddo 
       
           do mmm=201,212
               if (output_flag == mmm) then
