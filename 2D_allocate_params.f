@@ -67,8 +67,8 @@
       allocate(stage_daily(simdays,cells))
       allocate(stage_ave(cells))
       allocate(stage_max(cells))
-	allocate(octapr_stage(cells))
-	allocate(sepmar_stage(cells))
+      allocate(octapr_stage(cells))
+      allocate(sepmar_stage(cells))
       allocate(stage_summer(125,cells))
       allocate(stage_ave_summer(cells))
       allocate(difmean(125,cells))
@@ -174,12 +174,12 @@
       ! arrays of various length
       allocate(stghrwrite(nstghr))
       allocate(EShrly(nstghr))
-     	allocate(linkswrite(nlinksw))
-	allocate(FLO(nlinksw))
-	allocate(Dgr(4))	!sediment class parameters
-	allocate(D90(4))	!sediment class parameters
-	allocate(rhoSed(4))	!sediment class parameters
-	allocate(SGsed(4))	!sediment class parameters
+      allocate(linkswrite(nlinksw))
+      allocate(FLO(nlinksw))
+      allocate(Dgr(4))    !sediment class parameters
+      allocate(D90(4))    !sediment class parameters
+      allocate(rhoSed(4)) !sediment class parameters
+      allocate(SGsed(4))  !sediment class parameters
 
       allocate(dCSS(4))
       allocate(dCSSh(4))
@@ -337,14 +337,14 @@
       allocate(fa_mult(links))
       allocate(hourclosed(links,24))
 
-  	allocate(fa(links))
+      allocate(fa(links))
       allocate(fb(links))
       allocate(ACCSEDj(links))
 !      allocate(Achan(links))
-!	allocate(an(links))
+!   allocate(an(links))
       allocate(asedout(links))  !this was originally asedout(cells) in comdeck.h - should be allocated for links, not cells
       allocate(BCage(cells))
-	allocate(BCDA(cells))
+      allocate(BCDA(cells))
       allocate(BCDO(cells))
       allocate(BCDIN(cells))
       allocate(BCLA(cells))
@@ -356,22 +356,22 @@
       allocate(BCTSS(cells))
 !      allocate(Cinvert(links))
       allocate(CssL(links))     !this was originally CssL(30) - should be allocated for links
-!	allocate(Deptho(links))
-	allocate(EAOL(links))
-	allocate(Exy(links))
-!	allocate(itype(links))
-	allocate(jds(links))
-	allocate(jus(links))
-!	allocate(Ken(links))
-!	allocate(Km(links))
-!	allocate(Kx(links))
-!	allocate(Length(links))
-!	allocate(NR(links))
-!     allocate(Pmsh(links))
+!      allocate(Deptho(links))
+      allocate(EAOL(links))
+      allocate(Exy(links))
+!      allocate(itype(links))
+      allocate(jds(links))
+      allocate(jus(links))
+!      allocate(Ken(links))
+!      allocate(Km(links))
+!      allocate(Kx(links))
+!      allocate(Length(links))
+!      allocate(NR(links))
+!      allocate(Pmsh(links))
       allocate(Qsed(links))     !this was originally Qsed(30) - should be allocated for links
       allocate(Qsedsm(links))
 !      allocate(Resist(links))    !no longer an array - now a local calculation
-!	allocate(Width(links))
+!      allocate(Width(links))
 
 ! variables of (:,:) dimensions
 
@@ -394,15 +394,15 @@
       ! arrays of length equal to number of cells
       allocate(kinvisc(cells))
       allocate(group_vel(cells,2))
-	allocate(Hs(cells,2))
-	allocate(Uorb(cells,2))
-	allocate(wave_energy(cells,2))
-	allocate(wave_frequency(cells,2))
-	allocate(wavelength(cells,2))
-	allocate(wave_period(cells,2))
-	allocate(velset(cells,4))	!sediment class parameters
+      allocate(Hs(cells,2))
+      allocate(Uorb(cells,2))
+      allocate(wave_energy(cells,2))
+      allocate(wave_frequency(cells,2))
+      allocate(wavelength(cells,2))
+      allocate(wave_period(cells,2))
+      allocate(velset(cells,4))   !sediment class parameters
 
-	allocate(Aas(cells,3))
+      allocate(Aas(cells,3))
       allocate(As(cells,3))
       allocate(ASandD(cells,simdays))
       allocate(ASandT(cells,simdays))
@@ -481,9 +481,9 @@
 
       ! arrays of length equal to number of links
       allocate(Depth(links,3))
-	allocate(Q(links,3))
-!	allocate(QSal(links,3))
-!	allocate(Qss(links,3))
+      allocate(Q(links,3))
+!      allocate(QSal(links,3))
+!      allocate(Qss(links,3))
       allocate(SL(links,2))
       allocate(Tcoef(links,25))
       allocate(TL(links,3))
