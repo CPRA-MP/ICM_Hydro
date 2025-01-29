@@ -21,8 +21,8 @@
 
       
       subroutine ICM_SalinityThreshold_WM
-      			
-	use params
+
+      use params
 
       implicit none
       integer :: dd,j,jj,k,kk,firstday,lastday,thresholdlength
@@ -93,5 +93,5 @@
 
       return
       end 
-			
-			
+            
+            
