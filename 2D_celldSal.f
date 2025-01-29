@@ -23,10 +23,10 @@
       real :: vol1, vol2, marsh_vol1, marsh_vol2
       real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
       real :: salmaxcon, Qlink,Qsalsum_link
-	  real :: QSal_in,Q_in
+      real :: QSal_in,Q_in
 !      integer:: iAdvTrans  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
 
-!     cden=1./1000./24./3600.		! mm/d to m/s conversion
+!     cden=1./1000./24./3600.       ! mm/d to m/s conversion
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
@@ -271,7 +271,7 @@
               S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
           else
               S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
-          endif		  
+          endif       
 
           ds = S(j,2) - S(j,1)
           
@@ -306,7 +306,7 @@
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
 !          DSal =  -QSalsum/(As(j,1)*dddy)*dt
-!     &	    -Dz*S(j,1)/dddy
+!     &     -Dz*S(j,1)/dddy
 !      else
 !          DSal = 0.0
 !      endif
