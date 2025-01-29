@@ -1,17 +1,20 @@
-!      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+!> @file
+!> @brief This is the subrouine to calculate salinity at each timestep.
+!> @details This is the subrouine to calculate salinity at each timestep.
+
       Subroutine CelldSal(j,kday)
       
-      !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
-      !>>       - tributary flows into compartment
-      !>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
-      !>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
-      !>>       - marsh-openwater exchange flow
-      !>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly      
+!>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
+!>>       - tributary flows into compartment
+!>>       - diversion flow into compartment (not used anymore, diversions treated same as tribs now)
+!>>       - all link flows into/out of compartment - tabulated via salinity.f subroutine
+!>>       - marsh-openwater exchange flow
+!>>       - changes in water level due to rain/ET result in changes to total volume (denominator), but does not impact salinity mass within compartment, therefore concentration will be updated correctly      
 
-      !*************************************************************************************************************************************
-      !>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
-      !>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
-      !*************************************************************************************************************************************    
+!*************************************************************************************************************************************
+!>> new sal concentration = [ (old salinity concentration * old volume) + salinity mass flux at timestep ] / current volume 
+!>>       [kg/m3]         = [ (    [kg/m3]               *     [m3]  ) +      [kg/sec]*[sec]            ] /    [m3]
+!*************************************************************************************************************************************    
 
 
       use params
@@ -26,9 +29,7 @@
       real :: QSal_in,Q_in
 !      integer:: iAdvTrans  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
 
-!     cden=1./1000./24./3600.       ! mm/d to m/s conversion
-
-      !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
+!>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
 !      dry_depth = 0.05
       dry_depth = dry_threshold
@@ -127,24 +128,9 @@
               endif
           endif
 !===end 1/30/2024
-
-!          Qsalsum_b4link = Qsalsum
-
 !          call salinity(mm,iab,jnb,j,k,Qsalsum)
           if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
           
-!>> check if current link has flow during timestep
-!          if (Q(iab,2) .ne. 0.0) then
-!              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
-!          endif
-          
-!>> check if marsh overland links have salinity convection and/or dispersion through link flow
-!          if (linkt(iab) == 8) then
-!              if ( Qsalsum_b4link .ne. Qsalsum ) then
-!                  marsh_link_flow = 1
-!              endif
-!          endif
-      
       enddo
       
       !if (Qmarsh(j,2) > 0.0) then                ! combining marsh and OW volumne
