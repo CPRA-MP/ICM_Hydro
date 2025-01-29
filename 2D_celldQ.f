@@ -1,8 +1,8 @@
-!     Subroutine CelldQ(QSUM,Dz,j,fcrop,mm)
-    
-! day, dday, and kday now global parameters - no longer needed to be passed into subroutine      
-      Subroutine CelldQ(j,kday,fcrop,mm,dday)           !Solves Continuity for cell j 
-
+!> @file
+!> @brief This is the subrouine to calculate water levels at each timestep.
+!> @details This is the subrouine to calculate water levels at each timestep.
+!
+      Subroutine CelldQ(j,kday,fcrop,mm)           !Solves Continuity for cell j 
       
 !> @param[out]        Qsum_out(j)     sum of all flows leaving compartment
 !> @param[out]        Qsum_in(j)      sum of all flows entering compartment
@@ -13,12 +13,11 @@
       implicit none
       real :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
-      real :: Qsum,Qsumh,dday,fcrop,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
+      real :: Qsum,Qsumh,fcrop,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
       real :: Qow,sndz,Dzh,sndzh,PETuse,ETmin,Het,fET
 
       Qsum=0.0                      !JAM Oct 2010
       Qsumh=0.0
-      cden=1./1000./24./3600.       ! mm/d to m/s conversion
 
 !>> initialize directional components of cumulative flowrates that are used for sand transport equations in vanRijn
       Qsum_out(j) = 0.0
@@ -32,9 +31,6 @@
 !>> Update cumulative open water flow rates in compartment from input boundary tributary flows      
 !>> sign convention on open water flow = positive is flow out of compartment
       do jn = 1,ntrib
-!          if (isnan(Qmult(j,jn))) then  !move to infile.f - ZW 12/18/2023
-!              Qmult(j,jn) = 0.0
-!          endif
           flo_trib = Qtrib(jn,kday)*Qmult(j,jn)
           if((ddy1==0) .and. (flo_trib<0)) flo_trib = 0   !no outflow when compartment is dry in previous time step
           Qsum = Qsum - flo_trib
@@ -284,38 +280,10 @@
 
 !>> Update marsh water elevation
           Eh(j,2)= Max(Eh(j,1)+Dzh, BedM(j))        !JAM Oct 2010 Marsh stage (m) 
-! move Qmarshmax to hydrod.f - ZW 12/19/2023
-! !>> Determine level where open water stage and marsh stage will be equal in compartment
-!          Elevel = (As(j,1)*Es(j,2)+Ahf(j)*Eh(j,2)) / (As(j,1)+Ahf(j))
-!!>> Determine change in marsh level to reach equilbrium with open water marsh stage
-!          Dzhlim = max(Elevel,BedM(j)) - Eh(j,2)
-!!>> Calculate magnitude of flowrate needed into/out of marsh - directionality assigned in hydrod
-!          Qmarshmax(j) = abs(Dzhlim)*Ahf(j)/dt
-              
       else
 !>> If no marsh area in cell, set marsh water elevation to open water stage
           Eh(j,2) = Es(j,2)
-!          Qmarshmax(j) = 0.0
       endif      
-
-!!>> Calculate daily values reported out to output files ! moved to hydro
-!!  if(kday <= mmmd) then 
-!   if(daystep == 1) then
-!       ESMX(j,2)=ES(j,2)
-!       ESMN(j,2)=ES(j,2)
-!   !>> reset average water elevation value at start of day
-!       ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
-!          EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
-!      else
-!          ESMX(j,2)=max(ESMX(j,2),ES(j,2))
-!          ESMN(j,2)=min(ESMN(j,2),ES(j,2))
-!          !>> Update average elevation term by timestep's contribution to daily average 
-!       ESAV(j,1)=ESAV(j,1) + ES(j,2)*dt/(3600.*24.)
-!          EHAV(j,1) = EHAV(j,1) + EH(j,2)*dt/(3600.*24.)
-!          dailyHW(j) = max(dailyHW(j),ES(j,2))
-!          dailyLW(j) = min(dailyLW(j),ES(j,2))
-!          EsRange(j,1)=ESMX(j,2)-ESMN(j,2)        
-!   endif
 
 !>> Calculate cumulative time marsh is flooded
 !      if (ES(j,2) > (BedM(j)+dry_threshold)) then
@@ -323,10 +291,6 @@
           floodf(j)=floodf(j)+dt/(24.*3600.)    !accum days of flooding JAM Nov 13, 2010
       endif 
 
-
-2222  FORMAT(<cells-1>(F20.2,','),F20.2)
-
-3333  Format(5(1x,f15.4))
       return
       end
 
