@@ -8,7 +8,7 @@
       
 !> @ author Eric White - The Water Institute of the Gulf
 
-!> @param[in]		dtwind					timestep of wind observations
+!> @param[in]     dtwind                  timestep of wind observations
 !> @param[in]     g                       gravitational acceleration = 9.81
 !> @param[in]     j                       compartment number iterator from hydrod subroutine
 !> @param[in]     Es(N,2)                 water surface elevation for model timestep at each compartment
@@ -18,13 +18,13 @@
 !> @param[in]     windx(N)                wind X-vector for compartments at model timestep (m/s)
 !> @param[in]     windy(N)                wind speed Y-vector for compartments at model timestep (m/s)
 
-!> @param[out]	group_vel(N,2)			array of wave group velocity for compartments
-!> @param[out]	Hs(N,2)					array of significant wave height for compartments (m)
-!> @param[out]	Uorb(N,2)				array of orbital velocity values (at bed level) for compartments (m/s)
-!> @param[out]	wave_energy(N,2)		array of wave energy values for compartments
+!> @param[out]    group_vel(N,2)          array of wave group velocity for compartments
+!> @param[out]    Hs(N,2)                 array of significant wave height for compartments (m)
+!> @param[out]    Uorb(N,2)               array of orbital velocity values (at bed level) for compartments (m/s)
+!> @param[out]    wave_energy(N,2)        array of wave energy values for compartments
 !> @param[out]    wave_frequency(N,2)     array of wave frequency for compartments
 !> @param[out]    wavelength(N,2)         array of wavelength values for compartments
-!> @param[out]	wave_period(N,2)		array of wave period for compartments
+!> @param[out]    wave_period(N,2)        array of wave period for compartments
 
 
 !> @param         depth_value             water depth in compartment
@@ -41,15 +41,15 @@
 
       subroutine waves_YV(j)
 
-      			
-	use params
+                
+      use params
 
       implicit none
       integer :: ff,j,fetch_lookup,kday
-	real :: e, wind_spd,rhow
-	real :: windx_value,windy_value,wind_dir_rads,wind_dir_degs
-	real :: dim_factor,fetch_value,depth_value,duration_needed
-	real :: drag_coeff,wind_fric_spd,fetch_equiv
+      real :: e, wind_spd,rhow
+      real :: windx_value,windy_value,wind_dir_rads,wind_dir_degs
+      real :: dim_factor,fetch_value,depth_value,duration_needed
+      real :: drag_coeff,wind_fric_spd,fetch_equiv
       real :: energy_limit,frequency_limit,energy_nondim,fetch_nondim
       real :: depth_nondim,frequency_nondim,waven
       real :: YV_A1,YV_A2,YV_B1,YV_B2,YV_m,YV_n,Lo,d_L,t1,t2
@@ -64,20 +64,20 @@
       frequency_limit = 0.133
       YV_n = 1.74
       YV_m = -0.37
-	rhow = 1000.*(1+S(j,1)/1000.)	!adjust density for salinity
+      rhow = 1000.*(1+S(j,1)/1000.)   !adjust density for salinity
       gamma_b=0.6  !wave breaking index gamma
 
 !>> Calculate wind speed and direction (remove any zero values to avoid div-by-zero errors).      
       if (windx(j) == 0) then
-      	  windx_value = 0.01
+          windx_value = 0.01
       else
-      	  windx_value = windx(j)
+          windx_value = windx(j)
       endif
       
       if (windy(j) == 0) then
-      	  windy_value = 0.01
+          windy_value = 0.01
       else
-      	  windy_value = windy(j) 
+          windy_value = windy(j) 
       endif      
       wind_spd = sqrt(windx_value**2 + windy_value**2)
 !!!      wind_dir_rads = atan(windy_value/windx_value)
@@ -189,7 +189,7 @@
 !!!          wave_energy(j,1) = rhow*g*energy_nondim/dim_factor**2
           wave_energy(j,1) = energy_nondim/dim_factor**2  !ZW edit 12/4/2023
           wave_frequency(j,1) = frequency_nondim*dim_factor*wind_spd
-	    Hs(j,1)=4.*sqrt(wave_energy(j,1))
+          Hs(j,1)=4.*sqrt(wave_energy(j,1))
           wave_period(j,1) = 1/wave_frequency(j,1)
       endif
 
@@ -208,8 +208,8 @@
           Waven = (1+(4*pi*d_L)/sinh(4*pi*d_L))/2
           group_vel(j,1) = Waven*wavelength(j,1)/wave_period(j,1)      
 !>> Calculate orbital velocity at bottom of water column
-	      Uorb(j,1) = g*Hs(j,1)*wave_period(j,1)/(2*wavelength(j,1)*
-     &			cosh(2*pi*depth_value/wavelength(j,1)))
+          Uorb(j,1) = g*Hs(j,1)*wave_period(j,1)/(2*wavelength(j,1)*
+     &          cosh(2*pi*depth_value/wavelength(j,1)))
       endif
 
       return
