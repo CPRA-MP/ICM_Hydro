@@ -27,8 +27,8 @@
 !> @param         veg_grid_IDs(veg_matrix_cols,veg_matrix_rows)           matrix of 500-m grid cell ID numbers
       
       subroutine ICM_Formatting
-			
-	use params
+            
+      use params
 
       implicit none
       integer :: j,k,grid_cell
@@ -90,7 +90,7 @@
               endif
           enddo
       enddo
-	  close(203)
+      close(203)
 !>> End loop of grid cell IDs matrix.
 
 !>> Write these new, matrix-formatted arrays to file to be read directly into Vegetation model.
@@ -174,5 +174,5 @@
       
       return
       end 
-			
-			
+            
+            
