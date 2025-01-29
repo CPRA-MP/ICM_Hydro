@@ -1,7 +1,7 @@
 !cc**********************Start Subroutine for face temperature****JAM Oct 2010*******************
     
-!      Subroutine Temperature(mm,iab,jnb,j,k,QTMPsum)		!face densities from node densities
-      Subroutine Temperature(iab,jnb,j,k,QTMPsum)		!face densities from node densities
+!      Subroutine Temperature(mm,iab,jnb,j,k,QTMPsum)       !face densities from node densities
+      Subroutine Temperature(iab,jnb,j,k,QTMPsum)       !face densities from node densities
 
 !cc      TempMR(100,366*20) Miss River Temperature 
 !cc      Tempair(100,366*20) Air Temperature
@@ -10,7 +10,7 @@
 !cc      TL(200,3) Link water Temperature
 
       use params
-	  
+      
       implicit none
       integer :: iab,jnb,j,k
       real :: QTMPsum,CTMPface,diffus,Qlink,d1,d2
@@ -54,7 +54,7 @@
 
           if(Q(iab,2) >= 0.0) then
 !              CTMPface=Tempw(jus(iab),1)
-              CTMPface= fa(iab)*Tempw(jus(iab),1)				!cell face values
+              CTMPface= fa(iab)*Tempw(jus(iab),1)               !cell face values
      &                  +(1-fa(iab))*Tempw(jds(iab),1)
           else
 !              CTMPface=Tempw(jds(iab),1)
