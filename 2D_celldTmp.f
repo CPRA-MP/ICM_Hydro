@@ -1,8 +1,8 @@
-!   Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
-! kthr and kday now global parameters - no longer needed to be passed into subroutine      
-!   Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+!> @file
+!> @brief This is the subrouine to calculate temperature at each timestep.
+!> @details This is the subrouine to calculate temperature at each timestep.
+
         Subroutine CelldTmp(j,kday)
-!JAM     c Salinity  computations ****************************
     
         use params
 
@@ -130,11 +130,6 @@
 
         DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt         !JAM Oct 2010
       
-      ! debug for v23.4.2
-      !if(isNan(QTMPsum)) then
-      !   QTMPsum = 0.0
-      !endif
-
 !     openwater volume
         vol1 = 0.0
         vol2 = 0.0
@@ -232,7 +227,6 @@
 !zw 1/18/2024        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
 
 
-!   fsal=(1+S(j,2)/35) !-EDW not used anywhere                                  !salinity correction on Vs
 !   Temph(j,2)=Tempw(j,2)+0.5                           !JKS 10/31/13
 
         return 
