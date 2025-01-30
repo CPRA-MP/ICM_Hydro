@@ -2152,8 +2152,8 @@
       enddo
 
 !>> user-specified varying time step option - ZW 1/27/2025
-!     If idt_schm = 2 user specified varying time step input file
-      if(idt_schm == 2) then
+!     If idt_schem = 2 user specified varying time step input file
+      if(idt_schem == 2) then
           dt_var_user(:)=0
 
 !>> Skip timestep data for years prior to current model year

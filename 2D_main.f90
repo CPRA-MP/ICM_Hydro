@@ -447,7 +447,7 @@
       write(*,*) '----------------------------------------------------'
 
       do isimday = 1, simdays
-          if(idt_schm == 2) then
+          if(idt_schem == 2) then
               dt = dt_var_user(isimday)
           endif
 !>>  ndt_ICM is the ICM time step and is shared by the 1D and ICM. ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled.
