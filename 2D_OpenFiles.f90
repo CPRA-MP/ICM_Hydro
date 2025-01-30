@@ -77,8 +77,8 @@
           endif
       endif   
       
-!     If idt_schm = 2 user specified varying time step input file in daily interval
-      if(idt_schm == 2) then
+!     If idt_schem = 2 user specified varying time step input file in daily interval
+      if(idt_schem == 2) then
           open (unit=900, file= 'Dt_Varying_user.csv', status = 'unknown')
       endif
 
