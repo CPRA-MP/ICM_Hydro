@@ -615,7 +615,7 @@
                   tidestep = 0
               endif
 
-!>> -- Reset windstep counter because end of observed tidal timestep is met
+!>> -- Reset windstep counter because end of observed wind timestep is met
               if (windstep == lastwindstep) then
                   windstep = 0
               endif
@@ -627,8 +627,8 @@
 
 !>> -- Reset daystep counter because end of day is met
               if (daystep == lastdaystep) then
-                  write(1,3333)' 2D domain: year',year,' -day',isimday,'complete.'
-                  write(*,3333)' 2D domain: year',year,' -day',isimday,'complete.'
+                  write(1,3333)' 2D domain: year',year,' -day',int(day),'complete.'
+                  write(*,3333)' 2D domain: year',year,' -day',int(day),'complete.'
                   daystep = 0
               endif
 !>> End IF for checking whether model timestep should have the 2D model subroutines run          
@@ -796,8 +796,8 @@
             enddo                    
           
 !>> End main model DO loop that is looped over each simulation timestep
-          enddo
-      enddo
+          enddo  !day loop
+      enddo !year loop
 
 !>> Close any open 1D files
       if (n1d > 0) then
