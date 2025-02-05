@@ -446,7 +446,7 @@
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
 
-!      do isimday = 1, simdays
+      do isimday = 1, simdays
           if(idt_schem == 2) then
               dt = dt_var_user(isimday)
           endif
@@ -463,7 +463,7 @@
               ntim_all_ICM = ntim_all          
           endif
           
-!          ntim_all_ICM = ntim_all_ICM/simdays          !convert number of time steps in a simulation year to a day
+          ntim_all_ICM = ntim_all_ICM/simdays          !convert number of time steps in a simulation year to a day
           
 !>> Determine number of simulation timesteps
           NTs =int(simdays*24*60*60/dt)  !it's used in cellDSS
@@ -473,8 +473,7 @@
           lasttidestep = int(dttide*60*60/dt) !dttide is in hours - number of timesteps before updating tide data
           lastwindstep = int(dtwind*60*60/dt) !dtwind is in hours - number of timesteps before updating wind data
           lastlockstep = int(dtlock*60*60/dt) !dtlock is in hours - number of timesteps before updating lock control data
-
-!          print*, 'Starting hydro simulation in day =',isimday
+    
           print*, 'ICM dt =',ndt_ICM, 'should =',dt
           if (n1d > 0) then
               print*, 'MESH dt =', ndt_R
@@ -627,8 +626,8 @@
 
 !>> -- Reset daystep counter because end of day is met
               if (daystep == lastdaystep) then
-                  write(1,3333)' 2D domain: year',year,' -day',day,'complete.'
-                  write(*,3333)' 2D domain: year',year,' -day',day,'complete.'
+                  write(1,3333)' 2D domain: year',year,' -day',isimday,'complete.'
+                  write(*,3333)' 2D domain: year',year,' -day',isimday,'complete.'
                   daystep = 0
               endif
 !>> End IF for checking whether model timestep should have the 2D model subroutines run          
@@ -754,8 +753,8 @@
                 Q(i,1)=Q(i,2)
                 SL(i,1) = SL(i,2) !SL is for links
                 if(isNAN(Q(i,2))) then
-                  write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',day
-                  write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',day
+                  write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',isimday
+                  write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm,'at day=',isimday
                   write(*,*) '  Linkt=',linkt(i)
                   stop !pause
                 endif
@@ -788,8 +787,8 @@
                 Eh(j,1) = Eh(j,2)               ! added EDW/ZW - 02/16/2015
 !>> Check if any water surface elevation values are NaN - if so, pause model run
                 if(isNAN(Es(j,2))) then  
-                  write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',day
-                  write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',day
+                  write(1,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',isimday
+                  write(*,*)'Compartment',j,'WSEL is NaN @ end of timestep=',mm,'at day=',isimday
                   stop !pause
                 endif          
 
@@ -797,7 +796,7 @@
           
 !>> End main model DO loop that is looped over each simulation timestep
           enddo
-!      enddo
+      enddo
 
 !>> Close any open 1D files
       if (n1d > 0) then
