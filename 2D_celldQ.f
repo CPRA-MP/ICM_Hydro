@@ -29,8 +29,8 @@
       ddym1=max(Eh(j,1)-BedM(j),0.0)
 
 ! code debuging output
-      if(daystep == 1 .or. daystep == lastdaystep) then
-          write(*,*) 'Day= ',int(day),'kday= ',kday
+      if(j==75 .and. (daystep == 1 .or. daystep == lastdaystep)) then
+          write(*,*) 'Day= ',day,'kday= ',kday
           write(*,*) 'AtchaR MissR flows =',Qtrib(10,kday),Qtrib(11,kday)
       endif
       
