@@ -28,6 +28,13 @@
       ddy1=max(Es(j,1)-Bed(j),0.0)
       ddym1=max(Eh(j,1)-BedM(j),0.0)
 
+! code debuging output
+      if(daystep == 1 .or. daystep == lastdaystep) then
+          write(*,*) 'Day= ',int(day),'kday= ',kday
+          write(*,*) 'AtchaR MissR flows =',Qtrib(10,kday),Qtrib(11,kday)
+      endif
+      
+
 !>> Update cumulative open water flow rates in compartment from input boundary tributary flows      
 !>> sign convention on open water flow = positive is flow out of compartment
       do jn = 1,ntrib
