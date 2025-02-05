@@ -823,7 +823,7 @@
               elseif ((Es(jus(i),2)-Bed(jus(i)))<=dry_threshold) then
                   Q(i,2) = 0.0
               else
-                  cden=1/1000./24/3600.     !JAM Oct 2010 mm/d to m/s
+                  !cden=1/1000./24/3600.     !JAM Oct 2010 mm/d to m/s, already defined
                   infilrate= 2.54              ! urban infiltration rate (mm/hr)
                   AET = PET(kday,Jet(jus(i)))
                   Pexcess =(Rain(kday,jrain(jus(i)))-
