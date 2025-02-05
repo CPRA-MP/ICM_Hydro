@@ -946,6 +946,7 @@
                   fa(i) = 1.0
                endif
                if (abs(link_vel(i)) >= 0) then
+                   cou_num=abs(link_vel(i))*dt/Latr3(i)
                    if(cou_num>1)then
                        write(1,*)'Courant number at Link:',i
                        write(1,*)cou_num,'>1, dt should be reduced!'
