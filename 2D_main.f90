@@ -431,7 +431,7 @@
       surgerow = 0  !YW!
       lockrow = 0   !YW!
 
-      t=0           ! initialize total time counter in a year (in seconds)    
+      t=0.0           ! initialize total time counter in a year (in seconds)    
 
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
@@ -463,7 +463,7 @@
               ntim_all_ICM = ntim_all          
           endif
           
-          ntim_all_ICM = ntim_all_ICM/simdays          !convert number of time steps in a simulation year to a day
+          ntim_all_ICM = int(ntim_all_ICM/simdays)          !convert number of time steps in a simulation year to a day
           
 !>> Determine number of simulation timesteps
           NTs =int(simdays*24*60*60/dt)  !it's used in cellDSS
@@ -474,7 +474,8 @@
           lastwindstep = int(dtwind*60*60/dt) !dtwind is in hours - number of timesteps before updating wind data
           lastlockstep = int(dtlock*60*60/dt) !dtlock is in hours - number of timesteps before updating lock control data
     
-          print*, 'ICM dt =',ndt_ICM, 'should =',dt
+          write(*,*) 'Starting simulation on day=',isimday
+          write(*,*) 'ICM dt =',ndt_ICM, 'should be =',dt
           if (n1d > 0) then
               print*, 'MESH dt =', ndt_R
               print*, 'dt_all =', ndt_all_ICM
@@ -488,7 +489,7 @@
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
             if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-              t=t+dt                      ! lapse time in seconds  JAM 5/25/2011
+              t=t+dt  !t=float(mm)*dt                      ! lapse time in seconds  JAM 5/25/2011
               nts_1hr=nts_1hr+1
 
 !>> -- Calculate various versions of time to be used as flags throughout program
