@@ -488,7 +488,7 @@
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
             if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-              t=t+float(mm)*dt                      ! lapse time in seconds  JAM 5/25/2011
+              t=t+dt                      ! lapse time in seconds  JAM 5/25/2011
               nts_1hr=nts_1hr+1
 
 !>> -- Calculate various versions of time to be used as flags throughout program
