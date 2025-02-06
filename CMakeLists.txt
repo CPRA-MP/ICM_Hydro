@@ -438,6 +438,6 @@ ADD_EXECUTABLE( ${HYDRO} 1D_common_array_R.f90
                          2D_ICM_PP.f90
                          2D_Write_Hotstart.f90
                          2D_Constants2D.f90
-                         2D_dt_estimate.f90)
+                         2D_dt_estimate.f)
 SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles/mod)
 SET_TARGET_PROPERTIES( ${HYDRO} PROPERTIES COMPILE_FLAGS "${Fortran_LINELENGTH_FLAG} ${Fortran_COMPILER_SPECIFIC_FLAG}" )
