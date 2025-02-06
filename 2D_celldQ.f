@@ -30,6 +30,7 @@
 
 ! code debuging output
       if(j==75 .and. (daystep == 1 .or. daystep == lastdaystep)) then
+          write(*,*) 't= ',t
           write(*,*) 'Day= ',day,'kday= ',kday
           write(*,*) 'AtchaR MissR flows =',Qtrib(10,kday),Qtrib(11,kday)
       endif

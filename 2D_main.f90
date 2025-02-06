@@ -476,6 +476,7 @@
     
           write(*,*) 'Starting simulation on day=',isimday
           write(*,*) 'ICM dt =',ndt_ICM, 'should be =',dt
+		  write(*,*) 'Total number of timesteps (ntim_all_ICM)=',ntim_all_ICM
           if (n1d > 0) then
               print*, 'MESH dt =', ndt_R
               print*, 'dt_all =', ndt_all_ICM
