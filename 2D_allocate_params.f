@@ -546,6 +546,7 @@
       if(idt_schem == 2) then
           allocate(dt_var_user(simdays))  !variable time step in daily interval
       endif
+      allocate(daily_maxWL(simdays))      !max water level offshore within a day
 
       return
       end
