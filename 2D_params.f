@@ -26,7 +26,7 @@
 !     1-fixed; 2-Variable User Defined; 3-Varibale SWMM Scheme
       integer :: idt_schem
       real(sp),dimension(:),allocatable :: dt_var_user
-      
+      real(sp),dimension(:),allocatable :: daily_maxWL
 ! hardcoded specific salinity and stage trigger flags      
       integer :: SalLockTriggerHNC,SalLockStatusHNC
       integer :: StgTriggerSuperiorCanal,StgTriggerStatusSuperiorCanal
