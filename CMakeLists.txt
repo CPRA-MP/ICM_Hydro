@@ -41,7 +41,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 ###########################################################################
 #...Set the version string (used for libraries)
 SET(ICMHYDRO_VERSION_MAJOR 25)
-SET(ICMHYDRO_VERSION_MINOR  0)
+SET(ICMHYDRO_VERSION_MINOR  1)
 SET(ICMHYDRO_VERSION_PATCH  0)
 SET(ICMHYDRO_VERSION_STRING ${ICMHYDRO_VERSION_MAJOR}.${ICMHYDRO_VERSION_MINOR}.${ICMHYDRO_VERSION_PATCH})
 ###########################################################################
