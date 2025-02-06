@@ -21,6 +21,7 @@
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
       integer,dimension(:),allocatable :: jqtrib
       real :: Asum,phi_us,Aus,Ads
+      real,dimension(:),allocatable :: maxWL_dttide
 
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
@@ -1636,6 +1637,9 @@
 !>> Skip header row of Tide Gage and Surge data input files
       TideData(:,:)=0.0  !zw added 04/06/2020
       Surge(:,:)=0.0
+      kt=int(simdays*24/dttide+1)
+      allocate(maxWL_dttide(kt))
+
       read(47,*)
       read(110,*)
 
@@ -1657,9 +1661,19 @@
       do kt=1,(simdays*24/dttide+1)  !zw modififed 04/06/2020   !YW! +1 to include the final row
           read(47,*)dump_int,dump_text,TideData(kt,1:tidegages)
           read(110,*)dump_int,dump_text,Surge(kt,1:mds)
+          maxWL_dttide(kt)=maxval(TideData(kt,1:tidegages))+maxval(Surge(kt,1:mds))
       enddo
       close(47)
       close(110)
+
+!>> Determine highest water level within a day from offshore
+      daily_maxWL(:)=0.0
+      do kt=1,simdays
+         i=(kt-1)*24/dttide+1
+         j=kt*24/dttide
+         daily_maxWL(kt)=maxval(maxWL_dttide(i:j))
+      enddo
+      deallocate(maxWL_dttide)
 
 !>> Read in data to weight (by distance) the nearest observed water level timeseries to off-shore boundary compartments that do not have an observed WSEL timeseries
       weighted_tide(:,:)=0  !zw added 04/06/2020
@@ -1673,7 +1687,6 @@
       enddo
       close(49)
 
-!
 
 !>> Skip header row of Meteorology and Mississippi River Temperature input files
       ta(:)=0 !zw added 04/06/2020
