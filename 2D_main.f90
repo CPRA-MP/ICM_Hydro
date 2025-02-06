@@ -211,7 +211,7 @@
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
       integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
       integer :: NNN,ichem,me,mm,kt,k,kk,kj,kl
-      real :: dday,ddayhr,Pardpmr
+      real :: dday,ddayhr,Pardpmr,dtmax,dt_sim
       Character*100 header
       integer :: ndt_1hr, nts_1hr, isimday  
      
@@ -446,9 +446,20 @@
       write(*,*) 'START MAIN HYDRODYNAMIC MODEL'
       write(*,*) '----------------------------------------------------'
 
+      dt_sim = dt
       do isimday = 1, simdays
+          dt=dt_sim
           if(idt_schem == 2) then
               dt = dt_var_user(isimday)
+          endif
+
+          if(idt_schem == 3) then
+              call dt_estimate(isimday,dtmax)
+              write(*,*)'Estimated dtmax is: ', dtmax  
+              if (dtmax < dt_sim) then
+                  i = int(dt_sim/dtmax)
+                  dt = dt_sim/i
+              endif
           endif
 !>>  ndt_ICM is the ICM time step and is shared by the 1D and ICM. ndt_all and ntim_all are model timestepping variables that will be updated in common_init if there are 1D reaches being modeled.
 !>>  ndt_all_ICM and ntim_all_ICM are ICM only time step control. These two variables are updated if 1D is activated
@@ -476,7 +487,7 @@
     
           write(*,*) 'Starting simulation on day=',isimday
           write(*,*) 'ICM dt =',ndt_ICM, 'should be =',dt
-		  write(*,*) 'Total number of timesteps (ntim_all_ICM)=',ntim_all_ICM
+          write(*,*) 'Total number of timesteps (ntim_all_ICM)=',ntim_all_ICM
           if (n1d > 0) then
               print*, 'MESH dt =', ndt_R
               print*, 'dt_all =', ndt_all_ICM
