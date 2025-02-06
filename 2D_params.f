@@ -67,7 +67,7 @@
       !real(sp) :: time
       !real(sp) :: thour
       !real(sp) :: tmon
-      real(sp) :: day
+      real(dp) :: day
       !real(sp) :: dday
       !real(sp) :: hday
       !integer :: kday
@@ -518,7 +518,7 @@
       real(sp) :: ParChlA
       real(sp) :: ParSand
 !      real(sp) :: RSSSo
-      real(sp) :: t
+      real(dp) :: t
 
 !      real(dp) :: RSSS !-EDW no longer used
 !      real(dp) :: SEARD !-EDW no longer used
