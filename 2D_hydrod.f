@@ -59,6 +59,11 @@
       dmon=kmon-int(tmon)
       fmod=tmon-int(tmon)
 
+! code debuging output
+      if(daystep == 1 .or. daystep == lastdaystep) then
+          write(*,*) 't= ',t
+          write(*,*) 'Day= ',day,'kday= ',kday
+      endif
 ! Moved to start of main.f time looping and added variables to global parameters list      !-EDW
 
 ! Temporary values
@@ -1061,6 +1066,7 @@
                   fa(i) = 1.0
                endif
                if (abs(link_vel(i)) >= 0) then
+                   cou_num=abs(link_vel(i))*dt/Latr3(i)
                    if(cou_num>1)then
                        write(1,*)'Courant number at Link:',i
                        write(1,*)cou_num,'>1, dt should be reduced!'
@@ -1367,7 +1373,7 @@
                   if (Qmax /= 0.0) then
                       if (daystep == lastdaystep) then
                           Write(1,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
-                          Write(*,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
+                          !Write(*,*) 'Max flowrate reached. Link:',i,'; Link Type=',linkt(i)
                       endif
                   endif
                   if(isNan(Q(i,2))) then
