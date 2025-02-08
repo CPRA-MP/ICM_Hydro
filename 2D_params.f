@@ -67,7 +67,7 @@
       !real(sp) :: time
       !real(sp) :: thour
       !real(sp) :: tmon
-      real(dp) :: day
+      real(sp) :: day
       !real(sp) :: dday
       !real(sp) :: hday
       !integer :: kday
