@@ -98,7 +98,7 @@
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
 !      Qupld=Qhhf+(max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf)*cden	 
-      Qupld=Qhhf+(max(0.0,0.3*Rain(kday,jrain(j)))*Ahmf)*cden	 !zw 02/23/2025 Rational Method = CiA (assuming C=0.3 in all upland types)
+      Qupld=Qhhf+(max(0.0,0.1*Rain(kday,jrain(j)))*Ahmf)*cden	 !zw 02/23/2025 Rational Method = CiA (assuming C=0.3 in all upland types)
 
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
