@@ -59,7 +59,7 @@
      &        Apctmarsh(node),        ! portion of cell that is marsh (0-1)
 !     &	      Ahf(node),			  !	marsh area of cells (m2)
      &        ar_ed(node),            ! marsh edge area of cell (m2)
-     &        dump_float,			  !	initial stage of storage cells	(m)     !BUG! Eso(node) is not used !BUG! using values from hotstar_in.dat
+     &        runoff_method(node),	  !	rainfall runoff calculation method: 0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method 
      &	      Bed(node),			  !	bed elevation of storage cells	(m)
      &	      erBedDepth(node),       !	depth of erodible bed in open water area (m)
      &	      erBedBD(node),		  !	bulk density of erodible bed in open water area	(g/cm3)
@@ -68,7 +68,7 @@
 !     &	      dAdz(node),			  !	change in As with depth	(m)
 !     &	      CSS(node,1,1),		  !	sediment concentration	- sand only (mg/L)  !BUG! CSS(node,1,1) is not used, using values from hotstar_in.dat
      &	      adaption_coeff(node),	  !	non-equilibrium adaption coefficient for sand resuspension/deposition terms  
-     &	      dump_float,			  !	initial salinity (TDS) (ppt)       !BUG! S(node,1) is not used, using values from hotstar_in.dat
+     &	      runoff_coeff(node),	  !	runoff coefficient for Rational Method (C) or Curve Number (CN) for SCS Curve Number Method, otherwise=0
 !     &	      acss(node),			  !	resuspension parameters
 !     &	      bcss(node),			  !	resuspension parameters
 !     &	      Vss(node),			  !	deposition velocity     (m/d)
