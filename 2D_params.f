@@ -201,6 +201,11 @@
       real(sp),dimension(:),allocatable :: SWRfines
       real(sp),dimension(:),allocatable :: cssFines
       real(sp),dimension(:),allocatable :: adaption_coeff   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
+
+! arrays for rainfall runoff calculations for each compartments
+      integer,dimension(:),allocatable :: runoff_method     !0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method
+      real(sp),dimension(:),allocatable :: runoff_coeff     !runoff coefficient for Rational Method (C) or Curve Number (CN) for SCS Curve Number Method
+
 ! arrays used for BIMODE tidal prism
       real(sp),dimension(:,:),allocatable :: tidal_range_daily
       real(sp),dimension(:),allocatable :: dailyLW
