@@ -98,13 +98,13 @@
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
       if(runoff_method(j)==1)then  !Rational Method Q=CiA
-          Qupld=(max(0.0,run_coeff(j)*Rain(kday,jrain(j)))*Ahmf)*cden
+          Qupld=max(0.0,runoff_coeff(j)*Rain(kday,jrain(j)))*Ahmf*cden
       elseif(runoff_method(j)==2)then  !SCS Curve Number Method Q =(P-0.2S)^2/(P+0.8S) where S=1000/CN-10 (Q in mm or in)
           SCS_S=1000.0/runoff_coeff(j)-10.0
-          Qupld=(max(0.0,(Rain(kday,jrain(j))-0.2*SCS_S)**2.0
-     &           /(Rain(kday,jrain(j))+0.8*SCS_S)*Ahmf)*cden
+          Qupld=max(0.0,(Rain(kday,jrain(j))-0.2*SCS_S)**2.0
+     &           /(Rain(kday,jrain(j))+0.8*SCS_S))*Ahmf*cden
       else  !original MP23 method
-          Qupld=(max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf)*cden
+          Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden
       endif
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
