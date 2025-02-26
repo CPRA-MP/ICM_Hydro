@@ -1,0 +1,107 @@
+2019        !1   year of ICM run
+1           !2   number of years to simulate before exiting back to ICM (NOT FUNCTIONAL - must equal 1)
+30          !3   dt seconds
+6172        !4   number of links
+1787        !5   number of compartments
+0           !6   number of upstream boundary conditions (excluding tributary flow inputs in Qmult)
+22          !7   number of downstream boundary conditions (excluding diversion flows in Qmult_div)
+2           !8   dTprint interval in hours
+0           !9   number of days in input daily boundary condition files before data starts for current year run (startrun)
+364         !10   row number of last day in input daily boundary condition for model year being run(endrun)
+70          !11   number of tributary flow inputs
+0           !12   number of diversion flow inputs
+2.65        !13   specific Gravity of sediment
+0.5         !14   wind re-suspenion Calibration  Cp
+3           !15   time Step for  Wind Time Series, hours,dtwind
+387         !16   number of wind gages
+956         !17   number of precip gages
+2           !18   number of ET gages
+6           !19   number of tide gages
+1           !20   time Step for  Tidal Time Series, hours
+33.38       !21   clay flocculation parameter (McAnally A)
+2.537       !22   clay flocculation parameter (McAnally B)
+1.83        !23   clay flocculation exponent (McAnally n)
+1.89        !24   clay flocculation exponent (McAnally m)
+0.1         !25   clay concentration where floculation settling begins (McAnally C1)(kg/m**3)
+4.38        !26   clay concentration where floculation settling becominbegins to hinder settling (McAnally C3) (kg/m**3)
+5           !27   upper limit to salinity impact on floc (salinity concentration - ppt)
+0.5         !28   upper limit on portion of fines available to floc (ratio - unitless)
+0.001       !29   sand D50 (m)                  -- USDA particle size definition: 0.05 mm < sand < 2 mm
+0.00003     !30   silt D50 (m)                  -- USDA particle size definition: 0.002 mm < silt < 0.05 mm
+0.000001    !31   unflocculated clay D50 (m)    -- USDA particle size definition: clay < 0.002 mm
+0.000001    !32   flocculated clay D50(m)       -- USDA particle size definition: clay < 0.002 mm
+1.5         !33   representative D90/D50 ratio
+0.3         !34   critical shear stress for sand particles (N/m**2) %
+0.1         !35   critical shear stress for silt particles (N/m**2) %
+0.25        !36   critical shear stress for unflocculated clay particles (N/m**2) %
+0.25        !37   critical shear stress for flocculated clay particles (N/m**2) %
+2           !38   salinity concentration where algal growth is halved (saltox) (ppt)
+0.02        !39   temperature-dependent phytoplankton mortality rate @ 20 degC (kphy20)(1/day)
+1.047       !40   temperature-dependent phytoplankton mortality rate constant (thetaphy)
+0.05        !41   temperature-dependent detritus hydrolysis rate @ 20 degC (kdet20) (1/day)
+1.02        !42   temperature-dependent detritus hydrolysis rate constant (thetaDET)
+0.05        !43   temperature-dependent phytoplankton respiration rate @ 20 degC (kresp20) (1/day)
+1.08        !44   temperature-dependent phytoplankton respirtion rate constant (thetaresp)
+0.001       !45   temperature-dependent orthophosphate release rate @ 20 degC (kpo420) (1/day)
+1.085       !46   temperature-dependent orthophosphate rate coefficient (thetapo4)
+0.05        !47   temperature-dependent denitrification rate @ 20 degC (kdenit20) (1/day)
+1.05        !48   temperature-dependent denitrification rate coefficient (thetadenit) (1/day)
+1.5         !49   temperature-dependent photosynthetic rate @ 20 degC (kphot20) (1/day)
+1.066       !50   temperature-dependent photosynthetic rate coefficient (thetaphot) (1/day)
+0.015       !51   temperature-dependent dissolved organic N hydrolysis rate @ 20 degC (kdon20)(1/day)
+1.047       !52   temperature-dependent dissolved organic N hydrolysis rate coefficient (thetadon)(1/day)
+0.15        !53   temperature-dependent nitrification rate @ 20 degC (knit20) (1/day)
+1.085       !54   temperature-dependent nitrification rate coefficient (thetanit) (1/day)
+0.05        !55   minimum threshold to apply to calculated nitrification rate (knitmin) (1/day)
+0.3         !56   maximum threshold to apply to calculated nitrification rate (knitmax) (1/day)
+3           !57   exponent on Kadlec & Knight depth term for flow into marsh (KKexp)
+-30         !58   default bed elevation of open water compartments - used to fill any missing bed elevation values (m NAVD88)
+1           !59   default marsh elevation of open water compartments - used to fill any missing marsh elevation values (m NAVD88)
+0.1         !60   default roughness value to use if input roughness for link is less than 0.0, or greater than 1.0
+50          !61   number of hydraulic connections to model per each compartment(maxconnect)(must be less than 25) (if this number is equal to 10, but there are 15 links in a compartment: the first 10 links associated a compartment will be used, the last 5 will not - lower compartments assigned links first - see icc loop in infile.f)
+60          !62   maximum water surface elevation value allowed to be passed to other ICM routines (stagemax)(m NAVD88) (9999999 if not to be used)
+75          !63   maximum salinity concentration value allowed to be passed to other ICM routines (salmax)(ppt) (9999999 if not to be used)
+90          !64   maximum water temperature value allowed to be passed to other ICM routines (tmpmax)(deg C) (9999999 if not to be used)
+9999999     !65   maximum annual open water sediment accumulation allowed to be passed to other ICM routines (sedmaxow)(kg/m2/yr) (9999999 if not to be used)
+9999999     !66   maximum annual marsh interior sediment accumulation allowed to be passed to other ICM routines (sedmaxmi)(kg/m2/yr) (9999999 if not to be used)
+9999999     !67   maximum annual marsh edge sediment accumulation allowed to be passed to other ICM routines (sedmaxme)(kg/m2/yr) (9999999 if not to be used)
+9999999     !68   maximum tidal prism volume allowed to be passed to other ICM routines (m3) (prismmax)(9999999 if not to be used)
+9           !69   maximum range in water surface elevation allowed to be passed to other ICM routines (m) (rangemax)(9999999 if not to be used) %
+29          !70   maximum water depth value allowed to be passed to other ICM routines (depthmax)(m) (9999999 if not to be used)
+9999999     !71   maximum algae concentration value allowed to be passed to other ICM routines (algmax)(kg/m3) (9999999 if not to be used)
+9999999     !72   maximum TSS concentration value allowed to be passed to other ICM routines (tssmax)(kg/m3) (9999999 if not to be used)
+9999999     !73   maximum TKN concentration value allowed to be passed to other ICM routines (tknmax)(kg/m3) (9999999 if not to be used)
+6172        !74   number of links to write to FLO.out file (must match number of links in 'links_to_write.csv', set to 0 if no link flows are to be written)
+1787        !75   number of compartments to write to STGhr.out file (must match number of compartments in 'hourly_stage_to_write.csv', set to 0 if no hourly stages are to be written)
+1           !76   should overland flow be modeled in link types 8 and 9? (1=yes, 0=no)
+200000      !77   minimum water area required in each compartment (minwater (sq. meter)
+2           !78   vertical oscillation in water level between timesteps that will flag 'dz' warning (oscilflag)
+15          !79   maximum change in water level allowed between between timesteps - unrealistic but set to flag instabilities (maxdz) (meters)
+1           !80   modelling Temperature (iTemp)(No=0, Yes=1)
+1           !81   modelling Sediment (iSed) (No=0, Yes=1)
+1           !82   modelling Salinity (iSal) (No=0, Yes=1)
+0           !83   modelling Water Quality chemical constituents (iWQ) (No=0, Yes=1)
+1.0         !84   overwater evapotranspiration model (fpet) (1.0 = use PET input data 0.0 = Use average of PET input data)
+1.0         !85   upwind factor for weighting upwind/downwind contributions to WQ,salinity,TSS and temp transport calculations (fa) (range from 0.5 to 1) (0.5 gives equal weight to upwind and downwind, 1 will only use upwind)
+0.5         !86   channel velocity at which upwind factor, fa, is set to 1.0 (upwind_vel) (m/sec)
+1.0         !87   dispersion calibration factor (fe)
+366         !88   number of days in lock control observation timeseries data file LockControlObservedData.csv (lockdays) (days)
+1           !89   timestep of lock control observation timeseries data (dtlock) (hours)
+0.0         !90   minimum CSS concentration allowed to be reached - calculated CSS below this value will be increased - this is applied to each sediment class separately (cssmin) (mg/L)
+200.0       !91   maximum CSS concentration allowed to be reached - calculated CSS above this value will be throttled - this is applied to each sediment class separately (cssmax) (mg/L) (400 mg/L is approx maximum fine concentration in observed Miss. Riv. data - assume that this is a good upper limit for uniformly mixed water column in all of model domain for each sediment class)
+200.0       !92   CSS concentration threshold for bed resuspension - if sediment class CSS is greater than this threshold value, bed resuspension will be turned off for sediment class (CSSresusOff) (mg/L)
+0.00        !93   error term for freshest locations (0-1 ppt) - to be used to perturb output files (sal_0_1_error)
+0.00        !94   error term for intermediate salinity locations (1-5 ppt) - to be used to perturb output files (sal_1_5_error)
+0.00        !95   error term for saline locations (5-20 ppt) - to be used to perturb output files (sal_5_20_error)
+0.00        !96   error term for most saline locations (>20 ppt) - to be used to perturb output files (sal_20_35_error)
+0.00        !97   error term for TSS - to be used to perturb output files (tss_error)
+0.00        !98   error term for stage - to be used to perturb output files (stage_error)
+0.00        !99   error term for water level variability - to be used to perturb output files (stvar_error)
+279         !100  number of links to apply flow limiter (must match number of links in 'links_to_skip.csv', set to 0 if no link to apply flow limiter)
+4           !101  number of terminal connection
+148         !102  number of lateral connection
+1           !103  number of upstream connection
+4           !104  number of 1D regions
+0.05        !105  dry water depth threshold (dry_threshold)
+3           !106  (iAdvTrans) option for advection transport scheme: 1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme w/o fa
+0.5         !107  (r_BD) Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD (UD-upwind; CD-Central Differencing)
