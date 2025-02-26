@@ -316,6 +316,10 @@
       allocate(flag_offbc(cells))  !zw offshore bc cells flag 04/07/2020
       allocate(adaption_coeff(cells))   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
 
+! arrays for rainfall runoff calculations for each compartments
+      allocate(runoff_method(cells))    !0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method
+      allocate(runoff_coeff(cells))     !runoff coefficient for Rational Method (C) or Curve Number (CN) for SCS Curve Number Method
+
 
       ! arrays of length equal to number of links
       allocate(USx(links))
