@@ -14,7 +14,7 @@
       real :: Qlink,Dzhlim,Elevel,flo_trib,flo_div,mindz
       integer :: j,kday,mm,jn,jjn,k,iab,jnb
       real :: Qsum,Qsumh,dday,fcrop,fpc,Qhhf,Ahmf,Qupld,ddy1,ddym1,Qavail
-      real :: Qow,sndz,Dzh,sndzh,PETuse,ETmin,Het,fET
+      real :: Qow,sndz,Dzh,sndzh,PETuse,ETmin,Het,fET,SCS_S
 
       Qsum=0.0						!JAM Oct 2010
       Qsumh=0.0
@@ -97,9 +97,15 @@
       Ahmf=Ahydro(j)-Ahf(j)
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-!      Qupld=Qhhf+(max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf)*cden	 
-      Qupld=Qhhf+(max(0.0,0.05*Rain(kday,jrain(j)))*Ahmf)*cden	 !zw 02/23/2025 Rational Method = CiA (assuming C=0.05 in all upland types)
-
+      if(runoff_method(j)==1)then  !Rational Method Q=CiA
+          Qupld=(max(0.0,run_coeff(j)*Rain(kday,jrain(j)))*Ahmf)*cden
+      elseif(runoff_method(j)==2)then  !SCS Curve Number Method Q =(P-0.2S)^2/(P+0.8S) where S=1000/CN-10 (Q in mm or in)
+          SCS_S=1000.0/runoff_coeff(j)-10.0
+          Qupld=(max,0.0,(Rain(kday,jrain(j))-0.2*SCS_S)**2.0
+     &           /(Rain(kday,jrain(j))+0.8*SCS_S)*Ahmf)*cden
+      else  !original MP23 method
+          Qupld=(max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf)*cden
+      endif
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
       if (ddy1<=dry_threshold) then
@@ -109,16 +115,16 @@
           Qavail=ddy1*As(j,1)/dt
           Qsum=Qsum-max(Qow,-Qavail)                      !prevent excessive evap over openwater
       endif
-      QRain(j)=Qupld+Qow  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j
+      QRain(j)=Qupld+Qow+Qhhf  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j
 
 !      Qsumh=Qsumh-(Qhhf+max(0.0,(Rain(kday,jrain(j))
 !     &	 -PET(kday,Jet(j))*fpc))*Ahmf)*cden								!Runoff>0    !JAM Oct 2010          
 !>> modified zw 04/29/2020 to deal with upland compartments w/o marsh area
       if(Ahf(j) > 0.0) then	
-          Qsumh=Qsumh-Qupld
-      else
-          Qsum=Qsum-Qupld
+          Qsumh=Qsumh-Qhhf
       endif
+      Qsum=Qsum-Qupld
+
 !=====end rainfall runoff
 
 !>> Update cumulative marsh flowrate for marsh-to-open water exchange flow (calculated via Kadlec Knight in hydrod)      
