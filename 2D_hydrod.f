@@ -516,10 +516,13 @@
                       ! if Latr9 = 2, Latr2 = -9999
                       ! if Latr9 = 3, Latr2 = -9999
                       ! if Latr9 = 4, Latr2 = -9999
-                      ! if Latr9 = 5/10/11, Latr2 = d/s salinty (ppt)
+                      ! if Latr9 = 5/10/11/12/13/15, Latr2 = salinty (ppt)
                       ! if Latr9 = 6, Latr2 = -9999
                       ! if Latr9 = 7, Latr2 = control link number
                       ! if Latr9 = 8, Latr2 = -9999
+                      ! if Latr9 = 9, Latr2 = -9999
+                      ! if Latr9 = 14, Latr2 = WSEL (m)
+                      ! if Latr9 = 16, Latr2 = deactivated link number
               !! Latr3 = channel length
               !! Latr4 = channel width
               !! Latr5 = channel Roughness, n
@@ -528,7 +531,10 @@
               !! Latr8 = Structure loss through lock (when open), Kstr
               !! Latr9 = control scheme (1=diff stage, 2=hour, 3=d/s WSEL, 4=d/s Sal, 5=d/s WSEL or Sal,
 			             !! 6=observed timeseries, 7=target discharge, 8=u/s WSEL, 9=(u/s-d/s) diff stage, 
-						 !! 10=d/s WSEL or u/s Sal>Latr2, 11=d/s WSEL or u/s Sal<Latr2)
+						 !! 10=d/s WSEL or u/s Sal>Latr2, 11=d/s WSEL or u/s Sal<Latr2, 
+						 !! 12=u/s<d/s WESL or u/s Sal>Latr2, 13=u/s<d/s WESL when d/s Sal>Latr2
+						 !! 14=u/s<d/s WESL or u/s WSEL < Latr2, 15 - u/s WSEL<Latr10 OR u/s Sal>Latr2 & u/s<d/s WSEL
+						 !! 16=u/s Sal>Latr10, otherwise Q(Latr2)=0, Note that linkid in Latr2 should be smaller than current linkid)
               !! Latr10 = control scheme threshold value that shuts lock
                       ! if Latr9 = 1, Latr10 = diff stage (m)
                       ! if Latr9 = 2, Latr10 = -9999
@@ -541,6 +547,11 @@
 		              ! if Latr9 = 9, Latr10 = diff stage (m)
                       ! if Latr9 = 10, Latr10 = d/s WSEL (m)
                       ! if Latr9 = 11, Latr10 = d/s WSEL (m)
+		              ! if Latr9 = 12, Latr10 = diff stage (m)
+		              ! if Latr9 = 13, Latr10 = diff stage (m)
+		              ! if Latr9 = 14, Latr10 = diff stage (m)
+		              ! if Latr9 = 15, Latr10 = u/s WSEL (m)
+                      ! if Latr9 = 16, Latr10 = u/s salinty (ppt)
 		      
 		      
           !>> Initialize link's on/off flag to on
@@ -670,7 +681,7 @@
                       Latr11(i) = Latr11(i) + dt/lockOPstep
                   endif    
               
-	  !>> Set zero multiplier if lock should be closed due to high downstream water level OR high upstream salinity
+          !>> Set zero multiplier if lock should be closed due to high downstream water level OR high upstream salinity
               elseif (Latr9(i) == 10) then
                   if(S(jus(i),2) > Latr2(i)) then          ! use jus(i) instead of upN since this should be a function of link attribute definition of up/down not by WL definition of up/down
                       !dkd = 0.0
@@ -693,9 +704,69 @@
                   else
                       Latr11(i) = Latr11(i) + dt/lockOPstep                      
                   endif
-	      
-	          endif	!>> end of Latr(9) if statement
-                  
+
+          !>> Set zero multiplier if upstream stage is lower than downstream (e.g., flapgate/backflow preventer)
+          !>> OR high u/s salinity (such as CS-21 ES-1) - zw 04/29/2025
+              elseif (Latr9(i) == 12) then
+                  if(S(jus(i),2) >= Latr2(i)) then 
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  elseif (ES(jus(i),2) < ES(jds(i),2)) then
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  endif    
+              
+          !>> Set zero multiplier if upstream stage is lower than downstream (e.g., flapgate/backflow preventer)
+          !>> under condition of high d/s salinity (such as CS-21 ES-12) - zw 04/29/2025
+              elseif (Latr9(i) == 13) then
+                  if(S(jds(i),2) < Latr2(i)) then          
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  elseif (ES(jus(i),2) < ES(jds(i),2)) then
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  endif    
+
+          !>> Set zero multiplier if upstream stage is lower than downstream (e.g., flapgate/backflow preventer)
+          !>> OR low u/s water level (such as CS-29) - zw 05/02/2025
+              elseif (Latr9(i) == 14) then
+                  if(ES(jus(i),2) < Latr2(i)) then 
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  elseif ((ES(jus(i),2) < ES(jds(i),2))) then
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  endif    
+
+          !>> Set zero multiplier if upstream stage is lower than downstream (e.g., flapgate/backflow preventer) when u/s Sal>Latr2
+          !>> OR low u/s water level (such as ME-16) - zw 05/05/2025
+              elseif (Latr9(i) == 15) then
+                  if(ES(jus(i),2) < Latr10(i)) then 
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  elseif (S(jus(i),2) >= Latr2(i)) then
+                      if(ES(jus(i),2) < ES(jds(i),2)) then
+                          Latr11(i) = Latr11(i) - dt/lockOPstep
+                      else
+                          Latr11(i) = Latr11(i) + dt/lockOPstep
+                      endif
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                  endif    
+
+          !>> Set zero multiplier if u/s Sal > Latr10
+          !>> Otherwise Q(Latr2)=0 (such as ME-27 structure) - zw 05/06/2025
+              elseif (Latr9(i) == 16) then
+                  if(S(jus(i),2) > Latr10(i)) then 
+                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  else
+                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Q(Latr2(i),2)=0.0
+                      EAOL(Latr2(i)) = 0.0 
+                      link_vel(Latr2(i)) = 0.0					  
+                  endif    
+
+              endif	!>> end of Latr(9) if statement
+              
               if (Latr11(i) < 0) then
                   Latr11(i) = 0
               elseif (Latr11(i) > 1) then
@@ -1264,6 +1335,38 @@
               link_vel(i) = 0.0
 
               EAOL(i)=EAOL(Latr2(i))
+
+!>> Link type 13 = control link to deactivate specified link based on target WSEL and/or Salinity - zw 5/6/2025
+          elseif (linkt(i) == 13) then
+
+              !! attributes for control links which deactivate one of the 2 specified links based on scheme
+              !! Latr1 = control scheme
+                 !! 1 - u/s target WSEL for culvert with variable crest weir & flapgates (such as ME-26)
+              !! Latr2 = target WSEL (m)
+              !! Latr3 = target Salinity (ppt)
+              !! Latr4 = link number 1 to be deactivated when less than target
+              !! Latr5 = link number 2 to be deactivated when more than target
+              !! Latr6 = -9999
+              !! Latr7 = -9999
+              !! Latr8 = -9999
+              !! Latr9 = -9999
+              !! Latr10 = -9999
+
+              Q(i,2) = 0  ! there is no flow in type13 links
+              EAOL(i) = 0
+
+              if (Latr1(i)==1) then
+                  if (ES(jus(i),2) < Latr2(i)) then
+                      Q(Latr4(i),2) = 0.0
+                      EAOL(Latr4(i)) = 0.0
+                      link_vel(Latr4(i)) = 0.0
+                  else
+                      Q(Latr5(i),2) = 0.0
+                      EAOL(Latr5(i)) = 0.0
+                      link_vel(Latr5(i)) = 0.0
+                  endif
+              endif
+
           else
 		      write(1,*)'Warning - Link ',i, 'is not a defined link type (1-12)!!!'
               Q(i,2) = 0

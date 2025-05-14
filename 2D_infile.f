@@ -397,10 +397,21 @@
                       write(*,925)'Lock control scheme of link',lnkid,'is missing'
                       stop
                   endif
-                  
+
+                  if (Latr9(lnkid)==16) then
+                      if (Latr2(lnkid)>=lnkid) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'its deactivate link number (Latr2) should be smaller than it'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'its deactivate link number (Latr2) should be smaller than it'
+                          stop
+                  endif
+
                   if(Latr2(lnkid)<0) then
                       if((Latr9(lnkid)==5) .or. (Latr9(lnkid)==10)
-     &                    .or. (Latr9(lnkid)==11)) then
+     &                    .or. (Latr9(lnkid)==11).or.(Latr9(lnkid)==12)
+     &                    .or. (Latr9(lnkid)==13)
+     &                    .or. (Latr9(lnkid)==15)) then
                           write(1,925)'Lock control scheme of link',lnkid,
      & 'missing salinity (Latr2)'
                           write(*,925)'Lock control scheme of link',lnkid,
@@ -412,6 +423,18 @@
                           write(*,925)'Lock control scheme of link',lnkid,
      & 'missing control link number (Latr2)'
                           stop
+                      elseif (Latr9(lnkid)==14) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing water level (Latr2)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing water level (Latr2)'
+                          stop
+                      elseif (Latr9(lnkid)==16) then
+                          write(1,925)'Lock control scheme of link',lnkid,
+     & 'missing deactivate link number (Latr2)'
+                          write(*,925)'Lock control scheme of link',lnkid,
+     & 'missing deactivate link number (Latr2)'
+                          stop
                       endif
                   endif
   
@@ -419,13 +442,15 @@
                       if((Latr9(lnkid)==1) .or. (Latr9(lnkid)==3)
      &                    .or. (Latr9(lnkid)==5) .or. (Latr9(lnkid)==8)
      &                    .or. (Latr9(lnkid)==9) .or. (Latr9(lnkid)==10)
-     &                    .or. (Latr9(lnkid)==11)) then
+     &                    .or. (Latr9(lnkid)==11).or. (Latr9(lnkid)==12)
+     &                    .or. (Latr9(lnkid)==13).or. (Latr9(lnkid)==14)
+     &                    .or. (Latr9(lnkid)==15) ) then
                           write(1,925)'Lock control scheme of link',lnkid,
      & 'missing stage (Latr10)'
                           write(*,925)'Lock control scheme of link',lnkid,
      & 'missing stage (Latr10)'
                           stop
-                      elseif(Latr9(lnkid)==4) then
+                      elseif((Latr9(lnkid)==4).or.(Latr9(lnkid)==16))then
                           write(1,925)'Lock control scheme of link',lnkid,
      & 'missing salinity (Latr10)'
                           write(*,925)'Lock control scheme of link',lnkid,
@@ -502,8 +527,8 @@
 !                  Latr2(lnkid) = Latr3(lnkid)
 !              endif
 !   weir upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr2(lnkid)=Bed(jus(lnkid))
-			  Latr3(lnkid)=Bed(jds(lnkid))
+			  !Latr2(lnkid)=Bed(jus(lnkid)) - commented out zw-04/28/2025
+			  !Latr3(lnkid)=Bed(jds(lnkid)) - commented out zw-04/28/2025
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr3(lnkid)))then
                   write(1,925) 'Weir link',lnkid,'has crest elevation lower than 
