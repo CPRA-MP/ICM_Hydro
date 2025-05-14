@@ -405,8 +405,8 @@
                           write(*,925)'Lock control scheme of link',lnkid,
      & 'its deactivate link number (Latr2) should be smaller than it'
                           stop
+                      endif
                   endif
-
                   if(Latr2(lnkid)<0) then
                       if((Latr9(lnkid)==5) .or. (Latr9(lnkid)==10)
      &                    .or. (Latr9(lnkid)==11).or.(Latr9(lnkid)==12)
