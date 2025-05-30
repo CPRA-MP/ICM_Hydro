@@ -232,7 +232,7 @@
                   endif
               endif
           enddo
-          stop
+          !stop
       endif
 
       if(abs(Dz) > maxdz) then
@@ -278,7 +278,7 @@
                       endif
                   endif
               enddo
-              stop
+              !stop
           endif
 
           if(abs(Dzh) > maxdz) then
