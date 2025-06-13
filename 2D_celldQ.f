@@ -144,18 +144,26 @@
 !>> if compartment has no marsh area, add marsh overland flow in compartment to water area
 !>> if  marsh link flow is negative, flow is entering marsh from neighboring marsh
               if (linkt(iab) == 8) then
-                  if (Ahf(j) > 0) then
-                      Qsumh = Qsumh + Qlink
-                  else
-                      Qsum = Qsum + Qlink
-                  endif
+!                  if (Ahf(j) > 0) then
+!                      Qsumh = Qsumh + Qlink
+!                  else
+!                      Qsum = Qsum + Qlink
+!                  endif
+! distribute marsh link flows to both marsh & OW proportionly based on the percentage area
+                  Qsumh = Qsumh + Qlink*Ahf(j)/(Ahf(j)+As(j,1))
+                  Qsum = Qsum + Qlink*As(j,1)/(Ahf(j)+As(j,1))
 ! distribute ridge link flows to both marsh & OW proportionly based on the percentage area
               elseif (linkt(iab) == 9) then
                   Qsumh = Qsumh + Qlink*Ahf(j)/(Ahf(j)+As(j,1))
                   Qsum = Qsum + Qlink*As(j,1)/(Ahf(j)+As(j,1))
 !>> if link is not marsh overland flow type, then add flow to water flow sum
               else    
-                  Qsum = Qsum + Qlink
+                  if((Eh(j,1)-BedM(j)) < dry_threshold) then
+                      Qsum = Qsum + Qlink
+                  else
+                      Qsumh = Qsumh + Qlink*Ahf(j)/(Ahf(j)+As(j,1))
+                      Qsum = Qsum + Qlink*As(j,1)/(Ahf(j)+As(j,1))
+                  endif 
               endif
 
 !>> calculate magnitude of all flow and only in/out flows for use in sediment routing equations            
@@ -232,7 +240,7 @@
                   endif
               endif
           enddo
-          !stop
+          stop
       endif
 
       if(abs(Dz) > maxdz) then
@@ -278,7 +286,7 @@
                       endif
                   endif
               enddo
-              !stop
+              stop
           endif
 
           if(abs(Dzh) > maxdz) then
