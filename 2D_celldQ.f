@@ -160,7 +160,7 @@
               else    
                   if((Eh(j,1)-BedM(j)) < dry_threshold) then
                       Qsum = Qsum + Qlink
-                  else
+                  else !if marsh already inundated, flow redistributed to both OW & marsh
                       Qsumh = Qsumh + Qlink*Ahf(j)/(Ahf(j)+As(j,1))
                       Qsum = Qsum + Qlink*As(j,1)/(Ahf(j)+As(j,1))
                   endif 
@@ -217,12 +217,12 @@
           write(*,*) 'Comp=',j,'timestep=',mm,'dz=',dz
           write(*,*) 'Es(t-1)=',Es(j,1),'Eh(t-1)=',Eh(j,1)
           write(*,*) 'Qmarsh=',Qmarsh(j,2)
-          write(*,*) 'Es(t)=',Es(j,2)
+          write(*,*) 'Es(t)=',Es(j,1) + Dz
           write(*,*) 'Qsum=',Qsum
           write(1,*) 'Comp=',j,'timestep=',mm,'dz=',dz
           write(1,*) 'Es(t-1)=',Es(j,1),'Eh(t-1)=',Eh(j,1)
           write(1,*) 'Qmarsh=',Qmarsh(j,2)
-          write(1,*) 'Es(t)=',Es(j,2)
+          write(1,*) 'Es(t)=',Es(j,1) + Dz
           write(1,*) 'Qsum=',Qsum
           do k=1,nlink2cell(j)
               iab=abs(icc(j,k))
@@ -268,12 +268,12 @@
               write(*,*) 'Comp=',j,'timestep=',mm,'dzh=',dzh
               write(*,*) 'Es(t-1)=',Es(j,1),'Eh(t-1)=',Eh(j,1)
               write(*,*) 'Qmarsh=',Qmarsh(j,2)
-              write(*,*) 'Eh(t)=',Eh(j,2)
+              write(*,*) 'Eh(t)=',Eh(j,1)+Dzh
               write(*,*) 'Qsumh=',Qsumh
               write(1,*) 'Comp=',j,'timestep=',mm,'dz=',dz
               write(1,*) 'Es(t-1)=',Es(j,1),'Eh(t-1)=',Eh(j,1)
               write(1,*) 'Qmarsh=',Qmarsh(j,2)
-              write(1,*) 'Eh(t)=',Eh(j,2)
+              write(1,*) 'Eh(t)=',Eh(j,1)+Dzh
               write(1,*) 'Qsumh=',Qsumh
               do k=1,nlink2cell(j)
                   iab=abs(icc(j,k))
