@@ -45,15 +45,15 @@
  !                    fa_DS=fa(iab)
  !                endif
                  if(Q(iab,2) > 0.0) then			 
-                     fa_US=1.0-r_BD*(1-fx_ow)  !this is fa for flow from US to DS (Q>0)
+                     fa_US=1.0-r_BD*(1-fx_ow(iab))  !this is fa for flow from US to DS (Q>0)
 				 else
-                     fa_DS=1.0-r_BD*fx_ow  !this is fa for flow from DS to US (Q<0)
+                     fa_DS=1.0-r_BD*fx_ow(iab)  !this is fa for flow from DS to US (Q<0)
 				 endif
               elseif ((linkt(iab) == 8)) then
                  if(Q(iab,2) > 0.0) then			 
-                     fa_US=1.0-r_BD*(1-fx_marsh)  !this is fa for flow from US to DS (Q>0)
+                     fa_US=1.0-r_BD*(1-fx_marsh(iab))  !this is fa for flow from US to DS (Q>0)
 				 else
-                     fa_DS=1.0-r_BD*fx_marsh  !this is fa for flow from DS to US (Q<0)
+                     fa_DS=1.0-r_BD*fx_marsh(iab)  !this is fa for flow from DS to US (Q<0)
 				 endif
               else
                  fa_US=fa(iab)
