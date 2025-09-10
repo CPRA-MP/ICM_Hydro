@@ -14,7 +14,7 @@
       implicit none
       integer :: iab,jnb,j,k
       real :: QTMPsum,CTMPface,diffus,Qlink,d1,d2
-      real :: fa_DS
+      real :: fa_DS, fa_US
 
       if(abs(Q(iab,2)) == 0.0) then
           TL(iab,1)=0
@@ -38,12 +38,18 @@
           if (iAdvTrans==1) then
               if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
      &           .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
-     &           .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
+     &           .or. (linkt(iab) == 12)) then
  !                if(fa(iab)<1)then
  !                    fa_DS=2.0-r_BD-fa(iab)
  !                else
  !                    fa_DS=fa(iab)
  !                endif
+                 if(Q(iab,2) > 0.0) then			 
+                     fa_US=1.0-r_BD*(1-fx_ow)  !this is fa for flow from US to DS (Q>0)
+				 else
+                     fa_DS=1.0-r_BD*fx_ow  !this is fa for flow from DS to US (Q<0)
+				 endif
+              elseif ((linkt(iab) == 8)) then
                  if(Q(iab,2) > 0.0) then			 
                      fa_US=1.0-r_BD*(1-fx_marsh)  !this is fa for flow from US to DS (Q>0)
 				 else
