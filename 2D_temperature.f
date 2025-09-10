@@ -39,23 +39,30 @@
               if ((linkt(iab) == 1) .or. (linkt(iab) == 3) 
      &           .or. (linkt(iab) == 6) .or. (linkt(iab) == 11)  
      &           .or. (linkt(iab) == 12).or. (linkt(iab) == 8)) then
-                 if(fa(iab)<1)then
-                     fa_DS=2.0-r_BD-fa(iab)
-                 else
-                     fa_DS=fa(iab)
-                 endif
+ !                if(fa(iab)<1)then
+ !                    fa_DS=2.0-r_BD-fa(iab)
+ !                else
+ !                    fa_DS=fa(iab)
+ !                endif
+                 if(Q(iab,2) > 0.0) then			 
+                     fa_US=1.0-r_BD*(1-fx_marsh)  !this is fa for flow from US to DS (Q>0)
+				 else
+                     fa_DS=1.0-r_BD*fx_marsh  !this is fa for flow from DS to US (Q<0)
+				 endif
               else
+                 fa_US=fa(iab)
                  fa_DS=fa(iab)
               endif
           else
+              fa_US=fa(iab)
               fa_DS=fa(iab)
           endif
 !===
 
           if(Q(iab,2) >= 0.0) then
 !              CTMPface=Tempw(jus(iab),1)
-              CTMPface= fa(iab)*Tempw(jus(iab),1)				!cell face values
-     &                  +(1-fa(iab))*Tempw(jds(iab),1)
+              CTMPface= fa_US*Tempw(jus(iab),1)				!cell face values
+     &                  +(1-fa_US)*Tempw(jds(iab),1)
           else
 !              CTMPface=Tempw(jds(iab),1)
               CTMPface= fa_DS*Tempw(jds(iab),1)
