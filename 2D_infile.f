@@ -366,6 +366,15 @@
           write(*,*) '       Overland flow links turned off.'
           write(*,*)
           endif
+          Aus=As(jus(lnkid),1)
+          Ads=As(jds(lnkid),1)
+          Asum=Aus+Ads
+          fx_ow(lnkid)=Ads/Asum
+          Aus=Ahf(jus(lnkid))+As(jus(lnkid),1)
+          Ads=Ahf(jds(lnkid))+As(jds(lnkid),1)
+          Asum=Aus+Ads
+          fx_marsh(lnkid)=Ads/Asum
+		  
       enddo
 	  close(33)
 
