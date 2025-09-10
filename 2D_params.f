@@ -447,6 +447,8 @@
       real(sp) :: fa_def
       real(sp), dimension(:), allocatable :: fa
       real(sp), dimension(:), allocatable :: fb
+      real(sp), dimension(:), allocatable :: fx_ow
+      real(sp), dimension(:), allocatable :: fx_marsh
       real(sp) :: upwind_vel
       real(sp) :: fbc
       real(sp) :: fe

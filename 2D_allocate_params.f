@@ -343,6 +343,8 @@
 
   	allocate(fa(links))
       allocate(fb(links))
+      allocate(fx_ow(links))
+      allocate(fx_marsh(links))
       allocate(ACCSEDj(links))
 !      allocate(Achan(links))
 !	allocate(an(links))
