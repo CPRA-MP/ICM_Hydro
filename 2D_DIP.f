@@ -7,11 +7,11 @@
       
       !JAM Oct 2010 Chem #12
 
-	FNoC=1./5.681
-	fnodin=Chem(j,1,1)/(Chem(j,3,1)+10E-08)
+	    FNoC=1./5.681
+	    fnodin=Chem(j,1,1)/(Chem(j,3,1)+10E-08)
       DChemSUM=DChemSUM+decay(ichem,11)*Chem(j,11,1)		!dissolution = anaerobic decomposition of organic material   
 
-	return
-	end
+	    return
+	    end
  
-c***********************End Subroutine for chemical PArtition SRP = ParP*TP --> DIP*************
+!c***********************End Subroutine for chemical PArtition SRP = ParP*TP --> DIP*************

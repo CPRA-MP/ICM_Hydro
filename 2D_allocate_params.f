@@ -1,14 +1,15 @@
       subroutine allocate_params
 
       use params
-      integer :: windsteps,tidesteps,maxconnectuse
 
+      implicit none
+      integer :: windsteps,tidesteps,maxconnectuse
 
       cells=N
       links=M
       windsteps = simdays*24/dtwind
       tidesteps = simdays*24/dttide+1    !YW! Tide transpose is assumed been handled in the input files. +1 is to include the final row
-      maxconnectuse = max(maxconnect,25) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
+      maxconnectuse = max(maxconnect,100) ! upper limit on memory allocation for link connectivity matrices, icc and sicc
       numChem=14  !zw added 04/07/2020 to replace fixed variable dimensions related to chemicals
 
       WRITE(1,*) '----------------------------------------------------'
@@ -122,6 +123,7 @@
 
 
       allocate(SlkAve(links))
+      allocate(TlkAve(links))
 
 !output summary arrays for 500 m grid !-EDW
       allocate(pct_sand_bed_500m(n_500m_cells))
@@ -283,7 +285,7 @@
       allocate(Jrain(cells))
       allocate(Jwind(cells))
       allocate(Jet(cells))
-      allocate(jtrib(cells))
+      allocate(jtrib(Ntrib))  !ZW 12/12/2023 jtrib is the tributary IDs
       allocate(Percent(cells))
       allocate(phz(cells))
       allocate(por(cells))
@@ -311,6 +313,12 @@
       allocate(cumul_retreat(cells))
       allocate(Sacch_int(cells,2))
       allocate(Sacch_edge(cells,2))
+      allocate(flag_offbc(cells))  !zw offshore bc cells flag 04/07/2020
+      allocate(adaption_coeff(cells))   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
+
+! arrays for rainfall runoff calculations for each compartments
+      allocate(runoff_method(cells))    !0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method
+      allocate(runoff_coeff(cells))     !runoff coefficient for Rational Method (C) or Curve Number (CN) for SCS Curve Number Method
 
 
       ! arrays of length equal to number of links
@@ -335,6 +343,8 @@
 
   	allocate(fa(links))
       allocate(fb(links))
+      allocate(fx_ow(links))
+      allocate(fx_marsh(links))
       allocate(ACCSEDj(links))
 !      allocate(Achan(links))
 !	allocate(an(links))
@@ -450,6 +460,7 @@
       allocate(resuspension(cells,4))     !sediment array - 4 columns for 4 sediment classes
       allocate(deposition(cells,4))     !sediment array - 4 columns for 4 sediment classes
       allocate(CSSvRs(cells,2))
+      allocate(QRain(cells))            !ZW 1/31/2024 save total runoff volume (m3/s) at each time step 
 
 
       ! !EDW Tempw() used to be used to read in the boundary condition water temps, and then also used as the cell values of temperature at each timestep
@@ -507,6 +518,7 @@
  6666 format(A,I3,A,I3)
 
       allocate(linkslimiter(nlinklimiter))  !YW! store link numbers to apply flow limiter
+      allocate(flag_apply(links))           !zW! store flag to apply flow limiter in links
 
 !1D-ICM coupling variables
       allocate(tcr2D(ntc))  ! terminal connection ICM receiving compartment list

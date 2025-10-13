@@ -19,42 +19,43 @@
 !> @param 		kphy			temperature dependent reaction rate for phytoplankton mortality
 !> @param 		kresp			temperature dependent reaction rate for phytoplankton respiration
 	
-	Subroutine dLivA(DChemSum,ichem,j)
+	  Subroutine dLivA(DChemSum,ichem,j)
 !	dLivA(DChemSum,ichem,mex,j,k,kday)
       use params
       
-	implicit none
+	  implicit none
 
-	integer :: j, ichem
-	real :: dd
-	real :: alg
-	real :: kresp
+	  integer :: j, ichem
+	  real :: dd
+	  real :: alg
+	  real :: kresp
       real :: kphy
-	real :: va
+	  real :: va
       real :: DChemSUM
 
 !>> live algae calculation (eq. 25 of 2012 Master Plan Appendix D-1)
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
-	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+!	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
 
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)
+	  alg = chem(j,8,1)
       
 !>> temperature-dependent phytoplankton respiration rate coefficient
-	kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
+	  kresp = kresp20*thetaresp**(Tempw(j,2)-20.)
 
 !>> temperature-dependent phytoplankton mortality rate coefficient
-	kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
+	  kphy = kphy20*thetaphy**(Tempw(j,2)-20.)      
 
 !>> algae settling rate in compartments (m/day)
-	va = 0.01
+	  va = 0.01
 
 !>> change in live algae concentration (mg/L)
-	DChemSUM = (muph-kresp-kphy-va/dd)*alg
+	  DChemSUM = (muph-kresp-kphy-va/dd)*alg
 
-	return
-	end
+	  return
+	  end
 
 
 !      Subroutine LivA(DChemSum,ichem,mex,j,k)
@@ -115,23 +116,23 @@
 	
 !********apply growth restraint to Dead Algae based on Redfield
 !c______________________________________________________________________________________
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
-c*********************************************************************************
-cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
-cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
-c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
-cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
-cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
-c   0	   0    0	0	0	0 -0.005* 0.265* -0.055*  0	 0	 0	 0	  0		!8 LiveAlgae
-c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
-cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
-cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
-cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
-cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
-cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
-c**********************************************************************************
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-c______________________________________________________________________________________
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
+!c*********************************************************************************
+!cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
+!cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
+!c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
+!cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
+!cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
+!c   0	   0    0	0	0	0 -0.005* 0.265* -0.055*  0	 0	 0	 0	  0		!8 LiveAlgae
+!c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
+!cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
+!cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
+!cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
+!cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
+!cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
+!c**********************************************************************************
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!c______________________________________________________________________________________
 
-c***********************End Subroutine for Live Algae ******************************************
+!c***********************End Subroutine for Live Algae ******************************************

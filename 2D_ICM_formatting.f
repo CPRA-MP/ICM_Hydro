@@ -90,6 +90,7 @@
               endif
           enddo
       enddo
+	  close(203)
 !>> End loop of grid cell IDs matrix.
 
 !>> Write these new, matrix-formatted arrays to file to be read directly into Vegetation model.

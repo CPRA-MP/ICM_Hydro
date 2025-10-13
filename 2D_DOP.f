@@ -29,7 +29,7 @@
 ! kday now global parameter - no longer needed to be passed into subroutine   
       Subroutine dDOP(DChemSum,ichem,j)
 
-	use params
+	  use params
       
       implicit none
       integer :: ichem,j
@@ -42,16 +42,16 @@
 !>> DOP routine (eq. 23 of 2012 Master Plan Appendix D-1)
 
 !>> previous time step WQ concentrations
-	det = chem(j,9,1)
-	dop = chem(j,11,1)
+	  det = chem(j,9,1)
+	  dop = chem(j,11,1)
       
 !>> temperature-dependent detritus dissolution hydrolysis rate coefficient 
-	kdet = kdet20*thetadet**(Tempw(j,2)-20.)
+	  kdet = kdet20*thetadet**(Tempw(j,2)-20.)
       
 !>> temperature-dependent DOP hydrolysis rate coefficient 
-	kdop20 = 0.1
+	  kdop20 = 0.1
       thetadop = 1.047
-	kdop = kdop20*thetadop**(Tempw(j,2)-20.)
+	  kdop = kdop20*thetadop**(Tempw(j,2)-20.)
       
 !>> phosphorus-to-detritus stoichometric mass ration
       rpd = 0.01
@@ -82,24 +82,24 @@
 !	return
 !	end
 
-c______________________________________________________________________________________
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
-c*********************************************************************************
-cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
-cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
-c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
-cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
-cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
-c   0	   0    0	0	0	0 -0.005 0.265 -0.055  0	 0	 0	 0	  0		!8 LiveAlgae
-c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
-cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
-cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
-cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
-cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
-cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
-c**********************************************************************************
-cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
-c______________________________________________________________________________________
+!c______________________________________________________________________________________
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!cc   1	2	3	4	 5	 6	7	  8	     9	   10	11	12	13	  14 ***********
+!c*********************************************************************************
+!cc-0.0815	0.1	0	0	 0	 0	0    -0.5	 0	   0	 0	 0	 0	  0		!1 NO2+NO3
+!cc  0 -0.21	0	0    0	 0	0    -0.5	 0	   0.01	 0	 0	 0	  0		!2 NH4
+!c    0	0	0	0	 0	 0	0	  0	     0	   0	 0	 0	 0	  0		!3 DIN
+!cc 0-0.00001 0 -0.000001 0 0	0     1	-0.00001   0	 0	 0	 0	  0		!4 ON
+!cc 0	    0	0	0 -0.002 0	0     -1	  0    0     0	 0	 0	  0		!5 TP
+!c   0	   0    0	0	0	0 -0.005 0.265 -0.055  0	 0	 0	 0	  0		!8 LiveAlgae
+!c   0	   0    0	0	0	0 -0.005-0.055  0.055 -0.01-0.005 0	 0	  0		!9 DeadAlgae
+!cc  0 -0.01	0	0	0	0	0    0.0	0.005	0	 0	 0	 0	  0		!10 DON
+!cc  0	   0	0	0	0	0	0   0.01	  0	   0  0.01 -0.01 0	  0		!11 DOP
+!cc  0	   0	0	0	0	0	0	  0	      0	   0  -0.01	0.01 0	  0		!12 SRP
+!cc  0	   0	0	0	0	0	0	0.06667	  0	   0	0	0  0.01	  0		!13 Chla
+!cc  0	   0	0	0	0	0	0	  1	      0	-0.01	 0	 0	 0	  0		!14 POP
+!c**********************************************************************************
+!cc! NO3	NH4	DIN	ON	 TP	TOC	DO	  LA-C	DA-C	DON	DOP	SRP	ChLa POP
+!c______________________________________________________________________________________
 
-c***********************End Subroutine for chemical DeadA*StchP --> DOP*************************
+!c***********************End Subroutine for chemical DeadA*StchP --> DOP*************************

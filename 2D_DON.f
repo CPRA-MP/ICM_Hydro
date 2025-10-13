@@ -32,7 +32,7 @@
 ! kday now global parameter - no longer needed to be passed into subroutine   
       Subroutine dDON(DChemSum,ichem,j)
 
-	use params
+	  use params
       
       implicit none
       integer :: ichem,j
@@ -45,23 +45,23 @@
 !>> DON routine (eq. 20 of 2012 Master Plan Appendix D-1)
 
 !>> previous time step WQ concentrations
-	det = chem(j,9,1)
-	don = chem(j,10,1)
+	  det = chem(j,9,1)
+	  don = chem(j,10,1)
       
 !>> temperature-dependent detritus dissolution hydrolysis rate coefficient 
-	kdet = kdet20*thetadet**(Tempw(j,2)-20.)
+	  kdet = kdet20*thetadet**(Tempw(j,2)-20.)
       
 !>> temperature-dependent DON hydrolysis rate coefficient 
-	kdon20 = 0.015
-	thetadon = 1.047
-	kdon = kdon20*thetadon**(Tempw(j,2)-20.)
+	  kdon20 = 0.015
+	  thetadon = 1.047
+	  kdon = kdon20*thetadon**(Tempw(j,2)-20.)
       
 !>> nitrogen-detritus stoichometric mass ratio
       rnd = 0.072
       
 !>> change in dissolved organic nitrogen concentration
       dChemSUM = rnd*kdet*det-kdon*don
- 
+
       return
       end
       
@@ -75,21 +75,21 @@
 !	return
 !	end
 	
-c-------------------------------
-c        1 = NO3 + NO2
-c        2 = NH4 
-c        3 = DIN (1+2)
-c        4 = Organic N
-c        5 = TP
-c        6 = TOC
-c        7 = DO
-c	   8 = Live Algae
-c	   9 = Dead Algae = Detritus
-c        10= DON
-c        11= DOP
-c        12= DIP   !Partition SRP = ParP*TP
-c        13= ChLa  !Partition Chla= ParCla*LivA
-c        14= POP !-EDW used to say 14=TKN !-EDW
-c-------------------------------
+!c-------------------------------
+!c        1 = NO3 + NO2
+!c        2 = NH4 
+!c        3 = DIN (1+2)
+!c        4 = Organic N
+!c        5 = TP
+!c        6 = TOC
+!c        7 = DO
+!c	   8 = Live Algae
+!c	   9 = Dead Algae = Detritus
+!c        10= DON
+!c        11= DOP
+!c        12= DIP   !Partition SRP = ParP*TP
+!c        13= ChLa  !Partition Chla= ParCla*LivA
+!c        14= POP !-EDW used to say 14=TKN !-EDW
+!c-------------------------------
 	
-c***********************End Subroutine for DeadA --> DON****************************************
+!c***********************End Subroutine for DeadA --> DON****************************************

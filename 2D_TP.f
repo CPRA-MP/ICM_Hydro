@@ -42,7 +42,7 @@
       Subroutine dTP(DChemSum,ichem,j) ! THIS CALCULATED TOTAL INORGANIC PHOSPHORUS
 	!JAM Oct 2010 Chem #5
 
-	use params      
+	  use params      
 
       implicit none
       
@@ -60,32 +60,33 @@
 
 !>> current depth in compartment
 !	dd = Es(j,2) - Bed(j)
-	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+!	dd = max(Es(j,2) - Bed(j),0.01)	 !zw 4/28/2015 be consistent with NO3 and NH4
+	  dd = max(Es(j,2) - Bed(j),dry_threshold)	 !zw 4/28/2015 be consistent with NO3 and NH4
       
 !>> portion of compartment that is marsh
       fmarsh = Apctmarsh(j)
       
 !>> previous time step WQ concentrations
-	alg = chem(j,8,1)		
+	  alg = chem(j,8,1)		
       tip = chem(j,5,1)
       dop = chem(j,11,1)
       
 !>> temperature-dependent phytoplankton respiration rate coefficient
-	kresp = kresp20*thetaresp**(Tempw(j,2)-20.)      
+	  kresp = kresp20*thetaresp**(Tempw(j,2)-20.)      
       
 !>> temperature-dependent DOP hydrolysis rate coefficient 
-	kdop20 = 0.1
+	  kdop20 = 0.1
       thetadop = 1.047
-	kdop = kdop20*thetadop**(Tempw(j,2)-20.)
+	  kdop = kdop20*thetadop**(Tempw(j,2)-20.)
 
 !>> temperature-dependent orthophosphate release rate coefficient 
-	kpo4 = kpo420*thetapo4**(Tempw(j,2)-20.)
+	  kpo4 = kpo420*thetapo4**(Tempw(j,2)-20.)
 
 !>> carbon-to-chlorophyll ratio
-	rca = 75.0
+	  rca = 75.0
       
 !>> phosphorus-to-chlorophyll A stoichometric mass ratio
-	rp = 0.0244*rca
+	  rp = 0.0244*rca
       
 !>> settling rate for phosphorus calculations - average settling velocity of four particle classes converted to m/day
 !      vs=3600.*24.*(velset(j,1)+velset(j,2)+velset(j,3)+velset(j,4))/4.
@@ -118,4 +119,4 @@
 !	return
 !	end
 
-c***********************End Subroutine for chemical TP******************************************
+!c***********************End Subroutine for chemical TP******************************************

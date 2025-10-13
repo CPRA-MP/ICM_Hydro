@@ -1,63 +1,117 @@
 !	Subroutine CelldTmp(QSalSUM,Dz,j,SalTRIBj,dref,Tres)
 ! kthr and kday now global parameters - no longer needed to be passed into subroutine      
-	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
-cJAM     c Salinity  computations ****************************
+!	Subroutine CelldTmp(QTmpSUM,j,kday,kthr,SalTRIBj,dref,Tres)
+	  Subroutine CelldTmp(j,kday)
+!JAM     c Salinity  computations ****************************
 	
-      use params
+        use params
 
-      real :: QRain, CSHEAT,rhoj,ddy,dddy,ake,aktmp,DTempw2,QTMPsum
-      integer :: kdiv, ktrib,k,iab,jnb,j
+        implicit none
+        real :: CSHEAT,rhoj,ddy1,ddy2,dddy,ake,aktmp,DTempw2,QTMPsum
+        real :: vol1,vol2,ddym1,ddym2,marsh_vol1,marsh_vol2
+        real :: Qlink,QTMPsum_link
+        integer :: kdiv,ktrib,k,iab,jnb,j,kday
+        real :: QTmp_in,Q_in
 
-	CSHEAT=4182.					!Specific heat
-	rhoj=1000.*(1+S(j,1)/1000.)		!density
+        CSHEAT=4182.					!Specific heat
+        rhoj=1000.*(1+S(j,1)/1000.)		!density
 
 !>> Set minimum depth value (avoids div-by-zero errors)
-      ddy= Es(j,1)-Bed(j)
+        ddy1 = Es(j,1)-Bed(j)
+        ddy2 = Es(j,2)-Bed(j)
+        ddym1 = Eh(j,1)-BedM(j)
+        ddym2 = Eh(j,2)-BedM(j)
 	
-      if(ddy <= 0.1) then
-          dddy = 0.1
-      else
-          dddy = ddy
-      endif
+!      if(ddy1 <= 0.1) then
+!          dddy = 0.1
+        if(ddy1 <= dry_threshold) then
+            dddy = dry_threshold
+        else
+            dddy = ddy1
+        endif
       
-      ake=5.0
-      cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
-	aktmp=ake/rhoj/CSHEAT/dddy !JAM Oct 2010 temperature heat conduction  *** will need calibration
+!        ake=5.0
+        ake=26.5  !zw - 1/12/2024 based on MP2012 Ke averages
+!        cden=1./1000./24./3600.		!JAM Oct 2010 mm/d to m/s
+        if(ddy1 <= dry_threshold) then
+            aktmp=0
+        else
+            aktmp=ake/rhoj/CSHEAT/dddy !JAM Oct 2010 temperature heat conduction  *** will need calibration
+        endif
 
-      QTMPsum=0
+        QTMPsum=0
 
-      do kdiv=1,Ndiv
-	    QTMPsum=QTMPsum  -Qdiv(kdiv,kday)*TempMR(kday)*
+!ZW 1/30/2024 adding QTmp_in & Q_in for use of SWMM5 method
+! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
+!      iAdvTrans=3  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+        if(iAdvTrans==3)then
+            QTmp_in = 0.0  !QTmp_in>0 
+            Q_in=0.0       !Q_in>0         
+        endif
+
+!>> update  mass flux (QTMPsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
+        do kdiv=1,Ndiv
+            QTMPsum=QTMPsum - Qdiv(kdiv,kday)*TempMR(kday)*
      &	    Qmultdiv(j,kdiv)										!!!JAM Oct 2010
-      enddo
+            if(iAdvTrans==3) QTmp_in=QTmp_in+Qdiv(kdiv,kday)
+     &                          *TempMR(kday)*Qmultdiv(j,kdiv)             !ZW 1/30/2024 for use of SWMM method
+            if(iAdvTrans==3) Q_in=Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
+        enddo
 
-	do ktrib=1,Ntrib
+!>> update mass flux (QTMPsum) for tributary flows into compartment      
+        do ktrib=1,Ntrib
 !>> If Qtrib is negative, flow is leaving system via tributary, use compartment temp if this is the case
-          if (Qtrib(ktrib,kday) > 0.0) then
-		    QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
+            if (Qtrib(ktrib,kday) > 0.0) then
+                QTMPsum=QTMPsum-Qtrib(ktrib,kday)*TMtrib(ktrib,kday)*
      &			            Qmult(j,ktrib)
-          else
-              QTMPsum = QTMPsum-Qtrib(ktrib,kday)*TempW(j,1)*
+              if(iAdvTrans==3) QTmp_in=QTmp_in+Qtrib(ktrib,kday)
+     &                             *TMtrib(ktrib,kday)*Qmult(j,ktrib)     !ZW 1/30/2024 for use of SWMM method
+              if(iAdvTrans==3) Q_in=Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
+            else
+                QTMPsum = QTMPsum-Qtrib(ktrib,kday)*TempW(j,1)*
      &                    Qmult(j,ktrib)
-          endif
-      enddo
-      QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
-     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
-     
-	QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
+            endif
+        enddo
+
+!>> temperature source term from rainfall
+!        QRain = (Rain(kday,Jrain(j))-(1-fpet)*ETA(Jet(j))
+!     &        -fpet*PET(kday,Jet(j)))*As(j,1)*cden
+
+!        QTMPsum=QTMPsum-QRain*ta(kday)            !openwater As 
+        QTMPsum=QTMPsum-QRain(j)*Tempw(j,1)        !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
+
+!===ZW 1/30/2024 for use of SWMM method
+        if(iAdvTrans==3) then
+            Q_in=Q_in+QRain(j)  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
+            QTmp_in=QTmp_in+QRain(j)*Tempw(j,1)        
+        endif
+!== end revision 1/30/2024
       
-      
-      do k=1,nlink2cell(j)
-          if(icc(j,k) /= 0.0) then
-		    if(icc(j,k) < 0.0)then
-		        jnb=jus(abs(icc(j,k)))
-              else 
-		        jnb=jds(abs(icc(j,k)))
-              endif
-          endif  
-          iab=abs(icc(j,k))
-		call Temperature(mm,iab,jnb,j,k,QTMPsum)	!Temperature change computations
-      enddo
+!>> update mass flux (QTMPsum) for link flows into/out of compartment            
+        do k=1,nlink2cell(j)
+            if(icc(j,k) /= 0.0) then
+                if(icc(j,k) < 0.0)then
+                    jnb=jus(abs(icc(j,k)))
+                else 
+                    jnb=jds(abs(icc(j,k)))
+                endif
+            endif  
+            iab=abs(icc(j,k))
+
+!===ZW 1/30/2024 for use of SWMM method
+            if(iAdvTrans==3)then
+                Qlink = 0
+                if(iab > 0) Qlink = sicc(j,k)*Q(iab,2)
+                if (Qlink < 0.0) then
+                    Q_in = Q_in + abs(Qlink)
+                    QTmp_in = QTmp_in+abs(Qlink)*Tempw(jnb,1)
+                endif
+            endif
+!===end 1/30/2024
+
+!          call Temperature(mm,iab,jnb,j,k,QTMPsum)	!Temperature change computations
+            if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum)	!Temperature change computations
+        enddo
 
 
 !      DTempw1=  -QTMPsum/(As(j,1)*dddy)*dt
@@ -74,49 +128,113 @@ cJAM     c Salinity  computations ****************************
 
 !>> Calculate temperature source from equilbrium tempertaure at air-water interface
 
-      DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt			!JAM Oct 2010
+        DTempw2=aktmp*(Tempe(j,kday)-Tempw(j,1))*dt			!JAM Oct 2010
       
       ! debug for v23.4.2
       !if(isNan(QTMPsum)) then
       !	  QTMPsum = 0.0
       !endif
 
-      Tempw(j,2) = ((Tempw(j,1)*As(j,1)*dddy - QTMPsum*dt)
-     &   / (As(j,1)*dddy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt) ) + DTempw2
+!     openwater volume
+        vol1 = 0.0
+        vol2 = 0.0
+        marsh_vol1 = 0.0
+        marsh_vol2 = 0.0
 
+!ZW 1/17/2024 total vol based on dry-depth
+!        if ( ddy1 > dry_threshold ) then               ! check if openwater was dry in previous timestep
+!            vol1 = max(ddy1*As(j,1),0.0)
+!            vol2 = max(ddy2*As(j,1),0.0)
+!        elseif ( ddy2 > dry_threshold ) then               ! check if openwater was dry in current timestep
+!            vol1 = max(ddy1*As(j,1),0.0)
+!            vol2 = max(ddy2*As(j,1),0.0)
+!        endif
+!
+!! ZW-1/13/2024 adding marsh water volume
+!
+!        if ( ddym1 > dry_threshold ) then               ! check if marsh was dry in previous timestep
+!            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!            marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!        elseif ( ddym2 > dry_threshold ) then               ! check if marsh was dry in current timestep
+!            marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!            marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!        endif
+
+!ZW 1/17/2024 total vol w/o depth limitation
+        marsh_vol1 = max(ddym1*Ahf(j),0.0)
+        marsh_vol2 = max(ddym2*Ahf(j),0.0)
+        vol1 = max(ddy1*As(j,1),0.0)
+        vol2 = max(ddy2*As(j,1),0.0)
+
+        vol1 = vol1 + marsh_vol1
+        vol2 = vol2 + marsh_vol2
+
+!      Tempw(j,2) = ((Tempw(j,1)*As(j,1)*dddy - QTMPsum*dt)
+!     &   / (As(j,1)*dddy +(Qsum_in(j)-Qsum_out(j)+QRain)*dt) ) + DTempw2
+
+        if(ddy2 > dry_threshold) then
+!        if(vol2 > 0) then
+            if(iAdvTrans==3) then !===ZW 1/30/2024 use of SWMM method
+                Tempw(j,2)=(Tempw(j,1)*vol1+QTmp_in*dt)/(vol1+Q_in*dt)+DTempw2
+            else
+                Tempw(j,2)=(Tempw(j,1)*vol1-QTMPsum*dt)/vol2+DTempw2
+            endif
+        else
+            Tempw(j,2) = ta(kday)
+        endif
 !	Tempw(j,2)=Tempw(j,1)+DTempw1+DTempw2
-	
-     
       
-!		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
 
-c low high pass filter
-      if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
-      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
-
-      if(isNan(Tempw(j,2))) then      ! YW
-          write(*,*) 'j:',j
-          write(*,*) 'Tempw(j,2):',Tempw(j,2)
-          write(*,*) 'Tempw(j,1):',Tempw(j,1)
-          write(*,*) 'As(j,1):',As(j,1)
-          write(*,*) 'dddy:',dddy
-          write(*,*) 'QTMPsum:',QTMPsum
-          write(*,*) 'dt:',dt
-          write(*,*) 'Qsum_in(j):',Qsum_in(j)
-          write(*,*) 'Qsum_out(j):',Qsum_out(j)
-          write(*,*) 'QRain:',QRain
-          write(*,*) 'DTempw2:',DTempw2
-          write(*,*) 'aktmp:',aktmp
-          write(*,*) 'kday:',kday
-          write(*,*) 'Tempe(j,kday):',Tempe(j,kday)   
+!=== for code debugging
+!        if(((Tempw(j,2))<0) .or. ((Tempw(j,2))>tmpmax)) then
+        if(isNan(Tempw(j,2))) then
+          write(1,*) 'j:',j
+          write(1,*) 'As(j,1):',As(j,1)
+          write(1,*) 'depth(t-1) = ',Es(j,1)-Bed(j)
+          write(1,*) 'depth(t) =', Es(j,2)-Bed(j)
+          write(1,*) 'Dz =',Es(j,2)-Es(j,1)
+          write(1,*) 'vol(t-1) =', vol1,marsh_vol1
+          write(1,*) 'vol(t) =', vol2,marsh_vol2
+          write(1,*) 'Tempw(j,1):',Tempw(j,1)
+          write(1,*) 'Tempw(j,2):',Tempw(j,2)
+          write(1,*) 'QTMPsum:',QTMPsum
+          write(1,*) 'QRain:',QRain(j)
+          write(1,*) 'aktmp:',aktmp, 'DTempw2:',DTempw2
+          write(1,*) 'Tempe(j,kday):',Tempe(j,kday)   
+          write(1,*) 'Air Temp:',ta(kday)   
+          do k=1,nlink2cell(j)
+              iab=abs(icc(j,k))
+              if(icc(j,k) /= 0) then
+                  if(icc(j,k) < 0) then
+                      jnb=jus(iab)
+                  elseif(icc(j,k) > 0) then
+                      jnb=jds(iab)
+                  endif  
+              endif
+              QTMPsum_link=0.0
+              if(iab > 0) call Temperature(iab,jnb,j,k,QTMPsum_link)
+              Qlink = sicc(j,k)*Q(iab,2)
+              if(abs(Qlink)>0) then
+                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
+                  write(1,*)'Tempw(jus)=',Tempw(jus(iab),1),
+     &                      'Tempw(jds)=',Tempw(jds(iab),1)
+                  write(1,*)'QTMP_adv+diff=',QTMPsum_link
+              endif
+          enddo
           stop
-	  !write(*,*) 'setting water temp to equil temp due to NaN'
-	  !Tempw(j,2) = Tempe(j,kday)
-      endif
+        endif
+
+! low high pass filter
+!		if(Tempw(j,2).lt.TempMR(kday))Tempw(j,2)=TempMR(kday)
+        if(Tempw(j,2).lt.2.0)Tempw(j,2)=2.0
+!      if(Tempw(j,2).gt.36.)Tempw(j,2)=36.
+        if(Tempw(j,2).gt.tmpmax)Tempw(j,2)=tmpmax
+!zw 1/18/2024        if(Tempw(j,2).gt.ta(kday))Tempw(j,2)=ta(kday)
+
 
 !	fsal=(1+S(j,2)/35) !-EDW not used anywhere									!salinity correction on Vs
-cc	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
+!	Temph(j,2)=Tempw(j,2)+0.5							!JKS 10/31/13
 
-      return 
-	end
-c***********************End Subroutine for Change in Cell Temperature*******JAM Oct 2010********
+        return 
+        end
+!***********************End Subroutine for Change in Cell Temperature*******JAM Oct 2010********

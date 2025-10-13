@@ -16,6 +16,11 @@
       integer :: windgages,raingages,etgages,tidegages 
       integer :: writehourly,modeloverland
       integer :: iSed,iSal,iTemp,iWQ
+
+! zw 2/1/2024 added for option to select scalar advection transport scheme: 
+!     1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme (w/o fa)
+      integer :: iAdvTrans    
+      real :: r_BD
       
 ! hardcoded specific salinity and stage trigger flags      
       integer :: SalLockTriggerHNC,SalLockStatusHNC
@@ -66,6 +71,7 @@
 	real(sp) :: dtwind
       real(sp) :: dttide
       real(sp) :: dz
+      real(sp) :: dry_threshold  !dry water depth threshold >0
 
 ! global water quality parameters
       real(sp) :: saltox
@@ -194,6 +200,12 @@
       real(sp),dimension(:),allocatable :: SWRsand
       real(sp),dimension(:),allocatable :: SWRfines
       real(sp),dimension(:),allocatable :: cssFines
+      real(sp),dimension(:),allocatable :: adaption_coeff   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
+
+! arrays for rainfall runoff calculations for each compartments
+      integer,dimension(:),allocatable :: runoff_method     !0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method
+      real(sp),dimension(:),allocatable :: runoff_coeff     !runoff coefficient for Rational Method (C) or Curve Number (CN) for SCS Curve Number Method
+
 ! arrays used for BIMODE tidal prism
       real(sp),dimension(:,:),allocatable :: tidal_range_daily
       real(sp),dimension(:),allocatable :: dailyLW
@@ -247,6 +259,7 @@
       real(sp), dimension(:), allocatable :: per_water_500m            !lookup table - relates 500 m grid cell to percentage of grid that is  water (as calculated in Wetland Morph routine)
       real(sp), dimension(:),allocatable :: height_500m               !lookup table - relates 500 m grid cell to mean height of land above mean water level
       real(dp), dimension(:), allocatable :: SlkAve                 !average daily salinity values for links
+      real(dp), dimension(:), allocatable :: TlkAve                 !average daily salinity values for links
       
       real(dp), dimension(:,:), allocatable :: sal_daily              ! daily salinity values for compartments
       real(dp), dimension(:,:), allocatable :: sal_daily_links        ! daily salinity values for links
@@ -384,6 +397,7 @@
       integer, dimension(:), allocatable :: KBC       !should this be integer or real? implicitly defined in original
       integer, dimension(:), allocatable :: Jwind
       integer, dimension(:), allocatable :: Jet
+      integer, dimension(:), allocatable :: flag_offbc !zw offshore bc cells flag 04/07/2020
       
 !      real(sp), dimension(:), allocatable :: acss
       real(sp), dimension(:), allocatable :: Ahydro
@@ -433,6 +447,8 @@
       real(sp) :: fa_def
       real(sp), dimension(:), allocatable :: fa
       real(sp), dimension(:), allocatable :: fb
+      real(sp), dimension(:), allocatable :: fx_ow
+      real(sp), dimension(:), allocatable :: fx_marsh
       real(sp) :: upwind_vel
       real(sp) :: fbc
       real(sp) :: fe
@@ -532,6 +548,7 @@
       real(sp), dimension(:,:), allocatable :: Rain
 !      real(sp), dimension(:,:), allocatable :: uplandNP
       real(sp), dimension(:,:), allocatable :: Tcoef
+      real(sp), dimension(:), allocatable :: QRain  !ZW 1/31/2024 save total runoff volume (m3/s) at each time step
       
       real(sp), dimension(:,:,:), allocatable :: cChemdiv
       real(sp), dimension(:,:,:), allocatable :: QAtm
@@ -738,6 +755,7 @@
 
       integer :: nlinklimiter                            !YW! number of link to apply flow limiter   
       integer,dimension(:),allocatable :: linkslimiter   !YW! list of link number to apply flow limiter      
+      integer,dimension(:),allocatable :: flag_apply     !ZW! flag to apply flow limiter in links (1-apply; 0-no)     
       
       integer :: numChem  !add zw 04/08/2020      
       

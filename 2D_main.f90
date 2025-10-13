@@ -45,7 +45,7 @@
       write(*,*) '----------------------------------------------------'
       write(*,*) ' HYDRO MODEL RUN IS COMPLETE.'
       write(*,*) '----------------------------------------------------'
-
+      close(1)
 
 !      pause
       stop
@@ -206,18 +206,21 @@
 
       use params
       use common_array_R  ! 1D-ICM coupling
-      !implicit none       ! 1D-ICM coupling
-      
+
+      implicit none
       integer :: i,it,j,jj,jjj,sedclass       !iterators used in main.f
       integer :: n_1d, iir                    !new iterators used in conjunction with 1D code
+      integer :: NNN,ichem,me,mm,kt,k,kk,kj,kl
+      real :: dday,ddayhr,Pardpmr
       Character*100 header
-      
+      integer :: ndt_1hr, nts_1hr  
      
 !>@par General Structure of Subroutine Logic:
 
 ! determine start time for calculating runtimes
       call SYSTEM_CLOCK(runtime_start,count_rate1,count_max1)
 !>> Open file with model information regarding file formatting in ICM (written only before first model year - NOT updated yearly).
+!   This file is created in ICM.py      
       open (unit=300,  file= 'ICM_info_into_EH.txt', status ='unknown')
 !>> Read in names of Veg files to write output to.
       read(300,*) VegWaveAmpFile
@@ -368,8 +371,14 @@
       READ(30,*) nlc             ! 102      number of lateral connection
       READ(30,*) nuc             ! 103      number of upstream connection
       READ(30,*) n1D             ! 104      number of 1D regions
+      READ(30,*) dry_threshold   ! 105      dry water depth threshold
+      READ(30,*) iAdvTrans       ! 106      option to select advection transport scheme: 1-Blended Differencing (BD); 2-User defined fa; 3-SWMM5 WQ scheme w/o fa 
+      if (iAdvTrans==1) then
+          READ(30,*) r_BD        ! 107      Blending factor in Blend Differencing (BD) scheme: C_BD=(1-r)*C_UD+r*C_CD (UD-upwind; CD-Central Differencing)
+      endif
       close(30)
 
+      fa_def=1 !fa is an link attribute now and a calibration factor, so fa_def should be always 1 
 
 !>> Determine number of simulation timesteps
       ndt_ICM = dt
@@ -432,27 +441,27 @@
       
 !>> Set initial conditions for constants and model parameters that are not included in input text files
 !   Initial Conditions
-     g=9.81					! Gravity (m/s2)
-     pi=4.0*atan(1.0)
-     TemI = 15.				! Initial Water Temperature
-     KnN= 20.				! (ug/L) DIN Michaelis Constant  Thomann & Mueller
-     KnP= 3.					! (ug/L) P Michaelis Constant
-     KnSS= 50.				! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
-     KnSal=4.				! (ppt) Salinity  Michaelis Constant
+      g=9.81					 ! Gravity (m/s2)
+      pi=4.0*atan(1.0)
+!      TemI = 15.				 ! Initial Water Temperature
+      KnN= 20.				 ! (ug/L) DIN Michaelis Constant  Thomann & Mueller
+      KnP= 3.				 ! (ug/L) P Michaelis Constant
+      KnSS= 50.				 ! (mg/L) SS Michaelis Constant  chged 30 to 50 JAM March 2011
+      KnSal=4.				 ! (ppt) Salinity  Michaelis Constant
     
-     ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
-     ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
-     PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
-     ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
-     Pardpmr= 0.05
-     PPMR=1.-ParPMR-Pardpmr
-     ParSand=0.05			! sand/TSS in Tribs and MR typical
-     ParCLa=0.03				! Partition LivA --> ChlA
+      ParP= 0.4               ! SRP/TP in Tribs   J. Day 1994 BCS trial
+      ParDOP= 0.1             ! DOP/TP in Tribs   J. Day 1994 BCS trial
+      PARPOP=1.-ParDOP-ParP   ! POP/TP in Tribs   J. Day 1994 BCS trial
+      ParPMR= 0.2             ! SRP/TP in Diversions J. Day 1994 BCS trial
+      Pardpmr= 0.05
+      PPMR=1.-ParPMR-Pardpmr
+      ParSand=0.05			 ! sand/TSS in Tribs and MR typical
+      ParCLa=0.03			 ! Partition LivA --> ChlA
     
-     consd=24*3600			! sec to days
-     conv=0.001*consd		! (mg/L)*(m3/s) --> kg/d
-     floodf(:)=0.0
-     nuo=0.000001			! DEFAULT Viscosity
+      consd=24*3600			 ! sec to days
+      conv=0.001*consd		 ! (mg/L)*(m3/s) --> kg/d
+      floodf(:)=0.0
+!      nuo=0.000001			 ! DEFAULT Viscosity
 
 !>> Generate array for Day of Year value for the first day of each month
       month_DOY(1) = 1
@@ -474,14 +483,6 @@
           enddo
       endif
 
-!C> initially set GrowAlgae array equal to zero
-      do j=1,N
-          do ichem=1,14
-              do me=1,14
-                  GrowAlgae(j,ichem,me) = 0.
-              enddo
-          enddo
-      enddo
 
 !>> determine upper CSS threshold for each sediment class where resuspension of bed material will be deactivated
 !>> These values are based on an assumption that at a TSS value equal to the threshold concentration, the particle size distribution is 10% sand, 45% silt, and 45% clay.
@@ -504,7 +505,6 @@
       open (unit=40, file= 'PET.csv', status = 'unknown')
       open (unit=42, file= 'Precip.csv', status='unknown')
       open (unit=45, file= 'Meteorology.csv', status = 'unknown')
-      open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
       open (unit=43, file= 'WindVectorsX.csv',status= 'unknown')
       open (unit=46, file= 'WindVectorsY.csv',status= 'unknown')
       open (unit=47, file= 'TideData.csv',status='unknown')
@@ -514,37 +514,56 @@
       open (unit=55, file= 'TribS.csv', status = 'unknown')	! Tributary sand concentration (mg/L)
       open (unit=555,file= 'TribF.csv',status='unknown')      ! Tributary fines concentration (mg/L)
       open (unit=56, file= 'SBC.dat', status = 'unknown')
-      open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
-      open (unit=81, file= 'NH4Data.csv', status = 'unknown')
-      open (unit=82, file= 'OrgNData.csv', status = 'unknown')
-      open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
-      open (unit=84, file= 'AtmChemData.csv', status ='unknown')
-      open (unit=85, file= 'Decay.csv', status ='unknown')
-      open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
-      open (unit=87, file= 'DivWQ.csv', status ='unknown')
-      open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
-      open (unit=89, file= 'DivSW.csv', status = 'unknown')
-      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
       open (unit=110, file= 'surge.csv', form = 'formatted')
-!      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
-!      open (unit=118, file= 'UplandNP.dat', form ='formatted')
       open (unit=125, file= 'KBC.dat', status = 'unknown')		        !node numbers of open boundary
-      open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
-      open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
+      open (unit=101, file= 'BCToC2.dat', form = 'formatted')
+
+!==== conditional input files
+	  if (Ndiv>0) then
+          open (unit=86, file= 'DivQm.csv', status ='unknown')	! diversion flow multiplier on Miss Riv flow
+          open (unit=88, file= 'QMult_div.csv', form= 'formatted',status ='unknown')
+          open (unit=89, file= 'DivSW.csv', status = 'unknown')
+	  endif
+!      open (unit=117, file= 'AsedOW.csv',form ='formatted',status ='unknown')		! Sediment Accretion  !Status='unknown' added by Joao Pereira 5/17/2011
+	  if (nlinksw>0) then
+          open (unit=126, file= 'links_to_write.csv',status='unknown')	    !input csv file with the link ID numbers of links to write flowrate to output file
+	  endif
+	  if (nstghr>0) then
+          open (unit=127, file='hourly_stage_to_write.csv',status='unknown')  !input csv file with the ID numbers of compartments to write hourly stage to output file
+      endif
+      if (nlinklimiter>0) then
+	      open (unit=500, file= 'links_to_apply.csv',status='unknown')
+	  endif
+
+!     If WQ modeling is excluded (iWQ=0), WQ inputs are disabled	  
+	  if (iWQ>0) then
+          open (unit=44, file= 'AnthL.csv', status = 'unknown')			! Farm and Urban WW Loads (kg/d)
+          open (unit=80, file= 'NO2NO3Data.csv', status = 'unknown')
+          open (unit=81, file= 'NH4Data.csv', status = 'unknown')
+          open (unit=82, file= 'OrgNData.csv', status = 'unknown')
+          open (unit=83, file= 'PhosphorusData.csv', status ='unknown')
+          open (unit=84, file= 'AtmChemData.csv', status ='unknown')
+          open (unit=85, file= 'Decay.csv', status ='unknown')
+          open (unit=87, file= 'DivWQ.csv', status ='unknown')
+!          open (unit=118, file= 'UplandNP.dat', form ='formatted')
+      endif
+	  
+!     If 1D2D coupling enabled, 1D2Dcoupling input files
+      if (n1D>0) then
+          if (ntc>0) then
+     	      open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
+		  endif
+          if (nlc>0) then
+              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
+		  endif
+          if (nuc>0) then
+              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
+ 		  endif
+      endif	  
 
 !>> Open output text files (in append mode, if needed).
-      open (unit=70,file='DIN.out',form ='formatted',position='append')
-      open (unit=71,file='OrgN.out',form='formatted',position='append')
-      open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
-      open (unit=73,file='TOC.out',form='formatted',position='append')
       open (unit=75,file='SAL.out',form ='formatted',position='append')			! Salinity.out
-      open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
-      open (unit=92,file='NH4.out',form = 'formatted',position='append')		
-      open (unit=93,file='O2Sat.out',form='formatted',position='append')
-      open (unit=94,file='ALG.out',form='formatted',position='append')
-      open (unit=95,file='DO.out',form='formatted',position='append')
       open (unit=96,file='TSS.out',form='formatted',position='append')
-      open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
       open (unit=100,file='TMP.out',form='formatted',position='append')		   
 	  open (unit=103,file='SedAcc.out',form='formatted',position='append')		! Last row will be used to compute open water Acc. 
 	  open (unit=104,file='SedAcc_MarshInt.out',form='formatted',position='append')		! Last row will be used to compute interior marsh Acc. 
@@ -552,12 +571,28 @@
       open (unit=105,file='fflood.out',form='formatted',position='append')
       open (unit=111,file='STG.out',form='formatted',position='append')			! ESAVE.OUT
       open (unit=112,file='TRG.out',form='formatted',position='append')			! Range.out
-      open (unit=113,file='DON.out',form='formatted',position='append')
-      open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
-      open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
-      open (unit=123,file='TKN.out',form='formatted',position='append')
       open (unit=124,file='FLOm.out',form='formatted',position='append')
+      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
+      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
+      open(unit=212,file='STGm.out',form='formatted',position='append')
+      open (unit=93,file='O2Sat.out',form='formatted',position='append')
 
+!     If WQ modeling is excluded (iWQ=0), WQ outputs are disabled	  
+	  if (iWQ>0) then
+          open (unit=70,file='DIN.out',form ='formatted',position='append')
+          open (unit=71,file='OrgN.out',form='formatted',position='append')
+          open (unit=72,file='TPH.out',form='formatted',position='append')			! TP.out
+          open (unit=73,file='TOC.out',form='formatted',position='append')
+          open (unit=91,file='NO3.out',form='formatted',position='append')			! NO2NO3.out
+          open (unit=92,file='NH4.out',form = 'formatted',position='append')		
+          open (unit=94,file='ALG.out',form='formatted',position='append')
+          open (unit=95,file='DO.out',form='formatted',position='append')
+          open (unit=97,file='DET.out',form='formatted',position='append')			! DeadAlgae.out
+          open (unit=113,file='DON.out',form='formatted',position='append')
+          open (unit=119,file='SPH.out',form='formatted',position='append')			! SRP.out
+          open (unit=121,file='NRM.out',form='formatted',position='append')			! NRAcc.out -> Denitrification
+          open (unit=123,file='TKN.out',form='formatted',position='append')
+      endif
 ! read in information for grid cells used to pass data to other ICM routines !-EDW
       open (unit=200, file='grid_lookup_500m.csv', form='formatted')              ! compartment and link lookup table for 500-m grid cells
       open (unit=201, file='grid_interp_dist_500m.csv',form='formatted')          ! distance from each 500-m grid cell centroid to the compartment and link centroids
@@ -572,9 +607,6 @@
       open(unit=208,file='tkn_monthly_ave_500m.out',form='formatted')
       open(unit=209,file='TSS_monthly_ave_500m.out',form='formatted')
 
-      open(unit=210,file='STGhr.out',form='formatted',position='append')				!output file for hourly water level in Boundary Condition cells
-      open(unit=211,file='FLO.out',form='formatted',position='append')		!output file for flowrate	
-      open(unit=212,file='STGm.out',form='formatted',position='append')
 ! output files for use in the Vegetation ICM routine !-EDW
 ! these are written in append mode. ICM checks when first run as to whethere these files exist.
 ! If Ecohydro is run outside of the ICM these files may be erroneously appended to if they contain data and the model is re-run.
@@ -589,84 +621,6 @@
 ! hotstart files
       open(unit=400,file='hotstart_in.dat',form='formatted')
       open(unit=401,file='hotstart_out.dat',form='formatted')
-
-!>> Read Boundary Conditions file
-      Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
-      close(125)
-
-!>> Read input link file to apply flow limiter  !YW
-      open (unit=500, file= 'links_to_apply.csv',status='unknown')
-      read(500,*)
-      do kk = 1,nlinklimiter
-          read(500,*) linkslimiter(kk)
-      enddo
-
-!>> 1D-ICM coupling input files
-      if (n1D > 0) then
-          write(*,*) 'Reading input files to couple 1D and 2D models'
-          write(1,*) 'Reading input files to couple 1D and 2D models'
-          
-          write(*,*) '  - the number of terminal connections is ',ntc
-          write(1,*) '  - the number of terminal connections is ',ntc          
-          if (ntc>0) then
-              open (unit=402, file= '1D2Dcoupling_tc.csv', status = 'unknown')
-              read(402,*)                                                           ! dump header row of compartment input file
-              read(402,*)                                                           ! dump header row of compartment input file
-              do i = 1,ntc
-                  read(402,*) tcr1D(i), &                                           ! 1D region
-                      tcn1D(i), &                                                   ! 1D node            
-                      tcr2D(i), &                                                   ! ICM receiving compartment
-                      tcf2D(i), &                                                   ! ICM connecting compartment
-                      tcl2D(i)                                                      ! ICM connecting link
-              enddo
-              close(402)
-          endif
-
-          write(*,*) '  - the number of lateral connections is ',nlc
-          write(1,*) '  - the number of lateral connections is ',nlc
-          if (nlc>0) then
-              open (unit=403, file= '1D2Dcoupling_lc.csv', status = 'unknown')
-              read(403,*)                                                          ! dump header row of compartment input file
-              read(403,*)
-              do i = 1,nlc
-                  read(403,*) lcr1D(i), &
-                      lcn1D(i), &                
-                      lcr2D(i), &
-                      lcf2D(i), &
-                      lcl2D(i)
-              enddo        
-              close(403)
-          endif
-
-          write(*,*) '  - the number of upstream connections is ',nuc
-          write(1,*) '  - the number of upstream connections is ',nuc
-          if (nuc>0) then
-              open (unit=404, file= '1D2Dcoupling_uc.csv', status = 'unknown')
-              read(404,*)                                                          ! dump header row of compartment input file
-              read(404,*)
-              do i = 1,nuc
-                  read(404,*) ucr1D(i), &
-                      ucn1D(i), &              
-                      ucr2D(i), &
-                      ucf2D(i), &
-                      ucl2D(i)
-              enddo        
-              close(404)
-          endif
-      endif
-
-! Initialize some variables and arrays
-!      NR(:)=0.0
-      stds=0.
-      do j=1,N
-          accsed(j)=0.0
-          sal_ave(j)=0.0
-          cumul_retreat(j) = 0.0
-      enddo
-
-      do i=1,M
-          asedout(i)=0.0
-      enddo
 
 !>> Call 'infile' subroutine, which reads input text files and stores data into arrays
       call infile
@@ -689,48 +643,17 @@
 909	format(A,<nlinksw-1>(I0,','),I0) ! first column has 'Link:##', followed by comma delimited list of links
 
 !>> Close input files that were imported in infile subroutine
-      close(32)
-      close(33)
-      close(34)
-      close(39)
-      close(40)
-      close(42)
-      close(44)
-      close(45)
-      close(43)
-      close(46)
-      close(47)
-      close(48)
-      close(49)
-      close(55)
-      close(56)
-      close(74)
-      close(77)
-      close(80)
-      close(81)
-      close(82)
-      close(83)
-      close(84)
-      close(85)
-      close(86)
-      close(87)
-      close(88)
-      close(89)
-      close(90)
-      close(101)
-      close(110)
-!      close(118)
-      close(200)
-      close(201)
-      close(202)
+!   These files are closed within infile subroutine after importing the data
 
 !>> Take first timestep of imported wind data and save into windx and windy arrays.
 !>> These arrays will be overwritten at a delta t that matches the wind data timestep (this update occurs immediately prior to calling hydrod)
 !>> 'windrow' is a counter that is incrementally updated each time a wind data timestep is reached
       windrow = 1
       do jjj = 1,N
-          windx(jjj) = max(0.01,windx_data(windrow,jwind(jjj)))
-          windy(jjj) = max(0.01,windy_data(windrow,jwind(jjj)))
+!          windx(jjj) = max(0.01,windx_data(windrow,jwind(jjj)))
+!          windy(jjj) = max(0.01,windy_data(windrow,jwind(jjj)))
+          windx(jjj) = windx_data(windrow,jwind(jjj))
+          windy(jjj) = windy_data(windrow,jwind(jjj))
       enddo
 
 !>> 'tiderow','surgerow', and 'lockrow' are counters that are incrementally updated each time a tide or lock control data timestep is reached
@@ -738,7 +661,11 @@
       surgerow = 0	!YW!
       lockrow = 0	!YW!
 
-!>> Set initial conditions for links (from input files)
+!>> Initialize some variables and arrays
+!      NR(:)=0.0
+      stds=0.
+
+!>> Set initial conditions for links
       do i=1,M
           fa(i) = fa_def*fa_mult(i) !Set array of initial upwind factor to default value
           Q(i,1)=0.0	!YW!
@@ -748,9 +675,17 @@
           EAOL(i)=0.0
           !FLO(i)=0.0 !YW! flo range nlinksw
           SlkAve(i) = 0
+          SL(i,1) = 0  ! SL is for links
           SL(i,2)=0
           TL(i,1)=0
+          asedout(i)=0.0
       enddo
+
+      if(nlinksw > 0) then               !YW!
+          do jj = 1,nlinksw
+              FLO(jj) = 0.0
+          enddo
+      endif
 
 
 !>> Initialize hardcoded salinity and stage control trigger flags
@@ -762,78 +697,48 @@
       !SalLockTriggerCSC = 1
       !Atch_div_onoff = 1
 
-
-!>> Read in hotstart file and set initial conditions (will overwrite some ICs set previously from input files)
-      write(1,*)
-      write(1,*)'-----------------------------------------------'
-      write(1,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(1,*)'-----------------------------------------------'
-      write(*,*)
-      write(*,*)'-----------------------------------------------'
-      write(*,*)'Reading in hotstart file and setting values as initial conditons.'
-      write(*,*)'-----------------------------------------------'
-      read(400,*)                       ! ignore header row
+!>> Initialize compartment related arrays
       do j=1,N
-          read(400,*) dump_int,		&   ! no need to save compartment number - read in to a dummy integer variable
-                         Es(j,1),       &
-                         S(j,1),		&
-                         Css(j,1,1),		&
-                         Css(j,1,2),		&
-                         Css(j,1,3),		&
-                         Css(j,1,4),		&
-                         Tempw(j,1),		&
-                         Chem(j,1,1),		&
-                         Chem(j,2,1),		&
-                         Chem(j,3,1),		&
-                         Chem(j,4,1),		&
-                         Chem(j,5,1),		&
-                         Chem(j,6,1),		&
-                         Chem(j,7,1),		&
-                         Chem(j,8,1),		&
-                         Chem(j,9,1),		&
-                         Chem(j,10,1),		&
-                         Chem(j,11,1),		&
-                         Chem(j,12,1),		&
-                         Chem(j,13,1),		&
-                         Chem(j,14,1),		& !Chem unit = mg/L
-                         Eh(j,1)
-
-!>> Initialize some variables and arrays
-          Sandacc(j,1) = 0.0
-          Siltacc(j,1) = 0.0
-          Clayacc(j,1) = 0.0
-
-          As(j,2)= As(j,1)				    ! Surface area of cells (m2)
+          As(j,2)= As(j,1)				    ! Surface water area of cells (m2)
           Es(j,2)= Es(j,1)				    ! Stage in storage cells (m)
-          ds(j,1)= Es(j,2)-Bed(j)			! Depth in storage cells (m)
+          ds(j,1)= Es(j,1)-Bed(j)			! Depth in storage cells (m)
           !Eh(j,1) = BedM(j) + 0.1           ! Initial marsh depth (override hotstart file read in above)
           Eh(j,2)=Eh(j,1)					! Stage in Marsh storage (m)	!JAM Oct 2010
           BCnosurge(j,1) = 0.0              ! Initialize no surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0
           BCnosurge(j,2) = BCnosurge(j,1)   ! boundary conditions stage(m) before surge is added
           BCsurge(j,1) = 0.0                ! Initialize surge BC to zero for all compartments - only BC nodes will be updated - rest of array will be 0.0 -YW
           BCsurge(j,2) = BCsurge(j,1)
+          ESMX(j,2)=ES(j,1)
+          ESMN(j,2)=ES(j,1)
+          dailyHW(j)=0.0
+          dailyLW(j)=0.0
+          ESAV(j,1) = ES(j,1)*dt/(3600.*24.)
+          EHAV(j,1) = EH(j,1)*dt/(3600.*24.)
           
           Qmarsh(j,1) = 0.0				    ! Flow into/out of marsh area
           Qmarsh(j,2) = Qmarsh(j,1)		    
           Qmarshmax(j) = 0.0
+          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
+
           S(j,2) = S(j,1)
+          SALAV(j) = S(j,1)*dt/(3600.*24.)
+          sal_ave(j)=0.0
           Tempw(j,2) = Tempw(j,1)
+          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
 
-          do ichem=1,14                     
-              Chem(j,ichem,2)=Chem(j,ichem,1)
-          enddo
-
-!>> Initialize variables
-          SL(j,1) = 0
-          SL(j,2) = 0
           do sedclass=1,4
                CSS(j,2,sedclass) = CSS(j,1,sedclass)
                CSSh(j,1,sedclass) = CSS(j,1,sedclass)
                CSSh(j,2,sedclass) = CSS(j,1,sedclass)
           enddo
+          accsed(j)=0.0
+          cumul_retreat(j) = 0.0
           Sacc(j,1)=0.0
           Sacch_int(j,1)=0.0
           Sacch_edge(j,1)=0.0
+          Sandacc(j,1) = 0.0
+          Siltacc(j,1) = 0.0
+          Clayacc(j,1) = 0.0
           CSSvRs(j,1)= 0.0
           Sacc(j,2)=Sacc(j,1)
           Sacch_int(j,2)=Sacch_int(j,1)
@@ -842,28 +747,23 @@
           Siltacc(j,2) = Siltacc(j,1)
           Clayacc(j,2) = Clayacc(j,1)
           CSSvRs(j,2)= CSSvRs(j,1)
-
-          ESAV(j,1) = ES(j,2)*dt/(3600.*24.)
-          EHAV(j,1) = EH(j,2)*dt/(3600.*24.)
           TSSave(j) = ( CSS(j,1,1) + CSS(j,1,2) + CSS(j,1,3) + CSS(j,1,4) )*dt/(3600.*24.)
-          SALAV(j) = S(j,2)*dt/(3600.*24.)
-          QmarshAve(j) = Qmarsh(j,1)*dt/(3600.*24.)
-          TempwAve(j) = Tempw(j,1)*dt/(3600.*24.)
 
-          ESMX(j,2)=ES(j,2)
-          ESMN(j,2)=ES(j,2)
-          dailyHW(j)=0.0
-          dailyLW(j)=0.0
           do ichem = 1,14
-               ChemAve(j,ichem) = Chem(j,ichem,2)*dt/(3600.*24.)
+              Chem(j,ichem,2)=Chem(j,ichem,1)
+              ChemAve(j,ichem) = Chem(j,ichem,1)*dt/(3600.*24.)
+              ! initially set GrowAlgae array equal to zero
+              do me=1,14
+                  GrowAlgae(j,ichem,me) = 0.
+              enddo
           enddo
+          denit(j,1)=0
           denit(j,2)=0
 
       enddo
-      close(400)
 
-      Emax=0.0
-      Emin=0.0
+!      Emax=0.0  !never used
+!      Emin=0.0  !never used
       
 !>> initialize BCnosurge and BCsurge with initial tide and surge       -YW
       do jj=1,tidegages
@@ -875,12 +775,6 @@
           enddo
       enddo
               
-      if(nlinksw > 0) then               !YW!
-          do jj = 1,nlinksw
-              FLO(jj) = 0.0
-          enddo
-      endif
-
  
 !*****************************Start of the unsteady model run***********************************
 !>> Start time stepping through model. MAIN LOOP THAT IS COMPLETED FOR EACH SIMULATION TIMESTEP.
@@ -901,13 +795,16 @@
           print*, 'dt_all =', ndt_all_ICM
       endif
  !>> start model time stepping     
+	  ndt_1hr = int(3600.0/dt) !ndt_1hr=num of dt in 1hr for hourly output
+	  nts_1hr = 0              !nts_1hr=counting of time steps in an hour
+	  
       mm=0                                          ! initialize time counter
       do n_1d=0, ntim_all_ICM-1      
  !>> IF time for current loop is equal to timestepping interval for 2D model then run all 2D model subroutines and the 1D-2D coupling functions
           if (mod((n_1d*ndt_all_ICM+ndt_all_ICM), ndt_ICM) .eq. 0 .or. (n_1d.eq.0) )then
               mm=mm+1
-
               t=float(mm)*dt						! lapse time in seconds  JAM 5/25/2011
+              nts_1hr=nts_1hr+1
 
 !>> -- Calculate various versions of time to be used as flags throughout program
               day = t/3600./24.
@@ -954,7 +851,7 @@
 
 !>> -- Run 2D model hydrodynmics model
 !>> -- Call 'hydrod' subroutine, which calls all 2D hydrodynamic subroutines at each simulation timestep.
-              call hydrod(mm)
+              call hydrod(mm,nts_1hr,ndt_1hr)
 
 !>> -- 1D-2D ICM coupling connections - saving flow between 1D & 2D models
               !>> -- linking terminal connections
@@ -1053,7 +950,7 @@
 
 
 !>> Call 1D channel routing subroutines
-	  if (n1d> 0) then
+	      if (n1d> 0) then
 !>> -- Each channel reach will be run if timestep matches the dt for each respective 1D reach (ndt_R(iir)
               do iir=1, n_region
 !>> -- Call main loop for each 1D reach - this will calculate flows and water levels
@@ -1169,6 +1066,7 @@
 !>> -- Check if any link flowrate values are NaN - if so, pause model run
           do i=1,M
               Q(i,1)=Q(i,2)
+              SL(i,1) = SL(i,2) !SL is for links
               if(isNAN(Q(i,2))) then
                   write(1,*)'Link',i,'flow is NaN @ end of timestep=',mm
                   write(*,*)'Link',i,'flow is NaN @ end of timestep=',mm
@@ -1181,7 +1079,6 @@
           do j=1,N
               Es(j,1)=Es(j,2)
               S(j,1)=S(j,2)				! resetting ICs
-              SL(j,1) = SL(j,2)
               BCnosurge(j,1) = BCnosurge(j,2)
               BCsurge(j,1) = BCsurge(j,2)                !YW!
               do sedclass=1,4
@@ -1451,7 +1348,7 @@
              tss_var_annual(kj)**0.5, 		&  !stdev = sqrt(variance)
              max(0.0,(Atotal(kj)-As(kj,1)))
       enddo
-
+      close(205)
 !>> Write gridded output to file in list form - one row for each grid cell.
 !>> Write header rows in grid output files
 !>> THESE HEADERS ARE USED BY OTHER ICM ROUTINES - DO NOT CHANGE WITHOUT UPDATING ICM.PY, HSI.PY, & WM
@@ -1473,7 +1370,7 @@
          'WLV_stage_summer',		&
          'ave_depth_summer',		&
          'ave_depth'
-	write(206,1119)'GRID_ID',		&
+	  write(206,1119)'GRID_ID',		&
          'sal_ave_jan',		&
          'sal_ave_feb',		&
          'sal_ave_mar',		&
@@ -1512,7 +1409,7 @@
          'tkn_ave_oct',		&
      	'tkn_ave_nov',		&
          'tkn_ave_dec'
-	write(209,1119)'GRID_ID',		&
+	  write(209,1119)'GRID_ID',		&
          'TSS_ave_jan',		&
          'TSS_ave_feb',		&
          'TSS_ave_mar',		&
@@ -1528,25 +1425,25 @@
 
 	! write various summary results in 500m grid output file
       do k=1,n_500m_cells
-          write(204,1116) grid_lookup_500m(k,1),		&
-         min(salmax,salinity_500m(k)),		&
-         min(salmax,salinity_IDW_500m(k)),		&
-         min(salmax,salinity_summer_500m(k)),		&
-         min(salmax,salinity_summer_IDW_500m(k)),		&
-         min(salmax,sal_thresh_500m(k)),		&
-         min(salmax,sal_thresh_IDW_500m(k)),		&
-         pct_sand_bed_500m(k),		&
-         min(tmpmax,tmp_500m(k)),		&
-         min(tmpmax,tmp_IDW_500m(k)),		&
-         min(tmpmax,tmp_summer_500m(k)),		&
-         min(tmpmax,tmp_summer_IDW_500m(k)),		&
-         max(-stagemax,min(stagemax,stage_500m(k))),		&
-         max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
-         max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
-         max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
-         max(-depthmax,min(depthmax,depth_500m(k)))
+         write(204,1116) grid_lookup_500m(k,1),		&
+           min(salmax,salinity_500m(k)),		&
+           min(salmax,salinity_IDW_500m(k)),		&
+           min(salmax,salinity_summer_500m(k)),		&
+           min(salmax,salinity_summer_IDW_500m(k)),		&
+           min(salmax,sal_thresh_500m(k)),		&
+           min(salmax,sal_thresh_IDW_500m(k)),		&
+           pct_sand_bed_500m(k),		&
+           min(tmpmax,tmp_500m(k)),		&
+           min(tmpmax,tmp_IDW_500m(k)),		&
+           min(tmpmax,tmp_summer_500m(k)),		&
+           min(tmpmax,tmp_summer_IDW_500m(k)),		&
+           max(-stagemax,min(stagemax,stage_500m(k))),		&
+           max(-stagemax,min(stagemax,stage_summer_500m(k))),		&
+           max(-rangemax,min(rangemax,stage_wlv_summer_500m(k))),		&
+           max(-depthmax,min(depthmax,depth_summer_500m(k))),		&
+           max(-depthmax,min(depthmax,depth_500m(k)))
 
- 		write(206,1120) k,		&
+ 		 write(206,1120) k,		&
      	   min(salmax,sal_IDW_500m_month(1,k)),		&
      	   min(salmax,sal_IDW_500m_month(2,k)),		&
            min(salmax,sal_IDW_500m_month(3,k)),		&
@@ -1560,7 +1457,7 @@
      	   min(salmax,sal_IDW_500m_month(11,k)),		&
      	   min(salmax,sal_IDW_500m_month(12,k))
 
- 		write(207,1120) k,		&
+ 		 write(207,1120) k,		&
      	   min(tmpmax,tmp_IDW_500m_month(1,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(2,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(3,k)),		&
@@ -1574,7 +1471,7 @@
      	   min(tmpmax,tmp_IDW_500m_month(11,k)),		&
      	   min(tmpmax,tmp_IDW_500m_month(12,k))
 
- 		write(208,1120) k,		&
+ 		 write(208,1120) k,		&
      	   min(tknmax,tkn_500m_month(1,k)),		&
      	   min(tknmax,tkn_500m_month(2,k)),		&
      	   min(tknmax,tkn_500m_month(3,k)),		&
@@ -1588,7 +1485,7 @@
      	   min(tknmax,tkn_500m_month(11,k)),		&
      	   min(tknmax,tkn_500m_month(12,k))
 
- 		write(209,1120) k,TSS_500m_month(1,k),		&
+ 		 write(209,1120) k,TSS_500m_month(1,k),		&
      	   min(tssmax,TSS_500m_month(2,k)),		&
      	   min(tssmax,TSS_500m_month(3,k)),		&
      	   min(tssmax,TSS_500m_month(4,k)),		&
@@ -1601,7 +1498,49 @@
      	   min(tssmax,TSS_500m_month(11,k)),		&
      	   min(tssmax,TSS_500m_month(12,k))
 	enddo
-
+	close(204)
+	close(206)
+	close(207)
+	close(208)
+	close(209)
+	close(75)
+	close(96)
+	close(100)
+	close(103)
+	close(104)
+	close(1045)
+	close(105)
+	close(111)
+	close(112)
+	close(124)
+	close(210)
+	close(211)
+	close(212)
+	close(93)
+	close(301)
+	close(302)
+	close(303)
+	close(304)
+	close(305)
+	close(306)
+	close(307)
+	close(308)
+	if (iWQ>0) then
+	    close(70)
+		close(71)
+		close(72)
+		close(73)
+		close(91)
+		close(92)
+		close(94)
+		close(95)
+		close(97)
+		close(113)
+		close(119)
+		close(121)
+		close(123)
+	endif
+	
 !>> determine end time for calculating runtimes
       call SYSTEM_CLOCK(runtime_end,count_rate2,count_max2)
       runtime_s = dble(runtime_start)

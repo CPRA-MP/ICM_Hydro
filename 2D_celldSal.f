@@ -1,4 +1,5 @@
-      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+!      Subroutine CelldSal(QSalSUM,j,kday,k,SalTRIBj,dref,Tres)
+      Subroutine CelldSal(j,kday)
       
       !>> QSalsum is salinity mass flux at timestep into/out of open water from all flow mechanisms that change the water surface elevation (Es):
       !>>       - tributary flows into compartment
@@ -15,21 +16,22 @@
 
       use params
       
-      integer :: marsh_link_flow,Qsalsum_b4link
-      real :: Saltrib
+      implicit none
+      integer :: j, kday, ktrib, kdiv, marsh_link_flow, k, iab, jnb
+      real :: QSalsum, Saltrib, Qsalsum_b4link
       real :: dry_depth, dry_salinity
-      real :: vol1, vol2
-      real :: marsh_vol1, marsh_vol2
-      real :: ddy1, ddy2 
-      real :: ddym1, ddym2
-      real :: salmaxcon
-      !real :: DSal, maxDSal
-      
-      cden=1./1000./24./3600.		! mm/d to m/s conversion
+      real :: vol1, vol2, marsh_vol1, marsh_vol2
+      real :: ddy1, ddy2, dddy, ddym1, ddym2, dddym
+      real :: salmaxcon, Qlink,Qsalsum_link
+	  real :: QSal_in,Q_in
+!      integer:: iAdvTrans  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+
+!     cden=1./1000./24./3600.		! mm/d to m/s conversion
 
       !>> Define depth, in meters, for dry cells that will turn off salinity change calculations 
       !      this is used in other celldXXX subroutines but each subroutine may have a separate dry depth value assigned - double check for consistency
-      dry_depth = 0.05
+!      dry_depth = 0.05
+      dry_depth = dry_threshold
 !      dry_salinity = 0.1         ! set dry cell salinity to 0.1 ppt
       dry_salinity = S(j,1)      ! set dry cell salinity to value from previous timestep
       
@@ -40,21 +42,33 @@
       ddym2 = Eh(j,2)-BedM(j)
       
 !>> Set minimum depth value to avoid div-by-zero errors
-      if(ddy1 <= 0.01) then
-          dddy = 0.01
+!      if(ddy1 <= 0.01) then
+!          dddy = 0.01
+      if(ddy1 <= dry_threshold) then
+          dddy = dry_threshold
       else
           dddy = ddy1
       endif
 
-      if(ddym1 <= 0.01) then
-          dddym = 0.01
+!      if(ddym1 <= 0.01) then
+!          dddym = 0.01
+      if(ddym1 <= dry_threshold) then
+          dddym = dry_threshold
       else
           dddym = ddym1
       endif
       
       QSalsum = 0
-      salmaxcon = 0.0      
-          
+!      salmaxcon = 0.0      
+
+!ZW 1/30/2024 adding Qsal_in & Q_in for use of SWMM5 method
+! 𝑐(𝑡 + Δ𝑡)=[𝑐(𝑡)*𝑉(𝑡) + 𝐶𝑖n*𝑄𝑖n*Δ𝑡]/(𝑉(𝑡)+ 𝑄𝑖n*Δ𝑡)
+!      iAdvTrans=3  !zw 1/30/2024 change to a global variable, input in RuncontrolR.dat
+      if(iAdvTrans==3)then
+          Qsal_in = 0.0  !Qsal_in>0 
+          Q_in=0.0       !Q_in>0         
+      endif
+
 !>> update salinity mass flux (Qsalsum) for tributary flows into compartment      
       do ktrib=1,Ntrib
 !>> set salinity in tributary to default freshwater salinity value (0.1 ppt)
@@ -62,22 +76,35 @@
 !>> if tributary flow is negative, use compartment salinity concentration instead of default tributary salinity concentration
           if (Qtrib(ktrib,kday) < 0.0) then
               Saltrib = S(j,1)
+          else
+              if(iAdvTrans==3) Qsal_in = Qsal_in+Qtrib(ktrib,kday)
+     &                              *Saltrib*Qmult(j,ktrib)            !ZW 1/30/2024 for use of SWMM method
+              if(iAdvTrans==3) Q_in = Q_in+Qtrib(ktrib,kday)*Qmult(j,ktrib) !ZW 1/30/2024 for use of SWMM method
           endif             
           QSalsum=QSalsum-Qtrib(ktrib,kday)*Saltrib*Qmult(j,ktrib)
       enddo
       
-      if (Qsalsum .ne. 0) then
-          salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries if there was any tributary flow
-      endif
+!      if (Qsalsum .ne. 0) then
+!          salmaxcon = Saltrib     ! set first value of maximum salinity concentration to salinity of tributaries if there was any tributary flow
+!      endif
       
 !>> update salinity mass flux (Qsalsum) for diversion flows into compartment (diversions no longer modeled separately, but instead are treated as tributaries)
       do kdiv=1,Ndiv
           QSalsum = QSalsum-Qdiv(kdiv,kday)*0.15*Qmultdiv(j,kdiv)     ! diversion salinity assumed here to be 0.15 - but this is not used anymore since Ndiv is always set to 0
+          if(iAdvTrans==3) QSal_in = QSal_in+Qdiv(kdiv,kday)
+     &                          *0.15*Qmultdiv(j,kdiv)                !ZW 1/30/2024 for use of SWMM method
+          if(iAdvTrans==3) Q_in = Q_in+Qdiv(kdiv,kday)*Qmultdiv(j,kdiv)    !ZW 1/30/2024 for use of SWMM method    
       enddo
 
+!===ZW 1/30/2024 for use of SWMM method
+      if(iAdvTrans==3) then
+        Q_in=Q_in+QRain(j)  !ZW 1/31/2024: QRain is the total rainfall runoff within compartment j calculated in celldQ.f
+      endif
+!== end revision 1/30/2024
+
 !>> flag that will be set if overland marsh links have flow
-      marsh_link_flow = 0          
-      Qsalsum_b4link = 0
+!      marsh_link_flow = 0          
+!      Qsalsum_b4link = 0
       
 !>> update salinity mass flux (Qsalsum) for link flows into/out of compartment            
       do k=1,nlink2cell(j)
@@ -90,21 +117,33 @@
               endif  
           endif
 
-          Qsalsum_b4link = Qsalsum
-
-          call salinity(mm,iab,jnb,j,k,Qsalsum)
-          
-!>> check if current link has flow during timestep
-          if (Q(iab,2) .ne. 0.0) then
-              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
-          endif
-          
-!>> check if marsh overland links have salinity convection and/or dispersion through link flow
-          if (linkt(iab) == 8) then
-              if ( Qsalsum_b4link .ne. Qsalsum ) then
-                  marsh_link_flow = 1
+!===ZW 1/30/2024 for use of SWMM method
+          if(iAdvTrans==3)then
+              Qlink = 0
+              if(iab > 0) Qlink = sicc(j,k)*Q(iab,2)
+              if (Qlink < 0.0) then
+                  Q_in = Q_in + abs(Qlink)
+                  Qsal_in = Qsal_in+abs(Qlink)*S(jnb,1)
               endif
           endif
+!===end 1/30/2024
+
+!          Qsalsum_b4link = Qsalsum
+
+!          call salinity(mm,iab,jnb,j,k,Qsalsum)
+          if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum)
+          
+!>> check if current link has flow during timestep
+!          if (Q(iab,2) .ne. 0.0) then
+!              salmaxcon = max( salmaxcon,SL(iab,2) )          ! SL() is the updated face salinity concentration for link iab calculated in salinity()
+!          endif
+          
+!>> check if marsh overland links have salinity convection and/or dispersion through link flow
+!          if (linkt(iab) == 8) then
+!              if ( Qsalsum_b4link .ne. Qsalsum ) then
+!                  marsh_link_flow = 1
+!              endif
+!          endif
       
       enddo
       
@@ -168,35 +207,72 @@
 !>> if marsh depth is below dry depth threshold, there still may be shallow flow into the marsh area bringing salinity mass
 !>> check if there was flow into the marsh that could potentially add salinity mass
 !>> if so, then include volume of shallow water over marsh surface in total volume
+      vol1 = 0.0
+      vol2 = 0.0
       marsh_vol1 = 0.0
       marsh_vol2 = 0.0
-      if( Ahf(j) > 0 ) then                           ! check if there is marsh area
-          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
-              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
-                  marsh_vol1 = ddym1*Ahf(j)
-                  marsh_vol2 = ddym2*Ahf(j)
-              else
-                  marsh_vol1 = 0.0
-                  marsh_vol2 = 0.0
-                  if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
-                      marsh_vol1 = ddym1*Ahf(j)
-                      marsh_vol2 = ddym2*Ahf(j)
-                  endif
-              endif
-          else
-              marsh_vol1 = 0.0
-              marsh_vol2 = 0.0
-          endif
-      else
-          marsh_vol1 = 0.0
-          marsh_vol2 = 0.0
-      endif
+!      if( Ahf(j) > 0 ) then                           ! check if there is marsh area
+!          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+!              if ( ddym2 > dry_depth ) then           ! check if marsh is dry in current timestep
+!                  marsh_vol1 = ddym1*Ahf(j)
+!                  marsh_vol2 = ddym2*Ahf(j)
+!              else
+!                  marsh_vol1 = 0.0
+!                  marsh_vol2 = 0.0
+!                  if (marsh_link_flow == 1) then      ! marsh is dry but there was overland marsh flow
+!                      marsh_vol1 = ddym1*Ahf(j)
+!                      marsh_vol2 = ddym2*Ahf(j)
+!                  endif
+!              endif
+!          else
+!              marsh_vol1 = 0.0
+!              marsh_vol2 = 0.0
+!          endif
+!      else
+!          marsh_vol1 = 0.0
+!          marsh_vol2 = 0.0
+!      endif
 
-      vol1 = ddy1*As(j,1) + marsh_vol1
-      vol2 = ddy2*As(j,1) + marsh_vol2
+!ZW 1/17/2024 total vol based on dry-depth
+!      if( Ahf(j) > 0 ) then                           ! check if there is marsh area
+!          if ( ddym1 > dry_depth ) then               ! check if marsh was dry in previous timestep
+!              marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!              marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!          elseif ( ddym2 > dry_depth ) then               ! check if marsh was dry in current timestep
+!              marsh_vol1 = max(ddym1*Ahf(j),0.0)
+!              marsh_vol2 = max(ddym2*Ahf(j),0.0)
+!          endif
+!      endif
+!
+!     openwater volume
+!      if ( ddy1 > dry_depth ) then               ! check if openwater was dry in previous timestep
+!          vol1 = max(ddy1*As(j,1),0.0)
+!          vol2 = max(ddy2*As(j,1),0.0)
+!      elseif ( ddy2 > dry_depth ) then               ! check if openwater was dry in current timestep
+!          vol1 = max(ddy1*As(j,1),0.0)
+!          vol2 = max(ddy2*As(j,1),0.0)
+!      endif
+
+!ZW 1/17/2024 total vol w/o depth limitation
+      marsh_vol1 = max(ddym1*Ahf(j),0.0)
+      marsh_vol2 = max(ddym2*Ahf(j),0.0)
+      vol1 = max(ddy1*As(j,1),0.0)
+      vol2 = max(ddy2*As(j,1),0.0)
+
+      vol1 = vol1 + marsh_vol1
+      vol2 = vol2 + marsh_vol2
+
 
       if(ddy2 > dry_depth) then
-          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
+!1/15/2024      if(vol2 > 0) then
+!          S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / max(0.01,vol2)   
+
+          if(iAdvTrans==3) then !===ZW 1/30/2024 use of SWMM method
+              S(j,2)=(S(j,1)*vol1+Qsal_in*dt)/(vol1+Q_in*dt)
+          else
+              S(j,2)= ( S(j,1)*vol1 - QSalsum*dt ) / vol2
+          endif		  
+
           ds = S(j,2) - S(j,1)
           
           !>> vol2 includes changes to water volume from precip and ET (since it is calculated from depth, ddy2) 
@@ -222,16 +298,10 @@
 !                  endif
 !              endif
 !          endif
-                  
-                      
-          
       else
           S(j,2) = dry_salinity
 !          write(*,'(A,I,A,F,A,F,A,I)') 'dry sal in comp: ',j,' vol:',vol2,' m_vol: ',marsh_vol2,' marsh_flow: ',marsh_link_flow
-
       endif
-
-      
       
 !>> equation for MP2017 to avoid salinity spike
 !      if (dddy > 0.1) then   
@@ -243,36 +313,61 @@
 !      
 !     S(j,2)=S(j,1)+DSal
          
-!      if (S(j,2) > 100) then
-!          write(*,*)'comp = ',j
-!          write(*,*) 'As =',As(j,2)
-!          write(*,*)'sal(t-1) = ',s(j,1)
-!          write(*,*)'sal(t) = ',s(j,2)
-!          write(*,*)'qsalsum =',qsalsum
-!          write(*,*)'depth = ',Es(j,2)-Bed(j)
-!          write(*,*)'Es(t-1) =', Es(j,1)
-!          write(*,*)'Es(t) =', Es(j,2)
-!          write(*,*) 'Dz =',Dz
-!      endif
+!== for code debugging
+!      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
+      if ((S(j,2) > salmax)) then
+!      if (isNan(S(j,2))) then
+          write(1,*)'comp = ',j
+          write(1,*)'As =',As(j,1)
+          write(1,*)'sal(t-1) = ',S(j,1)
+          write(1,*)'sal(t) = ',S(j,2)
+          write(1,*)'depth(t-1) = ',Es(j,1)-Bed(j)
+          write(1,*)'depth(t) =', Es(j,2)-Bed(j)
+          write(1,*)'Dz =',Es(j,2)-Es(j,1)
+          write(1,*)'vol(t-1) =', vol1,marsh_vol1
+          write(1,*)'vol(t) =', vol2,marsh_vol2
+          write(1,*)'qsalsum =',qsalsum
+          do k=1,nlink2cell(j)
+              iab=abs(icc(j,k))
+              if(icc(j,k) /= 0) then
+                  if(icc(j,k) < 0) then
+                      jnb=jus(iab)
+                  elseif(icc(j,k) > 0) then
+                      jnb=jds(iab)
+                  endif  
+              endif
+              Qsalsum_link=0.0
+              if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum_link)
+              Qlink = sicc(j,k)*Q(iab,2)
+              if(abs(Qlink)>0) then
+                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
+                  write(1,*)'S(jus)=',S(jus(iab),1),'S(jds)=',S(jds(iab),1)
+                  write(1,*)'QSAL_adv+diff=',Qsalsum_link
+              endif
+          enddo
+          stop
+      endif
 
 !>> High-pass and low-pass filters on salinity calculation
 !      if(S(j,2) < 0.10) then
 !          S(j,2) = 0.10
       if(S(j,2) < 0.0) then
-          S(j,2) = 0.0
-      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
-          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
-              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
-                  S(j,2) = salmaxcon
-              endif
-          endif
-      elseif (S(j,2) > 36.) then
-          S(j,2)=36.
+!          S(j,2) = 0.0
+          S(j,2) = 0.5*S(j,1) !ZW 1/30/2024 following negative concentration treatment in WASP model
+!!ZW 1/17/2024      elseif (salmaxcon > 0.0) then           ! if salmaxcon is zero then there were no tributary or link flows into compartment for timestep - so salinity does not need to be capped by surrounding concentrations
+!          if ( S(j,2) > S(j,1) ) then         ! only filter by max salinity concentration from flows to compartments that have increased in salinity - otherwise a higher saline waterbody would be reduced to match fresh inflows
+!              if (S(j,2) > salmaxcon ) then   ! salinity concentration in compartment cannot be greater than the maximum salinity concentration of all connecting links for the timestep
+!                  S(j,2) = salmaxcon
+!              endif
+!          endif
+!      elseif (S(j,2) > 36.) then
+!          S(j,2)=36.
+      elseif (S(j,2) > salmax) then
+          S(j,2) = salmax
       endif
 
 !>> Set marsh salinity equal to open water salinity
       Sh(j,2)=S(j,2)  
-
 
 !!>> Calculate daily average values reported out to output files ! moved to hydro
 !     if(daystep == 1) then
@@ -285,4 +380,4 @@
 
       return 
       end
-c***********************End Subroutine for Change in Cell Salinity*******JAM Oct 2010***********
+!***********************End Subroutine for Change in Cell Salinity*******JAM Oct 2010***********

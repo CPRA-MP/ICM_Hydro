@@ -5,10 +5,10 @@
 	!JAM Oct 2010 Chem #6
 	
       use params
-      
+    
       DChemSUM=DChemSUM+decay(ichem,8)*GrowAlgae(j,8,8)*Chem(j,8,1)
 
-	return
-	end
+	  return
+	  end
 
-c***********************End Subroutine for chemical Total Organic Carbon (TOC)******************
+!c***********************End Subroutine for chemical Total Organic Carbon (TOC)******************
