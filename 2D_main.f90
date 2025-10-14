@@ -160,8 +160,8 @@
 !c        Control parameters:-
 !> @param[out] N						number of compartments
 !> @param[out] M						number of links
-!> @param[out] Mus					number of u/s BCs
-!> @param[out] Mds					number of d/s BCs
+!> @param[out] Mds_wq				number of downstream water quality boundary condition locations (salinity, temp, nutrients)
+!> @param[out] Mds					number of downstream tidal water level boundary condition locations
 !> @param[out] dt						computational time step			(s)
 !> @param[out] dTprint				output time step			(hours)
 !> @param[out] startrun				Julian day of start of run
@@ -270,8 +270,8 @@
       READ(30,*) dt            !  3        Computational time step
       READ(30,*) M             !  4        # of links
       READ(30,*) N             !  5        # of cells
-      READ(30,*) Mus           !  6        # of u/s BCs
-      READ(30,*) Mds           !  7        # of d/s BCs
+      READ(30,*) Mds_wq        !  6        # of downstream water quality boundary condition locations (salinity, temp, nutrients)
+      READ(30,*) Mds           !  7        # of downstream tidal water level boundary condition locations
       READ(30,*) dTprint       !  8        Print time interval/ output time step (hr)
       READ(30,*) startrun      !  9        Julian day start of run
       READ(30,*) endrun        ! 10        Julian day end of run

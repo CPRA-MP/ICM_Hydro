@@ -199,6 +199,7 @@
       allocate(MEESedRate(4))
       allocate(month_DOY(12))
       allocate(KBC(mds))  !allocate(KBC(20))  !zw change to mds instead of 20  04/07/2020
+      allocate(KBC_wq(mds_wq))
       allocate(Sal(1,1))
       allocate(SWR(50))
 

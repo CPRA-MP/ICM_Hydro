@@ -90,8 +90,8 @@
 !>> Update salinity, temperature,sediments and WQ offshore boundary conditions 
 !>> seasonal adjustment of boundary condition salinity data
 !c		do jj=101,mds+101-1
-      do jjk=1,mds  !AMc 8 oct 2013
-	      jj=KBC(jjk) !AMc 8 oct 2013
+      do jjk=1,mds_wq  !AMc 8 oct 2013
+	      jj=KBC_wq(jjk) !AMc 8 oct 2013
 		  tday= t/24/3600
 		  tdayj=tday-(int(tday/365.25))*365.25					!cal julian day JAM Nov 2010
 

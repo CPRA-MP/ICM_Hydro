@@ -1648,7 +1648,7 @@
       close(43)
       close(46)
 
-!>> Read Boundary Conditions file
+!>> Read Tidal Water Level Boundary Condition locations file
       KBC(:)=0
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
       close(125)
@@ -1658,6 +1658,18 @@
 	      jj=KBC(i)
 	      flag_offbc(jj)=1
       enddo    
+
+!>> Read Water Quality Boundary Condition locations file
+      KBC_wq(:)=0
+      Read(1255,*)(KBC_wq(jj), jj=1,mds_wq) !AMc Oct 8 2013
+      close(1255)
+	!zw added 04/07/2020 to determine whether a cell is offbc or not
+	  flag_offbc(:)=0
+	  do i=1,mds_wq
+	      jj=KBC_wq(i)
+	      flag_offbc(jj)=1
+      enddo    
+
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
@@ -1793,13 +1805,14 @@
       BCDA(:)=0
       BCage(:)=0
 
-
-	  do i=1,mds   !AMc Oct 8 2013
+     
+	  do i=1,mds_wq   !AMc Oct 8 2013
 !	      jj=kbc(i)   !AMc Oct 8 2013
+! below we could update the boundary condition arrays to be of size(mds_wq) in allocate_params and then assign input data over (i) instead of (jmds):  READ(56,*) jmds,SBC(i),BCTSS(i)...
 		  READ(56,*) jmds,SBC(jmds),BCTSS(jmds),BCNO3(jmds),BCNH4(jmds),
      &			BCON(jmds),BCTP(jmds),BCDO(jmds),BCTOC(jmds),BCLA(jmds),
      &			BCDA(jmds),BCage(jmds)									!added age
-
+         KBC_wq(i) = jmds
 	  enddo
       close(56)
 
@@ -2161,7 +2174,7 @@
       BCSedRatio(2) = 1./2.
       BCSedRatio(3) = 1./4.
       BCSedRatio(4) = 1./4.
-      do jkk=1,mds
+      do jkk=1,mds_wq
 	      jj=KBC(jkk)
 		  S(jj,1) = SBC(jj)
 		  Tempw(jj,1)=TempwBC(jkk,1)
