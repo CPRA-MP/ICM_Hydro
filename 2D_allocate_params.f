@@ -315,6 +315,7 @@
       allocate(Sacch_int(cells,2))
       allocate(Sacch_edge(cells,2))
       allocate(flag_offbc(cells))  !zw offshore bc cells flag 04/07/2020
+      allocate(flag_offbc_wq(cells))  !offshore wq bc cells flag
       allocate(adaption_coeff(cells))   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
 
 ! arrays for rainfall runoff calculations for each compartments

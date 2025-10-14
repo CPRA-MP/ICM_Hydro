@@ -1116,9 +1116,9 @@
                 fctrib=0.0
 !>> Add adjustment to Pearl River tributary flow !HARDCODED ADJUSTMENT
 !			     if(jt == 5) then
-                if(jt == 19) then
-                   fctrib=0.5
-                endif
+!                if(jt == 19) then
+!                   fctrib=0.5
+!                endif
 !>> Convert Water Quality input data from concentration to loading rate (input data in mg/L, converted to g/sec here)
                 QChem(jtrib(jt),1,kt)=cChem(jtrib(jt),1,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON                                      !NO3     ! JAM June 2008 & Jan 09, 2011
@@ -1659,17 +1659,6 @@
 	      flag_offbc(jj)=1
       enddo    
 
-!>> Read Water Quality Boundary Condition locations file
-      KBC_wq(:)=0
-      Read(1255,*)(KBC_wq(jj), jj=1,mds_wq) !AMc Oct 8 2013
-      close(1255)
-	!zw added 04/07/2020 to determine whether a cell is offbc or not
-	  flag_offbc(:)=0
-	  do i=1,mds_wq
-	      jj=KBC_wq(i)
-	      flag_offbc(jj)=1
-      enddo    
-
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
@@ -1792,7 +1781,10 @@
 !		  Sacch_int(j,1)=0.0                        !in main.f
 !	  enddo
 
-  !>>boundary conditions data for salinity and WQ
+
+!>> Read Water Quality Boundary Condition locations and data file
+      flag_offbc_wq(:)=0
+      KBC_wq(:)=0
       SBC(:)=0  !zw added 04/06/2020
       BCTSS(:)=0
       BCNO3(:)=0
@@ -1813,6 +1805,7 @@
      &			BCON(jmds),BCTP(jmds),BCDO(jmds),BCTOC(jmds),BCLA(jmds),
      &			BCDA(jmds),BCage(jmds)									!added age
          KBC_wq(i) = jmds
+         flag_offbc_wq(jmds)=1
 	  enddo
       close(56)
 

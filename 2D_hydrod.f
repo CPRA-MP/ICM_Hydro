@@ -1776,8 +1776,10 @@
 !============================cell continuity
 ! day now global parameters - no longer needed to be passed into subroutines
           if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
-
               call CelldQ(j,kday,fcrop,mm,dday)
+          endif
+          
+          if(flag_offbc_wc(j)==0) then !update wq and salinity for only non-offbc cell
 
               if (iSed == 1) then
                   call waves_YV(j)                                                            !-EDW

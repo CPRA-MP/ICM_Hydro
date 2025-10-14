@@ -398,7 +398,8 @@
       integer, dimension(:), allocatable :: KBC_wq
       integer, dimension(:), allocatable :: Jwind
       integer, dimension(:), allocatable :: Jet
-      integer, dimension(:), allocatable :: flag_offbc !zw offshore bc cells flag 04/07/2020
+      integer, dimension(:), allocatable :: flag_offbc      !zw offshore bc cells flag 04/07/2020
+      integer, dimension(:), allocatable :: flag_offbc_wq   !offshore wq bc cells flag 
       
 !      real(sp), dimension(:), allocatable :: acss
       real(sp), dimension(:), allocatable :: Ahydro
