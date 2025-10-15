@@ -1779,7 +1779,7 @@
               call CelldQ(j,kday,fcrop,mm,dday)
           endif
           
-          if(flag_offbc_wc(j)==0) then !update wq and salinity for only non-offbc cell
+          if(flag_offbc_wq(j)==0) then !update wq and salinity for only non-offbc cell
 
               if (iSed == 1) then
                   call waves_YV(j)                                                            !-EDW
