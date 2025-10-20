@@ -199,6 +199,7 @@
       allocate(MEESedRate(4))
       allocate(month_DOY(12))
       allocate(KBC(mds))  !allocate(KBC(20))  !zw change to mds instead of 20  04/07/2020
+      allocate(KBC_wq(mds_wq))
       allocate(Sal(1,1))
       allocate(SWR(50))
 
@@ -314,6 +315,7 @@
       allocate(Sacch_int(cells,2))
       allocate(Sacch_edge(cells,2))
       allocate(flag_offbc(cells))  !zw offshore bc cells flag 04/07/2020
+      allocate(flag_offbc_wq(cells))  !offshore wq bc cells flag
       allocate(adaption_coeff(cells))   !non-equilibrium adaption coefficient for sand resuspension/deposition source term
 
 ! arrays for rainfall runoff calculations for each compartments

@@ -90,8 +90,8 @@
 !>> Update salinity, temperature,sediments and WQ offshore boundary conditions 
 !>> seasonal adjustment of boundary condition salinity data
 !c		do jj=101,mds+101-1
-      do jjk=1,mds  !AMc 8 oct 2013
-	      jj=KBC(jjk) !AMc 8 oct 2013
+      do jjk=1,mds_wq  !AMc 8 oct 2013
+	      jj=KBC_wq(jjk) !AMc 8 oct 2013
 		  tday= t/24/3600
 		  tdayj=tday-(int(tday/365.25))*365.25					!cal julian day JAM Nov 2010
 
@@ -1776,8 +1776,10 @@
 !============================cell continuity
 ! day now global parameters - no longer needed to be passed into subroutines
           if(flag_offbc(j)==0) then !zw added 4/07/2020 for only non-offbc cells
-
               call CelldQ(j,kday,fcrop,mm,dday)
+          endif
+          
+          if(flag_offbc_wq(j)==0) then !update wq and salinity for only non-offbc cell
 
               if (iSed == 1) then
                   call waves_YV(j)                                                            !-EDW

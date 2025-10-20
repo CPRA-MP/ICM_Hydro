@@ -1116,9 +1116,9 @@
                 fctrib=0.0
 !>> Add adjustment to Pearl River tributary flow !HARDCODED ADJUSTMENT
 !			     if(jt == 5) then
-                if(jt == 19) then
-                   fctrib=0.5
-                endif
+!                if(jt == 19) then
+!                   fctrib=0.5
+!                endif
 !>> Convert Water Quality input data from concentration to loading rate (input data in mg/L, converted to g/sec here)
                 QChem(jtrib(jt),1,kt)=cChem(jtrib(jt),1,kt)
      &            *Qtrib(jtrib(jt),kt)*FSEASON                                      !NO3     ! JAM June 2008 & Jan 09, 2011
@@ -1648,7 +1648,7 @@
       close(43)
       close(46)
 
-!>> Read Boundary Conditions file
+!>> Read Tidal Water Level Boundary Condition locations file
       KBC(:)=0
       Read(125,*)(KBC(jj), jj=1,mds) !AMc Oct 8 2013
       close(125)
@@ -1658,6 +1658,7 @@
 	      jj=KBC(i)
 	      flag_offbc(jj)=1
       enddo    
+
 
 !>> Read in data to transpose near-shore observed water level timeseries to off-shore water levels
       transposed_tide(:,:)=0  !zw added 04/06/2020
@@ -1780,7 +1781,10 @@
 !		  Sacch_int(j,1)=0.0                        !in main.f
 !	  enddo
 
-  !>>boundary conditions data for salinity and WQ
+
+!>> Read Water Quality Boundary Condition locations and data file
+      flag_offbc_wq(:)=0
+      KBC_wq(:)=0
       SBC(:)=0  !zw added 04/06/2020
       BCTSS(:)=0
       BCNO3(:)=0
@@ -1793,13 +1797,15 @@
       BCDA(:)=0
       BCage(:)=0
 
-
-	  do i=1,mds   !AMc Oct 8 2013
-!	      jj=kbc(i)   !AMc Oct 8 2013
+     
+	  do i=1,mds_wq   !AMc Oct 8 2013
+!	      jj=kbc_wq(i)   !AMc Oct 8 2013
+! below we could update the boundary condition arrays to be of size(mds_wq) in allocate_params and then assign input data over (i) instead of (jmds):  READ(56,*) jmds,SBC(i),BCTSS(i)...
 		  READ(56,*) jmds,SBC(jmds),BCTSS(jmds),BCNO3(jmds),BCNH4(jmds),
      &			BCON(jmds),BCTP(jmds),BCDO(jmds),BCTOC(jmds),BCLA(jmds),
      &			BCDA(jmds),BCage(jmds)									!added age
-
+         KBC_wq(i) = jmds
+         flag_offbc_wq(jmds)=1
 	  enddo
       close(56)
 
@@ -1819,11 +1825,11 @@
 
 !>> Read Bounday Condition Temperature data for current model year
       do kt=1,simdays
-          READ(101,*)(TempwBC(jj,kt), jj=1,mds)
+          READ(101,*)(TempwBC(jj,kt), jj=1,mds_wq)
 
 !>> If compartment has a boundary condition, replace temperature values with downstream boundary conditions that were just read in for BC locations
-	      do jkk=1,mds   !AMc Oct 8 2013
-              jj=kbc(jkk)   !AMc Oct 8 2013
+	      do jkk=1,mds_wq   !AMc Oct 8 2013
+              jj=kbc_wq(jkk)   !AMc Oct 8 2013
               Tempe(jj,kt)=TempwBC(jkk,kt)
 
 	      enddo
@@ -2161,8 +2167,8 @@
       BCSedRatio(2) = 1./2.
       BCSedRatio(3) = 1./4.
       BCSedRatio(4) = 1./4.
-      do jkk=1,mds
-	      jj=KBC(jkk)
+      do jkk=1,mds_wq
+	      jj=KBC_wq(jkk)
 		  S(jj,1) = SBC(jj)
 		  Tempw(jj,1)=TempwBC(jkk,1)
           do i=1,4

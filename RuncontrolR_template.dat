@@ -3,8 +3,8 @@
 30          !3   dt seconds
 6172        !4   number of links
 1787        !5   number of compartments
-0           !6   number of upstream boundary conditions (excluding tributary flow inputs in Qmult)
-22          !7   number of downstream boundary conditions (excluding diversion flows in Qmult_div)
+22          !6   number of downstream water quality boundary condition locations (salinity, TSS, nutrients)
+22          !7   number of downstream tidal water level boundary condition locations
 2           !8   dTprint interval in hours
 0           !9   number of days in input daily boundary condition files before data starts for current year run (startrun)
 364         !10   row number of last day in input daily boundary condition for model year being run(endrun)
