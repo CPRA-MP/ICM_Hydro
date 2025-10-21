@@ -81,16 +81,16 @@
 !===
 
           if(Q(iab,2) > 0.0) then !from Upstream to Downstream
-              Csalface= min(fa_US*S(jus(iab),1)				!cell face values
-     &                  +(1-fa_US)*S(jds(iab),1),S(jus(iab),1)) 
+              Csalface= fa_US*S(jus(iab),1)				!cell face values
+     &                  +(1-fa_US)*S(jds(iab),1)
 !              Csalface= fa(iab)*S(jus(iab),1)				!cell face values
 !     &                  +(1-fa(iab))*S(jds(iab),1)
 !              Csalface=min(Csalface,S(jus(iab),1))  !zw testing 1/25/2024 
           else                    !from Downstream to upstream
 !              Csalface= fa(iab)*S(jds(iab),1)
 !     &                  +(1-fa(iab))*S(jus(iab),1)
-              Csalface= min(fa_DS*S(jds(iab),1)
-     &                  +(1.0-fa_DS)*S(jus(iab),1),S(jds(iab),1))
+              Csalface= fa_DS*S(jds(iab),1)
+     &                  +(1.0-fa_DS)*S(jus(iab),1)
 !              Csalface=min(Csalface,S(jds(iab),1))  !zw testing 1/25/2024 
           endif
    		!endif
