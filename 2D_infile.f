@@ -369,11 +369,11 @@
           Aus=As(jus(lnkid),1)
           Ads=As(jds(lnkid),1)
           Asum=Aus+Ads
-          fx_ow(lnkid)=Ads/Asum
+          fx_ow(lnkid)=sqrt(Ads)/sqrt(Asum)
           Aus=Ahf(jus(lnkid))+As(jus(lnkid),1)
           Ads=Ahf(jds(lnkid))+As(jds(lnkid),1)
           Asum=Aus+Ads
-          fx_marsh(lnkid)=Ads/Asum
+          fx_marsh(lnkid)=sqrt(Ads)/sqrt(Asum)
 		  
       enddo
 	  close(33)
