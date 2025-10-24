@@ -345,7 +345,7 @@
                   write(1,*)'QSAL_adv+diff=',Qsalsum_link
               endif
           enddo
-          stop
+!          stop
       endif
 
 !>> High-pass and low-pass filters on salinity calculation
