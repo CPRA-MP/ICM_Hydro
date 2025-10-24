@@ -315,37 +315,38 @@
          
 !== for code debugging
 !      if ((S(j,2) < 0) .or. (S(j,2) > salmax)) then
-      ! if ((S(j,2) > salmax)) then
-          ! write(1,*)'comp = ',j
-          ! write(1,*)'As =',As(j,1)
-          ! write(1,*)'sal(t-1) = ',S(j,1)
-          ! write(1,*)'sal(t) = ',S(j,2)
-          ! write(1,*)'depth(t-1) = ',Es(j,1)-Bed(j)
-          ! write(1,*)'depth(t) =', Es(j,2)-Bed(j)
-          ! write(1,*)'Dz =',Es(j,2)-Es(j,1)
-          ! write(1,*)'vol(t-1) =', vol1,marsh_vol1
-          ! write(1,*)'vol(t) =', vol2,marsh_vol2
-          ! write(1,*)'qsalsum =',qsalsum
-          ! do k=1,nlink2cell(j)
-              ! iab=abs(icc(j,k))
-              ! if(icc(j,k) /= 0) then
-                  ! if(icc(j,k) < 0) then
-                      ! jnb=jus(iab)
-                  ! elseif(icc(j,k) > 0) then
-                      ! jnb=jds(iab)
-                  ! endif  
-              ! endif
-              ! Qsalsum_link=0.0
-              ! if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum_link)
-              ! Qlink = sicc(j,k)*Q(iab,2)
-              ! if(abs(Qlink)>0) then
-                  ! write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
-                  ! write(1,*)'S(jus)=',S(jus(iab),1),'S(jds)=',S(jds(iab),1)
-                  ! write(1,*)'QSAL_adv+diff=',Qsalsum_link
-              ! endif
-          ! enddo
-          ! stop
-      ! endif
+      if ((S(j,2) > salmax)) then
+!      if (isNan(S(j,2))) then
+          write(1,*)'comp = ',j
+          write(1,*)'As =',As(j,1)
+          write(1,*)'sal(t-1) = ',S(j,1)
+          write(1,*)'sal(t) = ',S(j,2)
+          write(1,*)'depth(t-1) = ',Es(j,1)-Bed(j)
+          write(1,*)'depth(t) =', Es(j,2)-Bed(j)
+          write(1,*)'Dz =',Es(j,2)-Es(j,1)
+          write(1,*)'vol(t-1) =', vol1,marsh_vol1
+          write(1,*)'vol(t) =', vol2,marsh_vol2
+          write(1,*)'qsalsum =',qsalsum
+          do k=1,nlink2cell(j)
+              iab=abs(icc(j,k))
+              if(icc(j,k) /= 0) then
+                  if(icc(j,k) < 0) then
+                      jnb=jus(iab)
+                  elseif(icc(j,k) > 0) then
+                      jnb=jds(iab)
+                  endif  
+              endif
+              Qsalsum_link=0.0
+              if(iab > 0) call salinity(iab,jnb,j,k,Qsalsum_link)
+              Qlink = sicc(j,k)*Q(iab,2)
+              if(abs(Qlink)>0) then
+                  write(1,*)'LinkID=',iab,'Type=',linkt(iab),'Q=',Qlink
+                  write(1,*)'S(jus)=',S(jus(iab),1),'S(jds)=',S(jds(iab),1)
+                  write(1,*)'QSAL_adv+diff=',Qsalsum_link
+              endif
+          enddo
+          stop
+      endif
 
 !>> High-pass and low-pass filters on salinity calculation
 !      if(S(j,2) < 0.10) then
