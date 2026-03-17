@@ -248,7 +248,7 @@
               marshcount = marshcount + 1
           endif
 
-          if (BedM(j) <= Bed(j)) then
+          if (BedM(j) < Bed(j)) then
               BedM(j) = Bed(j)
               write(1,922) 'Compartment',j,'had an input marsh
      & elevation below the open water bed elevation. Set to bed elev.'
@@ -784,7 +784,7 @@
               write(1,925)'fa value for link',lnkid,'is less than 0.5'
               write(1,*) 'Default value of 0.5 is assigned'
 
-              write(*,925)'fa value for link',lnkid,'is missing.'
+              write(*,925)'fa value for link',lnkid,'is less than 0.5'
               write(*,*) 'Default value of 0.5 is assigned'
 
               fa_mult(lnkid) = 0.56
