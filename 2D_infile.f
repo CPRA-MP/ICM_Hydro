@@ -640,8 +640,8 @@
 
 !>> Marsh link attribute checks
           elseif (linkt(lnkid) == 8) then
-              Latr2(lnkid)=BedM(jus(lnkid))
-              Latr10(lnkid)=BedM(jds(lnkid))
+              ! Latr2(lnkid)=BedM(jus(lnkid))  - ZW commented out 03/17/2026 (link attr updating scripts already checked and set US/DS elevations)
+              ! Latr10(lnkid)=BedM(jds(lnkid))
 
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
 ! check if upstream is now water
@@ -712,9 +712,9 @@
 
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
-!   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr2(lnkid)=BedM(jus(lnkid))
-			  Latr10(lnkid)=BedM(jds(lnkid))
+! !   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
+			  ! Latr2(lnkid)=BedM(jus(lnkid)) - ZW commented out 03/17/2026 (link attr updating scripts already checked and set US/DS elevations)
+			  ! Latr10(lnkid)=BedM(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr10(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
