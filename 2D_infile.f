@@ -544,10 +544,12 @@
      & bed elevation of connecting compartments'
                   write(*,925) 'Weir link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
-	              Latr1(lnkid)=max(Latr2(lnkid),Latr3(lnkid))+0.5
-                  write(1,*) 'Weir crest elevation is set to be 0.5m 
+	              ! Latr1(lnkid)=max(Latr2(lnkid),Latr3(lnkid))+0.5
+	              Latr2(lnkid)=min(Latr2(lnkid),Latr1(lnkid)-0.1)
+	              Latr3(lnkid)=min(Latr3(lnkid),Latr1(lnkid)-0.1)
+                  write(1,*) 'Weir crest elevation is set to be 0.1m 
      & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
-                  write(*,*) 'Weir crest elevation is set to be 0.5m 
+                  write(*,*) 'Weir crest elevation is set to be 0.1m 
      & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
 			  endif
               if(Latr4(lnkid) <=0)then
