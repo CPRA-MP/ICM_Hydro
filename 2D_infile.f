@@ -573,10 +573,12 @@
      & bed elevation of connecting compartments'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
      & bed elevation of connecting compartments'
-                  Latr1(lnkid)=max(Latr3(lnkid),Latr5(lnkid))+0.5
-                  write(1,*) 'Invert elevation is set to be 0.5m 
+                  ! Latr1(lnkid)=max(Latr3(lnkid),Latr5(lnkid))+0.5
+                  Latr3(lnkid)=min(Latr1(lnkid)-0.1,Latr3(lnkid))
+                  Latr5(lnkid)=min(Latr1(lnkid)-0.1,Latr5(lnkid))
+                  write(1,*) 'Invert elevation is set to be 0.1m 
      & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
-                  write(*,*) 'Invert elevation is set to be 0.5m 
+                  write(*,*) 'Invert elevation is set to be 0.1m 
      & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
 			  endif
 
@@ -595,9 +597,9 @@
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
-	              Latr4(lnkid)=5.0
-                  write(1,*) 'Tidegate/Orifice width is set to be 5m'
-                  write(*,*) 'Tidegate/Orifice width is set to be 5m'
+	              Latr4(lnkid)=1.0
+                  write(1,*) 'Tidegate/Orifice width is set to be 1m'
+                  write(*,*) 'Tidegate/Orifice width is set to be 1m'
 			  endif
               if (Latr8(lnkid)<0) Latr8(lnkid)=0.4
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
