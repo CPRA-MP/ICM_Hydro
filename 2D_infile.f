@@ -548,9 +548,9 @@
 	              Latr2(lnkid)=min(Latr2(lnkid),Latr1(lnkid)-0.1)
 	              Latr3(lnkid)=min(Latr3(lnkid),Latr1(lnkid)-0.1)
                   write(1,*) 'Weir crest elevation is set to be 0.1m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+     & above higher bed elevation of us/ds compartments: ',max(Latr2(lnkid),Latr3(lnkid))
                   write(*,*) 'Weir crest elevation is set to be 0.1m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+     & above higher bed elevation of us/ds compartments: ',max(Latr2(lnkid),Latr3(lnkid))
 			  endif
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Weir link',lnkid,'has crest length lower than 0'
@@ -579,9 +579,9 @@
                   Latr3(lnkid)=min(Latr1(lnkid)-0.1,Latr3(lnkid))
                   Latr5(lnkid)=min(Latr1(lnkid)-0.1,Latr5(lnkid))
                   write(1,*) 'Invert elevation is set to be 0.1m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+     & above higher bed elevation of us/ds compartments: ',max(Latr3(lnkid),Latr5(lnkid))
                   write(*,*) 'Invert elevation is set to be 0.1m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+     & above higher bed elevation of us/ds compartments: ',max(Latr3(lnkid),Latr5(lnkid))
 			  endif
 
               if(Latr2(lnkid)<=Latr1(lnkid))then
