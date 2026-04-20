@@ -248,7 +248,7 @@
               marshcount = marshcount + 1
           endif
 
-          if (BedM(j) <= Bed(j)) then
+          if (BedM(j) < Bed(j)) then
               BedM(j) = Bed(j)
               write(1,922) 'Compartment',j,'had an input marsh
      & elevation below the open water bed elevation. Set to bed elev.'
@@ -544,11 +544,13 @@
      & bed elevation of connecting compartments'
                   write(*,925) 'Weir link',lnkid,'has crest elevation lower than 
      & bed elevation of connecting compartments'
-	              Latr1(lnkid)=max(Latr2(lnkid),Latr3(lnkid))+0.5
-                  write(1,*) 'Weir crest elevation is set to be 0.5m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
-                  write(*,*) 'Weir crest elevation is set to be 0.5m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+	              ! Latr1(lnkid)=max(Latr2(lnkid),Latr3(lnkid))+0.5
+	              Latr2(lnkid)=min(Latr2(lnkid),Latr1(lnkid)-0.1)
+	              Latr3(lnkid)=min(Latr3(lnkid),Latr1(lnkid)-0.1)
+                  write(1,*) 'Weir crest elevation is set to be 0.1m 
+     & above higher bed elevation of us/ds compartments: ',max(Latr2(lnkid),Latr3(lnkid))
+                  write(*,*) 'Weir crest elevation is set to be 0.1m 
+     & above higher bed elevation of us/ds compartments: ',max(Latr2(lnkid),Latr3(lnkid))
 			  endif
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Weir link',lnkid,'has crest length lower than 0'
@@ -573,11 +575,13 @@
      & bed elevation of connecting compartments'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has invert elevation lower than 
      & bed elevation of connecting compartments'
-                  Latr1(lnkid)=max(Latr3(lnkid),Latr5(lnkid))+0.5
-                  write(1,*) 'Invert elevation is set to be 0.5m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
-                  write(*,*) 'Invert elevation is set to be 0.5m 
-     & above higher bed elevation of us/ds compartments: ',Latr1(lnkid)
+                  ! Latr1(lnkid)=max(Latr3(lnkid),Latr5(lnkid))+0.5
+                  Latr3(lnkid)=min(Latr1(lnkid)-0.1,Latr3(lnkid))
+                  Latr5(lnkid)=min(Latr1(lnkid)-0.1,Latr5(lnkid))
+                  write(1,*) 'Invert elevation is set to be 0.1m 
+     & above higher bed elevation of us/ds compartments: ',max(Latr3(lnkid),Latr5(lnkid))
+                  write(*,*) 'Invert elevation is set to be 0.1m 
+     & above higher bed elevation of us/ds compartments: ',max(Latr3(lnkid),Latr5(lnkid))
 			  endif
 
               if(Latr2(lnkid)<=Latr1(lnkid))then
@@ -595,9 +599,9 @@
               if(Latr4(lnkid) <=0)then
                   write(1,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
                   write(*,925) 'Orifice/tidal gate link',lnkid,'has mean width lower than 0'
-	              Latr4(lnkid)=5.0
-                  write(1,*) 'Tidegate/Orifice width is set to be 5m'
-                  write(*,*) 'Tidegate/Orifice width is set to be 5m'
+	              Latr4(lnkid)=1.0
+                  write(1,*) 'Tidegate/Orifice width is set to be 1m'
+                  write(*,*) 'Tidegate/Orifice width is set to be 1m'
 			  endif
               if (Latr8(lnkid)<0) Latr8(lnkid)=0.4
 !!!ZW 12/15/2023 upwind factor for orifice link should always be 1???
@@ -640,8 +644,8 @@
 
 !>> Marsh link attribute checks
           elseif (linkt(lnkid) == 8) then
-              Latr2(lnkid)=BedM(jus(lnkid))
-              Latr10(lnkid)=BedM(jds(lnkid))
+              ! Latr2(lnkid)=BedM(jus(lnkid))  - ZW commented out 03/17/2026 (link attr updating scripts already checked and set US/DS elevations)
+              ! Latr10(lnkid)=BedM(jds(lnkid))
 
 !>> if marsh overland links connect to a compartment that has zero marsh area, update that compartment's marsh elevation (in the link attributes) to the bed elevation of the open water
 ! check if upstream is now water
@@ -712,9 +716,9 @@
 
 !>> ridge link attribute checks
           elseif(linkt(lnkid) == 9) then
-!   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
-			  Latr2(lnkid)=BedM(jus(lnkid))
-			  Latr10(lnkid)=BedM(jds(lnkid))
+! !   ridge upstream & downstream ground elevation = bed elevation of corresponding us/ds compartment
+			  ! Latr2(lnkid)=BedM(jus(lnkid)) - ZW commented out 03/17/2026 (link attr updating scripts already checked and set US/DS elevations)
+			  ! Latr10(lnkid)=BedM(jds(lnkid))
 !   weir upstream & downstream ground elevation can not be higher than crest elevation
               if(Latr1(lnkid)<=max(Latr2(lnkid),Latr10(lnkid)))then
                   write(1,925) 'Ridge link',lnkid,'has crest elevation lower than 
@@ -784,7 +788,7 @@
               write(1,925)'fa value for link',lnkid,'is less than 0.5'
               write(1,*) 'Default value of 0.5 is assigned'
 
-              write(*,925)'fa value for link',lnkid,'is missing.'
+              write(*,925)'fa value for link',lnkid,'is less than 0.5'
               write(*,*) 'Default value of 0.5 is assigned'
 
               fa_mult(lnkid) = 0.56
