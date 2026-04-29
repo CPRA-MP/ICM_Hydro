@@ -1287,10 +1287,10 @@
       enddo
 
 !>> Call 'ICM_TreeConditions_Veg' subroutine which determines if tree establishment conditions are met for each grid cell of the Veg model.
-      call ICM_TreeConditions_Veg
+!deprecated MP29!      call ICM_TreeConditions_Veg
 
 !>> Call 'ICM_Formatting' subroutine which formats the gridded output into versions directly digestable by other ICM routines.
-      call ICM_Formatting
+!deprecated MP29!      call ICM_Formatting
 
 !>> Calculate average tidal prism for each compartment.
       do j = 1,N

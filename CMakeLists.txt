@@ -41,7 +41,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/CMakeFiles)
 ###########################################################################
 #...Set the version string (used for libraries)
 SET(ICMHYDRO_VERSION_MAJOR 26)
-SET(ICMHYDRO_VERSION_MINOR  0)
+SET(ICMHYDRO_VERSION_MINOR  1)
 SET(ICMHYDRO_VERSION_PATCH  0)
 SET(ICMHYDRO_VERSION_STRING ${ICMHYDRO_VERSION_MAJOR}.${ICMHYDRO_VERSION_MINOR}.${ICMHYDRO_VERSION_PATCH})
 ###########################################################################
@@ -407,14 +407,12 @@ ADD_EXECUTABLE( ${HYDRO} 1D/1D_common_array_R.f90
                          2D/2D_DOP.f
                          2D/2D_DOx.f
                          2D/2D_hydrod.f
-                         2D/2D_ICM_formatting.f
                          2D/2D_ICM_InterpolateMonthlyToGrid.f
                          2D/2D_ICM_InterpolateToGrid.f
                          2D/2D_ICM_MapMonthlyToGrid.f
                          2D/2D_ICM_MapToGrid.f
                          2D/2D_ICM_SalinityThreshold_WM.f
                          2D/2D_ICM_summaries.f
-                         2D/2D_ICM_TreeConditions_Veg.f
                          2D/2D_infile.f
                          2D/2D_livA.f
                          2D/2D_main.f90
