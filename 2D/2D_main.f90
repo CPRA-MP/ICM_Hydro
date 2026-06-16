@@ -390,7 +390,7 @@
       lasttidestep = dttide*60*60/dt !dttide is in hours - number of timesteps before updating tide data
       lastwindstep = dtwind*60*60/dt !dtwind is in hours - number of timesteps before updating wind data
       lastlockstep = dtlock*60*60/dt !dtlock is in hours - number of timesteps before updating lock control data
-      lockOPstep = 600               ! YW time (s) needed for lock to open or close. Can be added to RuncontrolR      
+      lockOPstep = 600               ! YW time (s) needed for lock to open or close. Can be added to RuncontrolR - if dt=30 and lockOPstep=600 then a lock can close/open by 0.05 at each timestep (used in hydrod.f for linktype=3)     
 !>> Initialize counters for updating tide and wind data - initial values are set to 1 instead of zerob/c first day starts one timestep AFTER midnight - when midnight is hit at end of day this counter is then reset
       daystep = 0  !YW! Modified to fix the issue with skipping the first time step
       tidestep = 0 !YW!

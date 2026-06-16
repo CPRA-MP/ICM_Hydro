@@ -645,13 +645,12 @@
                       Latr11(i) = Latr11(i) + dt/lockOPstep                      
                   endif
 
-          !>> Set zero multiplier if lock should be closed based on observed daily timeseries
+          !>> Set flow multiplier if lock should be closed based on observed daily timeseries - can have partial opening in LockControlObservedData.csv
               elseif (Latr9(i) == 6) then
-                  if (lockhours(lockrow,Latr10(i)) <= 0.0) then    ! lockrow is data timestep counter updated in main.f
-                      !dkd = 0.0
-                      Latr11(i) = Latr11(i) - dt/lockOPstep
+                  if (lockhours(lockrow,Latr10(i)) <= 0.0) then                                 ! lockrow is data timestep counter updated in main.f
+                      Latr11(i) = Latr11(i) - dt/lockOPstep                                     ! lockhours = 0 so gate is shut - reduce Latr11(i) incrementally from previous timestep's Latr11(i) based on lockOPstep setting in main.f
                   else
-                      Latr11(i) = Latr11(i) + dt/lockOPstep
+                      Latr11(i) = min(lockhours(lockrow,Latr10(i)), Latr11(i) + dt/lockOPstep ) ! lockhours > 0 so gate is open - increase Latr11(i) incrementally from previous timestep's Latr11(i) but set to maximum value read in from lockhours (in case of partial operation of structures)
                   endif
 
           !>> Set zero multiplier if target link discharge is lower then the threshold discharge       
@@ -767,6 +766,7 @@
 
               endif	!>> end of Latr(9) if statement
               
+              ! use low/high pass filters to cap lock control operations to fully shut (0) or fully open (1)
               if (Latr11(i) < 0) then
                   Latr11(i) = 0
               elseif (Latr11(i) > 1) then
