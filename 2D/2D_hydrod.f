@@ -2067,7 +2067,7 @@
 ! save daily values at compartments
           do j=1,N
               stage_daily(day_int,j)= ESAV(j,1)
-              tidal_range_daily(day_int,j) = ESMX(kl,1) - ESMN(kl,1) 
+              tidal_range_daily(day_int,j) = ESMX(kl,2) - ESMN(kl,2) 
               sal_daily(day_int,j) = SALAV(j)
 ! SALAV is already filtered by filter in celldSal (all filters removed here)
 !              sal_daily(day_int,j) = max(min(SALAV(j),35.0),0.2)
