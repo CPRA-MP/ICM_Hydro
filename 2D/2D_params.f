@@ -208,8 +208,6 @@
 
 ! arrays used for BIMODE tidal prism
       real(sp),dimension(:,:),allocatable :: tidal_range_daily
-      real(sp),dimension(:),allocatable :: dailyLW
-      real(sp),dimension(:),allocatable :: dailyHW
       real(sp),dimension(:),allocatable :: TRsum
       real(sp),dimension(:),allocatable :: TRave
       real(sp),dimension(:),allocatable :: tidalprism_ave

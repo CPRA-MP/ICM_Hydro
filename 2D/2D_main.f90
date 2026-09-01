@@ -710,8 +710,6 @@
           BCsurge(j,2) = BCsurge(j,1)
           ESMX(j,2)=ES(j,1)
           ESMN(j,2)=ES(j,1)
-          dailyHW(j)=0.0
-          dailyLW(j)=0.0
           ESAV(j,1) = ES(j,1)*dt/(3600.*24.)
           EHAV(j,1) = EH(j,1)*dt/(3600.*24.)
           

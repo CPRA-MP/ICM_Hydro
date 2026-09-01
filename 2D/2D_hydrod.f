@@ -1953,8 +1953,6 @@
               ESMN(kl,2) = ES(kl,2)
               ESAV(kl,1) = ES(kl,2)*dt/(3600.*24.)
               EHAV(kl,1) = EH(kl,2)*dt/(3600.*24.)
-              dailyHW(kl) = 0.0
-              dailyLW(kl) = 0.0
               SALAV(kl) = S(kl,2)*dt/(3600.*24.)
 !>> Update average WQ values for compartments by timestep's contribution to daily average
           else
@@ -1972,8 +1970,6 @@
               ESMN(kl,2) = min(ESMN(kl,2),ES(kl,2))
               ESAV(kl,1) = ESAV(kl,1) + ES(kl,2)*dt/(3600.*24.)
               EHAV(kl,1) = EHAV(kl,1) + EH(kl,2)*dt/(3600.*24.)
-              dailyHW(kl) = max(dailyHW(kl),ES(kl,2))
-              dailyLW(kl) = min(dailyLW(kl),ES(kl,2))
               EsRange(kl,1)=ESMX(kl,2)-ESMN(kl,2)
               SALAV(kl)=SALAV(kl) + S(kl,2)*dt/(3600.*24.)
           endif
@@ -2071,7 +2067,7 @@
 ! save daily values at compartments
           do j=1,N
               stage_daily(day_int,j)= ESAV(j,1)
-              tidal_range_daily(day_int,j) = dailyHW(j)-dailyLW(j)
+              tidal_range_daily(day_int,j) = ESMX(kl,1) - ESMN(kl,1) 
               sal_daily(day_int,j) = SALAV(j)
 ! SALAV is already filtered by filter in celldSal (all filters removed here)
 !              sal_daily(day_int,j) = max(min(SALAV(j),35.0),0.2)
@@ -2081,9 +2077,6 @@
               tmp_daily(day_int,j) = TempwAve(j)  !change tmp_daily to daily average value instead of instanenous avlue - ZW 12/18/2023
               tkn_daily(day_int,j) = ChemAve(j,2)+ChemAve(j,4)
               tss_daily(day_int,j) = TSSAve(j)
-              ! Reset daily high and low waters to zero
-              dailyHW(j) = 0.0
-              dailyLW(j) = 0.0
           enddo
 
 

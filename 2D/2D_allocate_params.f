@@ -85,8 +85,6 @@
       allocate(SedMarshInt(cells))
       allocate(SedMarshEdge(cells))
       allocate(tidal_range_daily(simdays,cells))
-      allocate(dailyLW(cells))
-      allocate(dailyHW(cells))
       allocate(TRsum(cells))
       allocate(TRave(cells))
       allocate(tidalprism_ave(cells))
