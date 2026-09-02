@@ -59,7 +59,8 @@
      &        Apctmarsh(node),        ! portion of cell that is marsh (0-1)
 !     &	      Ahf(node),			  !	marsh area of cells (m2)
      &        ar_ed(node),            ! marsh edge area of cell (m2)
-     &        runoff_method(node),	  !	rainfall runoff calculation method: 0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method 
+!     &        runoff_method(node),	  !	rainfall runoff calculation method: 0 - original MP23 approach; 1 - Rational Method (C); 2 - Curve Number (CN) for SCS Curve Number Method 
+     &        perimeter(node),        ! compartment perimeter, inclusive of water, marsh, upland (m)
      &	      Bed(node),			  !	bed elevation of storage cells	(m)
      &	      erBedDepth(node),       !	depth of erodible bed in open water area (m)
      &	      erBedBD(node),		  !	bulk density of erodible bed in open water area	(g/cm3)
@@ -99,6 +100,10 @@
 !     &	      acssh(node),            !	resuspension parameters									!JAM Oct 2010
 !     &	      Vsh(node),			  !	deposition velocity							(m/d)		!JAM Oct 2010
 !     &	      SourceBM(node)		  !	Avg annual source due to biomass detritus.  (g/yr/m2)	!JAM Oct 2010
+
+          Atotal(node)
+          Apctwater(node)
+
 
           ! Eh(node,1)=Eho(node)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
           BedM(node) = BedMOrig(node) + BedMAdj(node)
