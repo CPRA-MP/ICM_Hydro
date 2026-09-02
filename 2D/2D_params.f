@@ -414,6 +414,8 @@
       real(sp), dimension(:), allocatable :: SSource      
 !     real(sp), dimension(:), allocatable :: tauc
 !      real(sp), dimension(:), allocatable :: Vss
+      real(sp), dimension(:), allocatable :: perimeter          !compartment perimeter used to calculate effective flow width
+      real(sp), dimension(:), allocatable :: eff_flow_width     !effective flow width for use in average velocity by compartment (used in sediment shear stress calculations)
             
              
       integer, dimension(:,:), allocatable :: icc            

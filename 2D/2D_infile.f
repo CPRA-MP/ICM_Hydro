@@ -20,7 +20,7 @@
       real :: Athresh,Area_change,Area_change2,upl,mr,maxmarel,edge_pct
       real :: faN,FSEASON,FSEASON2,FSEASON3,CtoN,fctrib,Qmax,tadd,dlow,a
       integer,dimension(:),allocatable :: jqtrib
-      real :: Asum,phi_us,Aus,Ads
+      real :: Asum,phi_us,Aus,Ads,xb,xc,xd,x1,x2,compL
 
 !>@par General Structure of Subroutine Logic:
 !>> Input junction geometry and properties.
@@ -100,9 +100,6 @@
 !     &	      acssh(node),            !	resuspension parameters									!JAM Oct 2010
 !     &	      Vsh(node),			  !	deposition velocity							(m/d)		!JAM Oct 2010
 !     &	      SourceBM(node)		  !	Avg annual source due to biomass detritus.  (g/yr/m2)	!JAM Oct 2010
-
-          Atotal(node)
-          Apctwater(node)
 
 
           ! Eh(node,1)=Eho(node)  ! BUG! Eh is assigned as BedM+0.1 later on - zw 04/04/2020
@@ -315,7 +312,28 @@
 !	       rmm=sqrt((As(j,1)+Ahf(j))/pi)	! JAM Oct 2010
 !	       hLength(j)=(rmm-rmo)*0.5			! JAM Oct 2010
 !          hwidth(j)=2.*pi*rmo				! JAM Oct 2010
-      enddo
+
+!>> Calculate an effective compartment width and length (from area and perimeter) assuming rectangular shape
+!>>         Perim = 2L + 2W     P/2 = L+W           W = P/2 - L;
+!>>         Area = LW           A = L*(P/2 - L)     A = L*P/2 - L^2
+!>> L can be solved by rearranging into quadratic:  0 = L^2 - (P/2)*L + A   
+!>>         L = -b +/- ((b^2 - 4ac)^0.5 )/ 2a
+!>>         a = 1;     b = P/2;    c = A
+          xb=-perimeter(j)/2.0
+          xc=Atotal(j)
+          xd=xb**2.0-4.0*xc
+          if(xd>=0) then
+              x1=(-xb+sqrt(xd))/2.0
+              x2=(-xb-sqrt(xd))/2.0
+              compL = max(x1,x2)        ! from the two solutions, select the largest to represent the length of the entire compartment
+          else
+              compL=sqrt(Atotal(j))     ! if xd = 0 (or is otherwise negative) - assume compartment is square shaped
+          endif
+          
+!>> We need the effective flow width of the water area, so assume that the water portion is the same length as calculated above and calculate effective width from water area
+          eff_flow_width(j)=As(j,1)/compL
+
+     enddo
 
 923   Format(7x,a,x,I0,x,a)
 

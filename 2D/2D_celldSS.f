@@ -186,11 +186,11 @@
               enddo
           endif
       enddo
-!      if(ave_vel_cnt(j)>0) ave_vel(j) = ave_vel_sum(j)/ave_vel_cnt(j)
-      
+
+	  !if(ave_vel_cnt(j)>0) ave_vel(j) = ave_vel_sum(j)/ave_vel_cnt(j)
       
       ! Eq. 14 in MP2017 Sediment Distribution report
-      ave_vel(j) = Qsum_abs(j) / ( 2.0*eff_flow_width(j)*( Es(j,2)-Bed(j) ) )
+      if(ddy_2>0) ave_vel(j) = Qsum_abs(j) / ( 2.0*eff_flow_width(j)*ddy_2 )
       
 
 !>> Call sediment resuspension and deposition subroutine - this calculates the net sediment accumulation rate (g/sec)      

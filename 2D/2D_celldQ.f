@@ -95,17 +95,28 @@
 !      endif
 
       Ahmf=Ahydro(j)-Ahf(j)
+
+
 !>> Update cumulative flow rate in marsh based on excess rainfall runoff on upland area
 !>> sign convention on marsh flow = positive flow is from marsh to open water
-      if(runoff_method(j)==1)then  !Rational Method Q=CiA
-          Qupld=max(0.0,runoff_coeff(j)*Rain(kday,jrain(j)))*Ahmf*cden
-      elseif(runoff_method(j)==2)then  !SCS Curve Number Method Q =(P-0.2S)^2/(P+0.8S) where S=1000/CN-10 (unit=inches) 
-          SCS_S=(1000.0/runoff_coeff(j)-10.0)*25.4  !S is in inches, need to convert to mm (*25.4)
-          Qupld=((max(0.0,Rain(kday,jrain(j))-0.2*SCS_S))**2.0
-     &           /(Rain(kday,jrain(j))+0.8*SCS_S))*Ahmf*cden
-      else  !original MP23 method
-          Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden
-      endif
+
+! runoff_method(j) is no longer an attribute in cells.csv this code block won't work unless re configured to set variable
+! we have replaced the upland compartments to have an excess preciptation value passed in as precip value for the day
+! excess precip was determined by a new upland rainfall-runoff model (see ICM_post-processing Github repo: 
+!
+!      if(runoff_method(j)==1)then  !Rational Method Q=CiA
+!          Qupld=max(0.0,runoff_coeff(j)*Rain(kday,jrain(j)))*Ahmf*cden
+!      elseif(runoff_method(j)==2)then  !SCS Curve Number Method Q =(P-0.2S)^2/(P+0.8S) where S=1000/CN-10 (unit=inches) 
+!          SCS_S=(1000.0/runoff_coeff(j)-10.0)*25.4  !S is in inches, need to convert to mm (*25.4)
+!          Qupld=((max(0.0,Rain(kday,jrain(j))-0.2*SCS_S))**2.0
+!     &           /(Rain(kday,jrain(j))+0.8*SCS_S))*Ahmf*cden
+!      else  !original MP23 method
+
+      Qupld=max(0.0,(Rain(kday,jrain(j))-PETuse*fpc))*Ahmf*cden
+
+!      endif
+
+
 !>> Update cumulative flow rate in open water based on excess rainfall runoff on open water area
 !>> sign convention on open water flow = positive is flow out of compartment
       if (ddy1<=dry_threshold) then
