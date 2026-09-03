@@ -333,7 +333,7 @@
 !>> We need the effective flow width of the water area, so assume that the water portion is the same length as calculated above and calculate effective width from water area
           eff_flow_width(j)=As(j,1)/compL
 
-     enddo
+      enddo
 
 923   Format(7x,a,x,I0,x,a)
 
