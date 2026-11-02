@@ -86,7 +86,7 @@ eco-hydrology model, are discussed in this overview.
 ![Satellite map of coastal Louisiana showing the 2012 Coastal Master
 Plan eco-hydrology model compartments and domains, outlined in yellow
 (Chenier Plain), red (Atchafalaya-Terrebonne), and blue
-(Pontchartrain-Barataria)](C:/Users/P00357462/Documents/MP23%20Appendices%20for%20GitHub/ICM-Hydro_MP17/ICM-Hydro_MP17_figs/ICM-Hydro_Fig3.png)  
+(Pontchartrain-Barataria)](https://github.com/CPRA-MP/ICM_Hydro/blob/ICM_Hydro_scg/ICM-Hydro_MP17_figs/ICM-Hydro_Fig3.png)  
 
 <caption>
 
@@ -104,7 +104,7 @@ show flows into and out of the compartments such as
 precipitation-evaporation, precipitation-evapotranspiration,
 inter-compartment exchange, intra-cell exchange, tributary input, and
 Mississippi
-River.](C:/Users/P00357462/Documents/MP23%20Appendices%20for%20GitHub/ICM-Hydro_MP17/ICM-Hydro_MP17_figs/ICM-Hydro_Fig1.png)  
+River.](https://github.com/CPRA-MP/ICM_Hydro/blob/ICM_Hydro_scg/ICM-Hydro_MP17_figs/ICM-Hydro_Fig1.png)  
 
 <caption>
 
@@ -113,7 +113,7 @@ Figure 2. Multi-type (left) and single-type (right) compartment
 
 ![Satellite map of coastal Louisiana showing the 2017 ICM Hydrology
 Subroutine domain and compartments, outlined in
-blue](C:/Users/P00357462/Documents/MP23%20Appendices%20for%20GitHub/ICM-Hydro_MP17/ICM-Hydro_MP17_figs/ICM-Hydro_Fig2.png)  
+blue](https://github.com/CPRA-MP/ICM_Hydro/blob/ICM_Hydro_scg/ICM-Hydro_MP17_figs/ICM-Hydro_Fig2.png)  
 
 <caption>
 
